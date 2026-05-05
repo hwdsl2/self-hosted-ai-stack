@@ -1,0 +1,91 @@
+services:
+  ollama:
+    image: hwdsl2/ollama-server:cuda
+    container_name: ollama
+    restart: always
+    # ports:
+    #   - "11434:11434/tcp"  # Uncomment for direct access to Ollama
+    volumes:
+      - ollama-data:/var/lib/ollama
+      # - ./ollama.env:/ollama.env:ro  # optional: custom config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  litellm:
+    image: hwdsl2/litellm-server
+    container_name: litellm
+    restart: always
+    ports:
+      - "4000:4000/tcp"
+    environment:
+      - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - litellm-data:/etc/litellm
+      # - ./litellm.env:/litellm.env:ro  # optional: custom config
+
+  embeddings:
+    image: hwdsl2/embeddings-server
+    container_name: embeddings
+    restart: always
+    ports:
+      - "8000:8000/tcp"
+    volumes:
+      - embeddings-data:/var/lib/embeddings
+      # - ./embed.env:/embed.env:ro  # optional: custom config
+
+  whisper:
+    image: hwdsl2/whisper-server:cuda
+    container_name: whisper
+    restart: always
+    ports:
+      - "9000:9000/tcp"
+    volumes:
+      - whisper-data:/var/lib/whisper
+      # - ./whisper.env:/whisper.env:ro  # optional: custom config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  kokoro:
+    image: hwdsl2/kokoro-server:cuda
+    container_name: kokoro
+    restart: always
+    ports:
+      - "8880:8880/tcp"
+    volumes:
+      - kokoro-data:/var/lib/kokoro
+      # - ./kokoro.env:/kokoro.env:ro  # optional: custom config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  mcp:
+    image: hwdsl2/mcp-gateway
+    container_name: mcp
+    restart: always
+    ports:
+      - "3000:3000/tcp"
+    volumes:
+      - mcp-data:/var/lib/mcp
+      # - ./mcp.env:/mcp.env:ro  # optional: custom config
+
+volumes:
+  ollama-data:
+  litellm-data:
+  embeddings-data:
+  whisper-data:
+  kokoro-data:
+  mcp-data:
