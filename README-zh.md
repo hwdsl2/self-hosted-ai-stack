@@ -1,0 +1,211 @@
+[English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
+
+# Docker AI Stack
+
+[![授权协议: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+
+一键在您自己的服务器上部署完整的自托管 AI 技术栈。所有服务在首次启动时自动配置安全默认值。音频处理（Whisper、Kokoro）、向量嵌入和大语言模型推理（Ollama）均在本地运行。当使用 LiteLLM 连接外部提供商（如 OpenAI、Anthropic）时，您的数据将发送给这些提供商。
+
+**包含的服务：**
+
+| 服务 | 用途 | 默认端口 |
+|---|---|---|
+| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | 运行本地大语言模型（llama3、qwen、mistral 等） | `11434` |
+| **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI 网关 — 将请求路由至 Ollama、OpenAI、Anthropic 及 100+ 提供商 | `4000` |
+| **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
+| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | 将语音转录为文本 | `9000` |
+| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | 将文本转换为自然语音 | `8880` |
+| **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
+
+**另提供：**
+
+- AI/音频：[WhisperLive（实时语音转文本）](https://github.com/hwdsl2/docker-whisper-live)
+- VPN：[WireGuard](https://github.com/hwdsl2/docker-wireguard)、[OpenVPN](https://github.com/hwdsl2/docker-openvpn)、[IPsec VPN](https://github.com/hwdsl2/docker-ipsec-vpn-server)、[Headscale](https://github.com/hwdsl2/docker-headscale)
+
+## 架构
+
+```mermaid
+graph LR
+    A["🎤 音频输入"] -->|转录| W["Whisper<br/>(语音转文本)"]
+    D["📄 文档"] -->|嵌入| E["Embeddings<br/>(文本 → 向量)"]
+    E -->|存储| VDB["向量数据库<br/>(Qdrant, Chroma)"]
+    W -->|查询| E
+    VDB -->|上下文| L["LiteLLM<br/>(AI 网关)"]
+    W -->|文本| L
+    L -->|路由至| O["Ollama<br/>(本地 LLM)"]
+    L -->|响应| T["Kokoro TTS<br/>(文本转语音)"]
+    T --> B["🔊 音频输出"]
+    C["🤖 AI 客户端<br/>(Cline, Claude 等)"] -->|MCP 工具| M["MCP Gateway<br/>(MCP 端点)"]
+    C -->|对话| L
+    L -->|MCP 协议| M
+```
+
+## 快速开始
+
+**系统要求：**
+
+- 一台安装了 Docker 的 Linux 服务器（本地或云端）
+- 至少 8 GB 内存（使用小型模型）。对于较大的 LLM 模型（8B+），建议 32 GB 或以上。
+- 您可以注释掉不需要的服务以减少内存使用。
+
+**启动完整技术栈：**
+
+```bash
+# 克隆仓库以获取编排文件
+git clone https://github.com/hwdsl2/docker-ai-stack
+cd docker-ai-stack
+docker compose up -d
+```
+
+查看日志确认所有服务已就绪：
+
+```bash
+docker compose logs
+```
+
+**获取 API 密钥：**
+
+```bash
+# Ollama API 密钥
+docker exec ollama ollama_manage --showkey
+
+# LiteLLM API 密钥
+docker exec litellm litellm_manage --getkey
+
+# MCP Gateway API 密钥
+docker exec mcp mcp_manage --getkey
+```
+
+**停止技术栈：**
+
+```bash
+docker compose down
+```
+
+## GPU 加速 (NVIDIA CUDA)
+
+如需 NVIDIA GPU 加速，请使用 CUDA 编排文件：
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**要求：** NVIDIA GPU、[NVIDIA 驱动](https://www.nvidia.com/en-us/drivers/) 535+，以及在宿主机上安装 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 镜像仅支持 `linux/amd64`。
+
+## 将 MCP Gateway 连接到 LiteLLM
+
+```yaml
+# 在 LiteLLM 配置中，添加 MCP 网关作为工具源：
+mcp_servers:
+  - url: http://mcp:3000/mcp
+    transport: sse
+    headers:
+      Authorization: "Bearer <mcp_api_key>"
+```
+
+## 语音管道示例
+
+转录语音问题，通过 Ollama 获取本地 LLM 响应，然后转换为语音：
+
+```bash
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+
+# 第 1 步：将音频转录为文本（Whisper）
+TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
+    -F file=@question.mp3 -F model=whisper-1 | jq -r .text)
+
+# 第 2 步：通过 LiteLLM 将文本发送至 Ollama 并获取响应
+RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
+    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
+    | jq -r '.choices[0].message.content')
+
+# 第 3 步：将响应转换为语音（Kokoro TTS）
+curl -s http://localhost:8880/v1/audio/speech \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
+    --output response.mp3
+```
+
+## RAG 管道示例
+
+嵌入文档用于语义搜索，检索上下文，然后使用本地 Ollama 模型回答问题：
+
+```bash
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+
+# 第 1 步：嵌入文档片段并将向量存储到向量数据库
+curl -s http://localhost:8000/v1/embeddings \
+    -H "Content-Type: application/json" \
+    -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
+    | jq '.data[0].embedding'
+# → 将返回的向量与源文本一起存储到 Qdrant、Chroma、pgvector 等。
+
+# 第 2 步：查询时，嵌入问题，从向量数据库中检索最匹配的片段，
+#          然后通过 LiteLLM 将问题和检索到的上下文发送至 Ollama。
+curl -s http://localhost:4000/v1/chat/completions \
+    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "ollama/llama3.2:3b",
+      "messages": [
+        {"role": "system", "content": "Answer using only the provided context."},
+        {"role": "user", "content": "What does Docker do?\n\nContext: Docker simplifies deployment by packaging apps in containers."}
+      ]
+    }' \
+    | jq -r '.choices[0].message.content'
+```
+
+## MCP 工具示例
+
+使用 MCP Gateway 为您的 AI 助手提供文件、网络和 GitHub 访问：
+
+```bash
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+
+# 在 AI 客户端中使用 MCP 端点（例如 VS Code 中的 Cline）
+# 设置 MCP 服务器 URL：http://localhost:3000/mcp
+# 设置 Authorization 头：Bearer <api_key>
+
+# 或直接测试 MCP 端点
+curl -s http://localhost:3000/mcp \
+    -X POST \
+    -H "Authorization: Bearer $MCP_KEY" \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/json, text/event-stream" \
+    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+```
+
+## 自定义配置
+
+每个服务可以通过可选的 env 文件进行配置。从相应仓库复制示例 env 文件，编辑后取消 `docker-compose.yml` 中的卷挂载注释：
+
+| 服务 | Env 文件 | 仓库 |
+|---|---|---|
+| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
+| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
+| Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings) |
+| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper) |
+| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
+| MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway) |
+
+有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
+
+## 更新镜像
+
+将所有服务更新到最新版本：
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+您的数据保存在 Docker 卷中。
+
+## 授权协议
+
+Copyright (C) 2026 Lin Song   
+本项目以 [MIT 许可证](https://opensource.org/licenses/MIT) 授权。
+
+本项目是独立的 Docker 配置，与 Ollama、Berri AI（LiteLLM）、Hugging Face、hexgrad（Kokoro）、OpenAI、SYSTRAN 或 MCPHub 无关联，未获其背书或赞助。
