@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
+
 # Голосовой конвейер
 
 Речь в текст → LLM → текст в речь. Транскрибируйте аудио, получите ответ AI и прослушайте его.
@@ -5,6 +7,26 @@
 **Сервисы:** Whisper (STT) + Ollama (LLM) + LiteLLM (шлюз) + Kokoro (TTS)
 
 **Память:** ~5 ГБ RAM (с моделью 3B)
+
+## Архитектура
+
+```mermaid
+graph LR
+    A["🎤 Аудиовход"] -->|транскрипция| W["Whisper<br/>(речь в текст)"]
+    W -->|текст| L["LiteLLM<br/>(AI-шлюз)"]
+    L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
+    L -->|ответ| T["Kokoro TTS<br/>(текст в речь)"]
+    T --> B["🔊 Аудиовыход"]
+```
+
+## Сервисы
+
+| Сервис | Назначение | Порт по умолчанию |
+|---|---|---|
+| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Транскрибирует речь в текст | `9000` |
+| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
+| **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI-шлюз — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
+| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Преобразует текст в естественную речь | `8880` |
 
 ## Быстрый старт
 
@@ -19,6 +41,78 @@ docker compose up -d
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
+
+## Запуск без Docker Compose
+
+Если вы предпочитаете использовать команды `docker run` напрямую, сначала создайте общую сеть для связи между сервисами:
+
+```bash
+docker network create ai-stack
+```
+
+Затем запустите каждый сервис в общей сети:
+
+```bash
+# Ollama (LLM)
+docker run -d --name ollama --restart always \
+    --network ai-stack \
+    -v ollama-data:/var/lib/ollama \
+    hwdsl2/ollama-server
+
+# LiteLLM (AI-шлюз)
+docker run -d --name litellm --restart always \
+    --network ai-stack \
+    -p 4000:4000 \
+    -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -v litellm-data:/etc/litellm \
+    hwdsl2/litellm-server
+
+# Whisper (STT)
+docker run -d --name whisper --restart always \
+    --network ai-stack \
+    -p 9000:9000 \
+    -v whisper-data:/var/lib/whisper \
+    hwdsl2/whisper-server
+
+# Kokoro (TTS)
+docker run -d --name kokoro --restart always \
+    --network ai-stack \
+    -p 8880:8880 \
+    -v kokoro-data:/var/lib/kokoro \
+    hwdsl2/kokoro-server
+```
+
+**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, LiteLLM подключается к Ollama через `http://ollama:11434`).
+
+**Загрузка модели** (обязательно перед отправкой LLM-запросов):
+
+```bash
+docker exec ollama ollama_manage --pull llama3.2:3b
+```
+
+## Настройка
+
+Каждый сервис можно настроить с помощью опционального env-файла. Скопируйте пример env-файла из соответствующего репозитория, отредактируйте его и раскомментируйте монтирование тома в `docker-compose.yml`:
+
+| Сервис | Env-файл | Репозиторий |
+|---|---|---|
+| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
+| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
+| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper) |
+| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
+
+Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
+
+## Обновление образов
+
+Обновление всех сервисов до последних версий:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Ваши данные сохраняются в Docker-томах.
 
 ## Пример
 

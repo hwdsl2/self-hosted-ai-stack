@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
+
 # 语音管道
 
 语音转文本 → LLM → 文本转语音。转录音频，获取 AI 回复，并以语音输出。
@@ -5,6 +7,26 @@
 **服务：** Whisper (STT) + Ollama (LLM) + LiteLLM (网关) + Kokoro (TTS)
 
 **内存：** ~5 GB RAM（使用 3B 模型）
+
+## 架构
+
+```mermaid
+graph LR
+    A["🎤 音频输入"] -->|转录| W["Whisper<br/>(语音转文本)"]
+    W -->|文本| L["LiteLLM<br/>(AI 网关)"]
+    L -->|路由至| O["Ollama<br/>(本地 LLM)"]
+    L -->|响应| T["Kokoro TTS<br/>(文本转语音)"]
+    T --> B["🔊 音频输出"]
+```
+
+## 服务
+
+| 服务 | 用途 | 默认端口 |
+|---|---|---|
+| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | 将语音音频转录为文本 | `9000` |
+| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI 网关 — 将请求路由至 Ollama 及 100+ 供应商 | `4000` |
+| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | 将文本转换为自然语音 | `8880` |
 
 ## 快速开始
 
@@ -19,6 +41,78 @@ docker compose up -d
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
+
+## 不使用 Docker Compose 运行
+
+如需直接使用 `docker run` 命令，请先创建共享网络以便服务之间通信：
+
+```bash
+docker network create ai-stack
+```
+
+然后在共享网络上启动各服务：
+
+```bash
+# Ollama (LLM)
+docker run -d --name ollama --restart always \
+    --network ai-stack \
+    -v ollama-data:/var/lib/ollama \
+    hwdsl2/ollama-server
+
+# LiteLLM (AI 网关)
+docker run -d --name litellm --restart always \
+    --network ai-stack \
+    -p 4000:4000 \
+    -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -v litellm-data:/etc/litellm \
+    hwdsl2/litellm-server
+
+# Whisper (STT)
+docker run -d --name whisper --restart always \
+    --network ai-stack \
+    -p 9000:9000 \
+    -v whisper-data:/var/lib/whisper \
+    hwdsl2/whisper-server
+
+# Kokoro (TTS)
+docker run -d --name kokoro --restart always \
+    --network ai-stack \
+    -p 8880:8880 \
+    -v kokoro-data:/var/lib/kokoro \
+    hwdsl2/kokoro-server
+```
+
+**注：** 共享网络允许服务通过容器名称互相访问（例如 LiteLLM 通过 `http://ollama:11434` 连接 Ollama）。
+
+**拉取模型**（发出 LLM 请求前必须执行）：
+
+```bash
+docker exec ollama ollama_manage --pull llama3.2:3b
+```
+
+## 自定义配置
+
+每个服务可以通过可选的 env 文件进行配置。从相应仓库复制示例 env 文件，编辑后取消 `docker-compose.yml` 中的卷挂载注释：
+
+| 服务 | Env 文件 | 仓库 |
+|---|---|---|
+| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
+| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
+| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper) |
+| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
+
+有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
+
+## 更新镜像
+
+将所有服务更新到最新版本：
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+您的数据保存在 Docker 卷中。
 
 ## 示例
 
