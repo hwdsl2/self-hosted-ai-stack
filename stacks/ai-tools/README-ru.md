@@ -40,6 +40,16 @@ docker compose up -d
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## GPU-ускорение (NVIDIA CUDA)
+
+Для GPU-ускорения NVIDIA используйте CUDA compose-файл:
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**Требования:** GPU NVIDIA, [драйвер NVIDIA](https://www.nvidia.com/en-us/drivers/) 535+, и [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html), установленный на хосте. CUDA-образы поддерживают только `linux/amd64`.
+
 ## Запуск без Docker Compose
 
 Если вы предпочитаете использовать команды `docker run` напрямую, сначала создайте общую сеть для связи между сервисами:
@@ -104,19 +114,29 @@ docker compose up -d
 
 Ваши данные сохраняются в Docker-томах.
 
+## Подключение MCP Gateway к LiteLLM
+
+LiteLLM и MCP Gateway **автоматически подключены** в compose-файле. `LITELLM_MCP_URL=http://mcp:3000/mcp` уже задан, поэтому LiteLLM при каждом запуске автоматически добавляет блок `mcp_servers:` в конфигурацию.
+
+Для завершения настройки задайте API-ключ MCP после первого запуска:
+
+```bash
+# 1. Получите API-ключ MCP Gateway
+docker exec mcp mcp_manage --showkey
+
+# 2. Добавьте его в litellm.env (или передайте как переменную окружения) и перезапустите:
+#    LITELLM_MCP_API_KEY=mcp-xxxx...
+docker compose restart litellm
+```
+
+Альтернативно: задайте `MCP_API_KEY=my-key` в `mcp.env` и укажите то же значение для `LITELLM_MCP_API_KEY` в `litellm.env` до запуска — тогда перезапуск не потребуется.
+
 ## Использование
 
 ```bash
 # Получение API-ключей
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
-
-# Подключите MCP Gateway к LiteLLM, добавив в конфигурацию LiteLLM:
-# mcp_servers:
-#   - url: http://mcp:3000/mcp
-#     transport: sse
-#     headers:
-#       Authorization: "Bearer <mcp_api_key>"
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 
 # Используйте с AI-клиентом (например, Cline в VS Code):
 # LLM-эндпоинт: http://localhost:4000 (с LITELLM_KEY)

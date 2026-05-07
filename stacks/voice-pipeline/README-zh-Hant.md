@@ -42,6 +42,16 @@ docker compose up -d
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## GPU 加速 (NVIDIA CUDA)
+
+如需 NVIDIA GPU 加速，請使用 CUDA 編排檔案：
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**需求：** NVIDIA GPU、[NVIDIA 驅動程式](https://www.nvidia.com/en-us/drivers/) 535+，以及在主機上安裝 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 映像檔僅支援 `linux/amd64`。
+
 ## 不使用 Docker Compose 執行
 
 如需直接使用 `docker run` 指令，請先建立共享網路以便服務之間通訊：
@@ -124,7 +134,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # 將音訊轉錄為文字
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \

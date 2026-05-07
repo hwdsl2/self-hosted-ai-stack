@@ -40,6 +40,16 @@ docker compose up -d
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## GPU 加速 (NVIDIA CUDA)
+
+如需 NVIDIA GPU 加速，请使用 CUDA 编排文件：
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**要求：** NVIDIA GPU、[NVIDIA 驱动](https://www.nvidia.com/en-us/drivers/) 535+，以及在宿主机上安装 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 镜像仅支持 `linux/amd64`。
+
 ## 不使用 Docker Compose 运行
 
 如需直接使用 `docker run` 命令，请先创建共享网络以便服务之间通信：
@@ -107,7 +117,7 @@ docker compose up -d
 ## 示例
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # 嵌入文档片段
 curl -s http://localhost:8000/v1/embeddings \

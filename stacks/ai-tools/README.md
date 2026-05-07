@@ -40,6 +40,16 @@ docker compose up -d
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## GPU acceleration (NVIDIA CUDA)
+
+For NVIDIA GPU acceleration, use the CUDA compose file:
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**Requirements:** NVIDIA GPU, [NVIDIA driver](https://www.nvidia.com/en-us/drivers/) 535+, and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed on the host. CUDA images are `linux/amd64` only.
+
 ## Running without Docker Compose
 
 If you prefer using `docker run` commands directly, first create a shared network so services can communicate:
@@ -104,19 +114,29 @@ docker compose up -d
 
 Your data is preserved in the Docker volumes.
 
+## Connect MCP Gateway to LiteLLM
+
+LiteLLM and MCP Gateway are **automatically wired** in the compose file. `LITELLM_MCP_URL=http://mcp:3000/mcp` is pre-configured, so LiteLLM injects the `mcp_servers:` block on every start.
+
+To complete the wiring, set the MCP API key after first start:
+
+```bash
+# 1. Get the MCP Gateway API key
+docker exec mcp mcp_manage --showkey
+
+# 2. Add it to litellm.env (or set as environment variable) and restart:
+#    LITELLM_MCP_API_KEY=mcp-xxxx...
+docker compose restart litellm
+```
+
+Alternatively, pre-set `MCP_API_KEY=my-key` in `mcp.env` and use the same value for `LITELLM_MCP_API_KEY` in `litellm.env` before first start — then no restart is needed.
+
 ## Usage
 
 ```bash
 # Get API keys
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
-
-# Connect MCP Gateway to LiteLLM by adding to your LiteLLM config:
-# mcp_servers:
-#   - url: http://mcp:3000/mcp
-#     transport: sse
-#     headers:
-#       Authorization: "Bearer <mcp_api_key>"
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 
 # Use with an AI client (e.g., Cline in VS Code):
 # LLM endpoint: http://localhost:4000 (with LITELLM_KEY)

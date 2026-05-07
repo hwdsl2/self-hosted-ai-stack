@@ -40,6 +40,16 @@ docker compose up -d
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## GPU 加速 (NVIDIA CUDA)
+
+如需 NVIDIA GPU 加速，請使用 CUDA 編排檔案：
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**需求：** NVIDIA GPU、[NVIDIA 驅動程式](https://www.nvidia.com/en-us/drivers/) 535+，以及在主機上安裝 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 映像檔僅支援 `linux/amd64`。
+
 ## 不使用 Docker Compose 執行
 
 如需直接使用 `docker run` 指令，請先建立共享網路以便服務之間通訊：
@@ -104,19 +114,29 @@ docker compose up -d
 
 您的資料保存在 Docker 磁碟區中。
 
-## 使用方法
+## 將 MCP Gateway 連接到 LiteLLM
+
+LiteLLM 和 MCP Gateway 已在 compose 檔案中**自動接入**。`LITELLM_MCP_URL=http://mcp:3000/mcp` 已預設，因此 LiteLLM 每次啟動時會自動注入 `mcp_servers:` 區塊。
+
+完成接入只需在首次啟動後設定 MCP API 金鑰：
+
+```bash
+# 1. 取得 MCP Gateway API 金鑰
+docker exec mcp mcp_manage --showkey
+
+# 2. 將金鑰新增至 litellm.env（或作為環境變數傳入）並重新啟動：
+#    LITELLM_MCP_API_KEY=mcp-xxxx...
+docker compose restart litellm
+```
+
+或者，在啟動前在 `mcp.env` 中預設 `MCP_API_KEY=my-key`，並在 `litellm.env` 中為 `LITELLM_MCP_API_KEY` 使用相同的值——這樣就無需重新啟動。
+
+## 使用方式
 
 ```bash
 # 取得 API 金鑰
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
-
-# 將 MCP Gateway 連接到 LiteLLM，在 LiteLLM 設定中新增：
-# mcp_servers:
-#   - url: http://mcp:3000/mcp
-#     transport: sse
-#     headers:
-#       Authorization: "Bearer <mcp_api_key>"
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 
 # 在 AI 用戶端中使用（例如 VS Code 中的 Cline）：
 # LLM 端點：http://localhost:4000（使用 LITELLM_KEY）

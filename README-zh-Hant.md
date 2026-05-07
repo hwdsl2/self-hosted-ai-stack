@@ -85,10 +85,10 @@ docker compose logs
 docker exec ollama ollama_manage --showkey
 
 # LiteLLM API 金鑰
-docker exec litellm litellm_manage --getkey
+docker exec litellm litellm_manage --showkey
 
 # MCP Gateway API 金鑰
-docker exec mcp mcp_manage --getkey
+docker exec mcp mcp_manage --showkey
 ```
 
 **停止技術堆疊：**
@@ -188,14 +188,22 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## 將 MCP Gateway 連接到 LiteLLM
 
-```yaml
-# 在 LiteLLM 設定中，新增 MCP 閘道作為工具來源：
-mcp_servers:
-  - url: http://mcp:3000/mcp
-    transport: sse
-    headers:
-      Authorization: "Bearer <mcp_api_key>"
+在本倉庫的 compose 檔案中，LiteLLM 和 MCP Gateway 已**自動接入**。compose 檔案中預設了 `LITELLM_MCP_URL=http://mcp:3000/mcp`，因此 LiteLLM 每次啟動時會自動將 `mcp_servers:` 區塊注入其設定檔案。
+
+完成接入只需在首次啟動後設定 MCP API 金鑰：
+
+```bash
+# 1. 取得 MCP Gateway API 金鑰
+docker exec mcp mcp_manage --showkey
+
+# 2. 將金鑰新增至 litellm.env（或作為環境變數傳入）並重新啟動：
+#    LITELLM_MCP_API_KEY=mcp-xxxx...
+docker compose restart litellm
 ```
+
+或者，在啟動前在 `mcp.env` 中預設一個已知金鑰（`MCP_API_KEY=my-key`），並在 `litellm.env` 中為 `LITELLM_MCP_API_KEY` 使用相同的值——這樣就無需重新啟動。
+
+連線成功後，呼叫 LiteLLM 的 AI 用戶端即可透過 LiteLLM 代理直接使用 MCP 工具（檔案系統、網頁擷取、GitHub 等）。
 
 ## 語音管道範例
 
@@ -209,7 +217,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # 第 1 步：將音訊轉錄為文字（Whisper）
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
@@ -234,7 +242,7 @@ curl -s http://localhost:8880/v1/audio/speech \
 嵌入文件用於語意搜尋，擷取上下文，然後使用本機 Ollama 模型回答問題：
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # 第 1 步：嵌入文件片段並將向量儲存到向量資料庫
 curl -s http://localhost:8000/v1/embeddings \
@@ -263,7 +271,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 使用 MCP Gateway 為您的 AI 助手提供檔案、網路和 GitHub 存取：
 
 ```bash
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 
 # 在 AI 用戶端中使用 MCP 端點（例如 VS Code 中的 Cline）
 # 設定 MCP 伺服器 URL：http://localhost:3000/mcp

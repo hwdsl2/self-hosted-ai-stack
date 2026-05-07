@@ -42,6 +42,16 @@ docker compose up -d
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## GPU-ускорение (NVIDIA CUDA)
+
+Для GPU-ускорения NVIDIA используйте CUDA compose-файл:
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**Требования:** GPU NVIDIA, [драйвер NVIDIA](https://www.nvidia.com/en-us/drivers/) 535+, и [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html), установленный на хосте. CUDA-образы поддерживают только `linux/amd64`.
+
 ## Запуск без Docker Compose
 
 Если вы предпочитаете использовать команды `docker run` напрямую, сначала создайте общую сеть для связи между сервисами:
@@ -124,7 +134,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # Транскрибация аудио в текст
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \

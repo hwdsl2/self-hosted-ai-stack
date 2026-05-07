@@ -42,6 +42,16 @@ docker compose up -d
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## GPU acceleration (NVIDIA CUDA)
+
+For NVIDIA GPU acceleration, use the CUDA compose file:
+
+```bash
+docker compose -f docker-compose.cuda.yml up -d
+```
+
+**Requirements:** NVIDIA GPU, [NVIDIA driver](https://www.nvidia.com/en-us/drivers/) 535+, and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed on the host. CUDA images are `linux/amd64` only.
+
 ## Running without Docker Compose
 
 If you prefer using `docker run` commands directly, first create a shared network so services can communicate:
@@ -124,7 +134,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # Transcribe audio to text
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \

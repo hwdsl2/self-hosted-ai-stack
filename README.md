@@ -85,10 +85,10 @@ docker compose logs
 docker exec ollama ollama_manage --showkey
 
 # LiteLLM API key
-docker exec litellm litellm_manage --getkey
+docker exec litellm litellm_manage --showkey
 
 # MCP Gateway API key
-docker exec mcp mcp_manage --getkey
+docker exec mcp mcp_manage --showkey
 ```
 
 **Stop the stack:**
@@ -188,14 +188,22 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## Connect MCP Gateway to LiteLLM
 
-```yaml
-# In your LiteLLM config, add the MCP gateway as a tool source:
-mcp_servers:
-  - url: http://mcp:3000/mcp
-    transport: sse
-    headers:
-      Authorization: "Bearer <mcp_api_key>"
+LiteLLM and MCP Gateway are **automatically wired** when using the compose files in this repository. The `LITELLM_MCP_URL=http://mcp:3000/mcp` environment variable is pre-configured in the compose files, so LiteLLM injects the `mcp_servers:` block into its config on every start.
+
+To complete the wiring, set the MCP API key after first start:
+
+```bash
+# 1. Get the MCP Gateway API key
+docker exec mcp mcp_manage --showkey
+
+# 2. Add it to litellm.env (or pass as environment variable) and restart:
+#    LITELLM_MCP_API_KEY=mcp-xxxx...
+docker compose restart litellm
 ```
+
+Alternatively, pre-set a known key in `mcp.env` before starting (`MCP_API_KEY=my-key`) and use the same value for `LITELLM_MCP_API_KEY` in `litellm.env` — then no restart is needed.
+
+Once connected, AI clients that call LiteLLM can use MCP tools (filesystem, fetch, GitHub, etc.) directly through the LiteLLM proxy.
 
 ## Voice pipeline example
 
@@ -209,7 +217,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # Step 1: Transcribe audio to text (Whisper)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
@@ -234,7 +242,7 @@ curl -s http://localhost:8880/v1/audio/speech \
 Embed documents for semantic search, retrieve context, then answer questions with a local Ollama model:
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
 
 # Step 1: Embed a document chunk and store the vector in your vector DB
 curl -s http://localhost:8000/v1/embeddings \
@@ -263,7 +271,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 Use MCP Gateway to give your AI assistant access to files, web, and GitHub:
 
 ```bash
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 
 # Use MCP endpoint with an AI client (e.g., Cline in VS Code)
 # Set the MCP server URL: http://localhost:3000/mcp
