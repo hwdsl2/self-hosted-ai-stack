@@ -1,11 +1,18 @@
 services:
   ollama:
-    image: hwdsl2/ollama-server
+    image: hwdsl2/ollama-server:cuda
     container_name: ollama
     restart: always
     volumes:
       - ollama-data:/var/lib/ollama
       # - ./ollama.env:/ollama.env:ro  # optional: custom config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   litellm:
     image: hwdsl2/litellm-server
@@ -15,25 +22,10 @@ services:
       - "4000:4000/tcp"
     environment:
       - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
-      - LITELLM_MCP_URL=http://mcp:3000/mcp
-      # - LITELLM_MCP_API_KEY=  # set after first start: docker exec mcp mcp_manage --showkey
     volumes:
       - litellm-data:/etc/litellm
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
-    depends_on:
-      - mcp
-
-  mcp:
-    image: hwdsl2/mcp-gateway
-    container_name: mcp
-    restart: always
-    ports:
-      - "3000:3000/tcp"
-    volumes:
-      - mcp-data:/var/lib/mcp
-      # - ./mcp.env:/mcp.env:ro  # optional: custom config
 
 volumes:
   ollama-data:
   litellm-data:
-  mcp-data:

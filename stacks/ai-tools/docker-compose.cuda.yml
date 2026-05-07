@@ -1,11 +1,18 @@
 services:
   ollama:
-    image: hwdsl2/ollama-server
+    image: hwdsl2/ollama-server:cuda
     container_name: ollama
     restart: always
     volumes:
       - ollama-data:/var/lib/ollama
       # - ./ollama.env:/ollama.env:ro  # optional: custom config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   litellm:
     image: hwdsl2/litellm-server

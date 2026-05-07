@@ -3,8 +3,6 @@ services:
     image: hwdsl2/ollama-server:cuda
     container_name: ollama
     restart: always
-    # ports:
-    #   - "11434:11434/tcp"  # Uncomment for direct access to Ollama
     volumes:
       - ollama-data:/var/lib/ollama
       # - ./ollama.env:/ollama.env:ro  # optional: custom config
@@ -24,23 +22,9 @@ services:
       - "4000:4000/tcp"
     environment:
       - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
-      - LITELLM_MCP_URL=http://mcp:3000/mcp
-      # - LITELLM_MCP_API_KEY=  # set after first start: docker exec mcp mcp_manage --showkey
     volumes:
       - litellm-data:/etc/litellm
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
-    depends_on:
-      - mcp
-
-  embeddings:
-    image: hwdsl2/embeddings-server
-    container_name: embeddings
-    restart: always
-    ports:
-      - "8000:8000/tcp"
-    volumes:
-      - embeddings-data:/var/lib/embeddings
-      # - ./embed.env:/embed.env:ro  # optional: custom config
 
   whisper:
     image: hwdsl2/whisper-server:cuda
@@ -76,20 +60,8 @@ services:
               count: 1
               capabilities: [gpu]
 
-  mcp:
-    image: hwdsl2/mcp-gateway
-    container_name: mcp
-    restart: always
-    ports:
-      - "3000:3000/tcp"
-    volumes:
-      - mcp-data:/var/lib/mcp
-      # - ./mcp.env:/mcp.env:ro  # optional: custom config
-
 volumes:
   ollama-data:
   litellm-data:
-  embeddings-data:
   whisper-data:
   kokoro-data:
-  mcp-data:

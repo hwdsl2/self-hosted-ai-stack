@@ -17,9 +17,13 @@ services:
       - "4000:4000/tcp"
     environment:
       - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
+      - LITELLM_MCP_URL=http://mcp:3000/mcp
+      # - LITELLM_MCP_API_KEY=  # set after first start: docker exec mcp mcp_manage --showkey
     volumes:
       - litellm-data:/etc/litellm
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
+    depends_on:
+      - mcp
 
   embeddings:
     image: hwdsl2/embeddings-server
