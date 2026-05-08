@@ -92,9 +92,9 @@ if [ -n "$OLLAMA" ]; then
   pass "Container running"
 
   # Check if at least one model is pulled
-  MODEL_COUNT=$(docker exec "$OLLAMA" ollama list 2>/dev/null | tail -n +2 | wc -l | tr -d ' ') || MODEL_COUNT=0
+  MODEL_COUNT=$(docker exec "$OLLAMA" ollama_manage --listmodels | awk 'NF >= 4 && $2 ~ /^[a-f0-9]+$/ { print $1 }' | wc -l | tr -d ' ') || MODEL_COUNT=0
   if [ "$MODEL_COUNT" -gt 0 ]; then
-    MODELS=$(docker exec "$OLLAMA" ollama list 2>/dev/null | tail -n +2 | awk '{print $1}' | paste -sd', ' -)
+    MODELS=$(docker exec "$OLLAMA" ollama_manage --listmodels | awk 'NF >= 4 && $2 ~ /^[a-f0-9]+$/ { print $1 }' | paste -sd',' - | sed 's/,/, /g')
     pass "Models available ($MODEL_COUNT): $MODELS"
   else
     fail "No models pulled — run: docker exec $OLLAMA ollama_manage --pull llama3.2:3b"
@@ -121,10 +121,10 @@ if [ -n "$LITELLM" ]; then
 
   # Check health endpoint
   # LiteLLM typically exposes /health
-  if http_ok "http://localhost:4000/health"; then
+  if http_ok "http://localhost:4000/health/liveliness"; then
     pass "Health endpoint responds"
   else
-    fail "Health endpoint not responding at http://localhost:4000/health"
+    fail "Health endpoint not responding at http://localhost:4000/health/liveliness"
   fi
 
   # Check API key exists
@@ -136,13 +136,13 @@ if [ -n "$LITELLM" ]; then
 
   # If Ollama is running and has models, test a routing check
   if [ -n "$OLLAMA" ] && [ "$MODEL_COUNT" -gt 0 ]; then
-    LITELLM_KEY=$(docker exec "$LITELLM" litellm_manage --showkey 2>/dev/null | grep '^sk-' | head -1) || LITELLM_KEY=""
+    LITELLM_KEY=$(docker exec "$LITELLM" litellm_manage --showkey 2>/dev/null | sed 's/^ //' | grep '^sk-' | head -1) || LITELLM_KEY=""
     if [ -n "$LITELLM_KEY" ]; then
-      FIRST_MODEL=$(docker exec "$OLLAMA" ollama list 2>/dev/null | tail -n +2 | awk '{print $1}' | head -1)
+      FIRST_MODEL=$(docker exec "$OLLAMA" ollama_manage --listmodels | awk 'NF >= 4 && $2 ~ /^[a-f0-9]+$/ { print $1 }' | head -1)
       if http_post_ok "http://localhost:4000/v1/chat/completions" \
         -H "Authorization: Bearer $LITELLM_KEY" \
         -H "Content-Type: application/json" \
-        -d "{\"model\":\"ollama/$FIRST_MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":5}"; then
+        -d "{\"model\":\"ollama/${FIRST_MODEL%%:*}\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":5}"; then
         pass "LLM routing works (ollama/$FIRST_MODEL)"
       else
         fail "LLM routing failed for ollama/$FIRST_MODEL"
@@ -226,7 +226,7 @@ if [ -n "$MCP" ]; then
   pass "Container running"
 
   # Check API key
-  MCP_KEY=$(docker exec "$MCP" mcp_manage --showkey 2>/dev/null | grep '^mcp-' | head -1) || MCP_KEY=""
+  MCP_KEY=$(docker exec "$MCP" mcp_manage --showkey 2>/dev/null | sed 's/^ //' | grep '^mcp-' | head -1) || MCP_KEY=""
   if [ -n "$MCP_KEY" ]; then
     pass "API key generated"
 
