@@ -78,6 +78,12 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker compose logs
 ```
 
+Запустите проверку работоспособности, чтобы убедиться, что все сервисы работают:
+
+```bash
+./stack-check.sh
+```
+
 **Получение API-ключей:**
 
 ```bash
@@ -301,6 +307,28 @@ curl -s http://localhost:3000/mcp \
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 
+## Резервное копирование и восстановление
+
+Ваши API-ключи, модели и конфигурация хранятся в Docker-томах. Создайте резервную копию перед обновлением или внесением изменений:
+
+```bash
+# Экспорт API-ключей (при работающих контейнерах)
+docker exec ollama ollama_manage --showkey
+docker exec litellm litellm_manage --showkey
+docker exec mcp mcp_manage --showkey
+
+# Резервное копирование всех томов (сначала остановите сервисы)
+docker compose down
+mkdir -p backups
+for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data; do
+  docker volume inspect "$vol" >/dev/null 2>&1 && \
+    docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
+      alpine tar czf "/backup/${vol}.tar.gz" -C /source .
+done
+```
+
+Инструкции по восстановлению, миграции на новый сервер и полный контрольный список перед обновлением см. в руководстве [Резервное копирование и восстановление](docs/backup-restore-ru.md).
+
 ## Обновление образов
 
 Обновление всех сервисов до последних версий:
@@ -308,9 +336,10 @@ curl -s http://localhost:3000/mcp \
 ```bash
 docker compose pull
 docker compose up -d
+./stack-check.sh
 ```
 
-Ваши данные сохраняются в Docker-томах.
+Ваши данные сохраняются в Docker-томах. **Всегда [создавайте резервную копию](#резервное-копирование-и-восстановление) перед обновлением.**
 
 ## Лицензия
 

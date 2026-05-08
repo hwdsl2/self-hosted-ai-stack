@@ -78,6 +78,12 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker compose logs
 ```
 
+运行健康检查以验证所有服务正常工作：
+
+```bash
+./stack-check.sh
+```
+
 **获取 API 密钥：**
 
 ```bash
@@ -301,6 +307,28 @@ curl -s http://localhost:3000/mcp \
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 
+## 备份与恢复
+
+您的 API 密钥、模型和配置存储在 Docker 卷中。升级或更改前请先备份：
+
+```bash
+# 导出 API 密钥（在容器运行时）
+docker exec ollama ollama_manage --showkey
+docker exec litellm litellm_manage --showkey
+docker exec mcp mcp_manage --showkey
+
+# 备份所有卷（先停止服务）
+docker compose down
+mkdir -p backups
+for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data; do
+  docker volume inspect "$vol" >/dev/null 2>&1 && \
+    docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
+      alpine tar czf "/backup/${vol}.tar.gz" -C /source .
+done
+```
+
+有关恢复说明、服务器迁移和完整的升级前检查清单，请参阅[备份与恢复](docs/backup-restore-zh.md)指南。
+
 ## 更新镜像
 
 将所有服务更新到最新版本：
@@ -308,9 +336,10 @@ curl -s http://localhost:3000/mcp \
 ```bash
 docker compose pull
 docker compose up -d
+./stack-check.sh
 ```
 
-您的数据保存在 Docker 卷中。
+您的数据保存在 Docker 卷中。**升级前请务必[备份](#备份与恢复)。**
 
 ## 授权协议
 

@@ -78,6 +78,12 @@ Check the logs to confirm all services are ready:
 docker compose logs
 ```
 
+Run the health check to verify all services are working:
+
+```bash
+./stack-check.sh
+```
+
 **Get the API keys:**
 
 ```bash
@@ -301,6 +307,28 @@ Each service can be configured with an optional env file. Copy the example env f
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
+## Backup and restore
+
+Your API keys, models, and configuration are stored in Docker volumes. Back up before upgrading or making changes:
+
+```bash
+# Export API keys (while containers are running)
+docker exec ollama ollama_manage --showkey
+docker exec litellm litellm_manage --showkey
+docker exec mcp mcp_manage --showkey
+
+# Back up all volumes (stop services first)
+docker compose down
+mkdir -p backups
+for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data; do
+  docker volume inspect "$vol" >/dev/null 2>&1 && \
+    docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
+      alpine tar czf "/backup/${vol}.tar.gz" -C /source .
+done
+```
+
+For restore instructions, server migration, and the full pre-upgrade checklist, see the [Backup and Restore](docs/backup-restore.md) guide.
+
 ## Update images
 
 To update all services to the latest versions:
@@ -308,9 +336,10 @@ To update all services to the latest versions:
 ```bash
 docker compose pull
 docker compose up -d
+./stack-check.sh
 ```
 
-Your data is preserved in the Docker volumes.
+Your data is preserved in the Docker volumes. **Always [back up](#backup-and-restore) before upgrading.**
 
 ## License
 

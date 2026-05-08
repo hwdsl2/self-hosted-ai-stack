@@ -78,6 +78,12 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker compose logs
 ```
 
+執行健康檢查以驗證所有服務正常運作：
+
+```bash
+./stack-check.sh
+```
+
 **取得 API 金鑰：**
 
 ```bash
@@ -301,6 +307,28 @@ curl -s http://localhost:3000/mcp \
 
 有關詳細設定選項、API 參考和模型管理，請參閱各服務儲存庫的文件。
 
+## 備份與還原
+
+您的 API 金鑰、模型和設定儲存在 Docker 磁碟區中。升級或變更前請先備份：
+
+```bash
+# 匯出 API 金鑰（在容器執行時）
+docker exec ollama ollama_manage --showkey
+docker exec litellm litellm_manage --showkey
+docker exec mcp mcp_manage --showkey
+
+# 備份所有磁碟區（先停止服務）
+docker compose down
+mkdir -p backups
+for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data; do
+  docker volume inspect "$vol" >/dev/null 2>&1 && \
+    docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
+      alpine tar czf "/backup/${vol}.tar.gz" -C /source .
+done
+```
+
+有關還原說明、伺服器遷移和完整的升級前檢查清單，請參閱[備份與還原](docs/backup-restore-zh-Hant.md)指南。
+
 ## 更新映像檔
 
 將所有服務更新到最新版本：
@@ -308,9 +336,10 @@ curl -s http://localhost:3000/mcp \
 ```bash
 docker compose pull
 docker compose up -d
+./stack-check.sh
 ```
 
-您的資料保存在 Docker 磁碟區中。
+您的資料保存在 Docker 磁碟區中。**升級前請務必[備份](#備份與還原)。**
 
 ## 授權協議
 
