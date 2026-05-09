@@ -91,6 +91,15 @@ docker run -d --name mcp --restart always \
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## 驗證部署
+
+啟動後，可以驗證所有服務是否正常運作：
+
+```bash
+# 在 docker-ai-stack 根目錄中執行
+../../stack-check.sh
+```
+
 ## 自訂設定
 
 每個服務可以透過可選的 env 檔案進行設定。從相應儲存庫複製範例 env 檔案，編輯後取消 `docker-compose.yml` 中的磁碟區掛載註解：
@@ -116,7 +125,7 @@ docker compose up -d
 
 ## 將 MCP Gateway 連接到 LiteLLM
 
-LiteLLM 和 MCP Gateway 已在 compose 檔案中**自動接入**。`LITELLM_MCP_URL=http://mcp:3000/mcp` 已預設，因此 LiteLLM 每次啟動時會自動注入 `mcp_servers:` 區塊。
+LiteLLM 和 MCP Gateway 已在 compose 檔案中**自動接入**。`LITELLM_MCP_URL=http://mcp:3000/mcp` 已預設，因此 LiteLLM 在設定 API 金鑰後會自動注入 `mcp_servers:` 區塊。
 
 完成接入只需在首次啟動後設定 MCP API 金鑰：
 

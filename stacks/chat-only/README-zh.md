@@ -81,6 +81,15 @@ docker run -d --name litellm --restart always \
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## 验证部署
+
+启动后，可以验证所有服务是否正常运行：
+
+```bash
+# 在 docker-ai-stack 根目录中运行
+../../stack-check.sh
+```
+
 ## 自定义配置
 
 每个服务可以通过可选的 env 文件进行配置。从相应仓库复制示例 env 文件，编辑后取消 `docker-compose.yml` 中的卷挂载注释：

@@ -91,6 +91,15 @@ docker run -d --name mcp --restart always \
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## Verify deployment
+
+After starting the stack, you can verify that all services are running correctly:
+
+```bash
+# Run from the docker-ai-stack root directory
+../../stack-check.sh
+```
+
 ## Customization
 
 Each service can be configured with an optional env file. Copy the example env file from the respective repository, edit it, and uncomment the volume mount in `docker-compose.yml`:
@@ -116,7 +125,7 @@ Your data is preserved in the Docker volumes.
 
 ## Connect MCP Gateway to LiteLLM
 
-LiteLLM and MCP Gateway are **automatically wired** in the compose file. `LITELLM_MCP_URL=http://mcp:3000/mcp` is pre-configured, so LiteLLM injects the `mcp_servers:` block on every start.
+LiteLLM and MCP Gateway are **automatically wired** in the compose file. `LITELLM_MCP_URL=http://mcp:3000/mcp` is pre-configured, so LiteLLM injects the `mcp_servers:` block once the API key is also set.
 
 To complete the wiring, set the MCP API key after first start:
 

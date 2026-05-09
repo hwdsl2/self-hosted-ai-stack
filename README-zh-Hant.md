@@ -194,20 +194,15 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## 將 MCP Gateway 連接到 LiteLLM
 
-在本倉庫的 compose 檔案中，LiteLLM 和 MCP Gateway 已**自動接入**。compose 檔案中預設了 `LITELLM_MCP_URL=http://mcp:3000/mcp`，因此 LiteLLM 每次啟動時會自動將 `mcp_servers:` 區塊注入其設定檔案。
+在本倉庫的 compose 檔案中，LiteLLM 和 MCP Gateway 已**自動接入**——無需手動設定金鑰。
 
-完成接入只需在首次啟動後設定 MCP API 金鑰：
+API 金鑰透過 Docker 共享卷在服務之間自動共享：
 
-```bash
-# 1. 取得 MCP Gateway API 金鑰
-docker exec mcp mcp_manage --showkey
+- Ollama 在首次啟動時生成 API 金鑰，並將其複製到共享卷
+- MCP Gateway 執行相同操作
+- LiteLLM 在啟動時自動從共享卷讀取這兩個金鑰
 
-# 2. 將金鑰新增至 litellm.env（或作為環境變數傳入）並重新啟動：
-#    LITELLM_MCP_API_KEY=mcp-xxxx...
-docker compose restart litellm
-```
-
-或者，在啟動前在 `mcp.env` 中預設一個已知金鑰（`MCP_API_KEY=my-key`），並在 `litellm.env` 中為 `LITELLM_MCP_API_KEY` 使用相同的值——這樣就無需重新啟動。
+compose 檔案中已預設 `LITELLM_MCP_URL=http://mcp:3000/mcp` 和 `LITELLM_OLLAMA_BASE_URL=http://ollama:11434`，因此只需一條 `docker compose up -d` 命令即可自動連接所有服務。
 
 連線成功後，呼叫 LiteLLM 的 AI 用戶端即可透過 LiteLLM 代理直接使用 MCP 工具（檔案系統、網頁擷取、GitHub 等）。
 
@@ -326,6 +321,8 @@ for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
 done
 ```
+
+**注：** `ollama-shared` 和 `mcp-shared` 磁碟區是臨時金鑰共享卷，無需備份。
 
 有關還原說明、伺服器遷移和完整的升級前檢查清單，請參閱[備份與還原](docs/backup-restore-zh-Hant.md)指南。
 

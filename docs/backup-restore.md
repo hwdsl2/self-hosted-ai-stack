@@ -19,6 +19,8 @@ Each service stores its data in a named Docker volume:
 
 **Important:** API keys for Ollama, LiteLLM, and MCP Gateway are auto-generated on first start and stored inside these volumes. If you lose the volume, you lose the key. Connected clients will need to be updated with new keys.
 
+**Note:** The `ollama-shared` and `mcp-shared` volumes are ephemeral key-sharing volumes used to pass API keys between services automatically. They do not need to be backed up — the keys are already stored in `ollama-data` and `mcp-data` respectively, and are re-copied on every container start.
+
 ## Export API keys
 
 Before any maintenance, save your current API keys:

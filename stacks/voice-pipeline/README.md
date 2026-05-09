@@ -100,6 +100,15 @@ docker run -d --name kokoro --restart always \
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
+## Verify deployment
+
+After starting the stack, you can verify that all services are running correctly:
+
+```bash
+# Run from the docker-ai-stack root directory
+../../stack-check.sh
+```
+
 ## Customization
 
 Each service can be configured with an optional env file. Copy the example env file from the respective repository, edit it, and uncomment the volume mount in `docker-compose.yml`:

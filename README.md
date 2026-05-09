@@ -194,20 +194,15 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## Connect MCP Gateway to LiteLLM
 
-LiteLLM and MCP Gateway are **automatically wired** when using the compose files in this repository. The `LITELLM_MCP_URL=http://mcp:3000/mcp` environment variable is pre-configured in the compose files, so LiteLLM injects the `mcp_servers:` block into its config on every start.
+LiteLLM and MCP Gateway are **automatically wired** when using the compose files in this repository — no manual key setup is needed.
 
-To complete the wiring, set the MCP API key after first start:
+API keys are shared automatically between services via Docker shared volumes:
 
-```bash
-# 1. Get the MCP Gateway API key
-docker exec mcp mcp_manage --showkey
+- Ollama generates an API key on first start and copies it to a shared volume
+- MCP Gateway does the same
+- LiteLLM reads both keys from the shared volumes on startup
 
-# 2. Add it to litellm.env (or pass as environment variable) and restart:
-#    LITELLM_MCP_API_KEY=mcp-xxxx...
-docker compose restart litellm
-```
-
-Alternatively, pre-set a known key in `mcp.env` before starting (`MCP_API_KEY=my-key`) and use the same value for `LITELLM_MCP_API_KEY` in `litellm.env` — then no restart is needed.
+The `LITELLM_MCP_URL=http://mcp:3000/mcp` and `LITELLM_OLLAMA_BASE_URL=http://ollama:11434` environment variables are pre-configured in the compose files, so all services are connected automatically with a single `docker compose up -d`.
 
 Once connected, AI clients that call LiteLLM can use MCP tools (filesystem, fetch, GitHub, etc.) directly through the LiteLLM proxy.
 
@@ -326,6 +321,8 @@ for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
 done
 ```
+
+**Note:** The `ollama-shared` and `mcp-shared` volumes are ephemeral key-sharing volumes and do not need to be backed up.
 
 For restore instructions, server migration, and the full pre-upgrade checklist, see the [Backup and Restore](docs/backup-restore.md) guide.
 

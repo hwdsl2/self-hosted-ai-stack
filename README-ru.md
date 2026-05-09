@@ -194,20 +194,15 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## Подключение MCP Gateway к LiteLLM
 
-В compose-файлах этого репозитория LiteLLM и MCP Gateway **подключаются автоматически**. Переменная `LITELLM_MCP_URL=http://mcp:3000/mcp` уже задана в compose-файлах, поэтому LiteLLM при каждом запуске автоматически добавляет блок `mcp_servers:` в свою конфигурацию.
+В compose-файлах этого репозитория LiteLLM и MCP Gateway **подключаются автоматически** — ручная настройка ключей не требуется.
 
-Для завершения настройки задайте API-ключ MCP после первого запуска:
+API-ключи автоматически передаются между сервисами через общие Docker-тома:
 
-```bash
-# 1. Получите API-ключ MCP Gateway
-docker exec mcp mcp_manage --showkey
+- Ollama генерирует API-ключ при первом запуске и копирует его в общий том
+- MCP Gateway делает то же самое
+- LiteLLM считывает оба ключа из общих томов при запуске
 
-# 2. Добавьте его в litellm.env (или передайте как переменную окружения) и перезапустите:
-#    LITELLM_MCP_API_KEY=mcp-xxxx...
-docker compose restart litellm
-```
-
-Альтернативно: задайте известный ключ в `mcp.env` до запуска (`MCP_API_KEY=my-key`) и укажите то же значение для `LITELLM_MCP_API_KEY` в `litellm.env` — тогда перезапуск не потребуется.
+Переменные `LITELLM_MCP_URL=http://mcp:3000/mcp` и `LITELLM_OLLAMA_BASE_URL=http://ollama:11434` уже заданы в compose-файлах, поэтому все сервисы подключаются автоматически одной командой `docker compose up -d`.
 
 После подключения AI-клиенты, обращающиеся к LiteLLM, смогут использовать MCP-инструменты (файловая система, web-fetch, GitHub и др.) напрямую через прокси LiteLLM.
 
@@ -326,6 +321,8 @@ for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
 done
 ```
+
+**Примечание:** Тома `ollama-shared` и `mcp-shared` являются временными томами для передачи ключей и не требуют резервного копирования.
 
 Инструкции по восстановлению, миграции на новый сервер и полный контрольный список перед обновлением см. в руководстве [Резервное копирование и восстановление](docs/backup-restore-ru.md).
 
