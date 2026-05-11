@@ -1,0 +1,77 @@
+services:
+  ollama:
+    image: hwdsl2/ollama-server:cuda
+    container_name: ollama
+    restart: always
+    volumes:
+      - ollama-data:/var/lib/ollama
+      - ollama-shared:/var/lib/ollama-shared
+      # - ./ollama.env:/ollama.env:ro  # optional: custom config
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:11434/"]
+      interval: 5s
+      timeout: 3s
+      start_period: 60s
+      retries: 3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  litellm:
+    image: hwdsl2/litellm-server
+    container_name: litellm
+    restart: always
+    ports:
+      - "4000:4000/tcp"
+    environment:
+      - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - litellm-data:/etc/litellm
+      - ollama-shared:/var/lib/ollama-shared:ro
+      # - ./litellm.env:/litellm.env:ro  # optional: custom config
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  embeddings:
+    image: hwdsl2/embeddings-server
+    container_name: embeddings
+    restart: always
+    ports:
+      - "127.0.0.1:8000:8000/tcp"
+    volumes:
+      - embeddings-data:/var/lib/embeddings
+      # - ./embed.env:/embed.env:ro  # optional: custom config
+
+  docling:
+    image: hwdsl2/docling-server:cuda
+    container_name: docling
+    restart: always
+    ports:
+      - "127.0.0.1:5001:5001/tcp"
+    volumes:
+      - docling-data:/var/lib/docling
+      # - ./docling.env:/docling.env:ro  # optional: custom config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  ollama-data:
+    name: ollama-data
+  ollama-shared:
+    name: ollama-shared
+  litellm-data:
+    name: litellm-data
+  embeddings-data:
+    name: embeddings-data
+  docling-data:
+    name: docling-data
