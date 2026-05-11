@@ -83,6 +83,22 @@ services:
       start_period: 60s
       retries: 3
 
+  # docling:
+  #   image: hwdsl2/docling-server
+  #   container_name: docling
+  #   restart: always
+  #   ports:
+  #     - "127.0.0.1:5001:5001/tcp"
+  #   volumes:
+  #     - docling-data:/var/lib/docling
+  #     # - ./docling.env:/docling.env:ro  # optional: custom config
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-sf", "http://127.0.0.1:5001/health"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     start_period: 120s
+  #     retries: 3
+
 volumes:
   ollama-data:
     name: ollama-data
@@ -100,3 +116,5 @@ volumes:
     name: mcp-data
   mcp-shared:
     name: mcp-shared
+  # docling-data:
+  #   name: docling-data

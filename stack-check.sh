@@ -251,6 +251,32 @@ fi
 
 echo ""
 
+# ── Docling ──────────────────────────────────────────────
+DOCLING=$(find_service "docling" "hwdsl2/docling-server")
+if [ -n "$DOCLING" ]; then
+  info "Docling ($DOCLING)"
+
+  pass "Container running"
+
+  # Check health endpoint
+  if http_ok "http://localhost:5001/health"; then
+    pass "Health endpoint responds"
+  else
+    fail "Health endpoint not responding at http://localhost:5001/health"
+  fi
+
+  # Check readiness
+  if http_ok "http://localhost:5001/ready"; then
+    pass "Service ready (models loaded)"
+  else
+    warn "Service not ready yet (models may still be loading)"
+  fi
+else
+  info "Docling — not running (skipped)"
+fi
+
+echo ""
+
 # ── Summary ─────────────────────────────────────────────
 echo "==============================="
 echo -e "Results: ${GREEN}${PASS} passed${NC}, ${RED}${FAIL} failed${NC}, ${YELLOW}${WARN} warnings${NC}"
