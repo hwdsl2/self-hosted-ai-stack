@@ -25,6 +25,7 @@ Deploy a complete, self-hosted AI stack on your own server with a single command
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Transcribes spoken audio to text | `9000` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Converts text to natural-sounding speech | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
+| **[Docling](https://github.com/hwdsl2/docker-docling)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
 
 **Also available:**
 
@@ -121,12 +122,13 @@ Don't need the full stack? Use a pre-configured subset from the `stacks/` folder
 |---|---|---|---|
 | **[voice-pipeline](stacks/voice-pipeline/)** | Whisper + Ollama + LiteLLM + Kokoro | ~5 GB | Speech-to-text → LLM → text-to-speech |
 | **[rag-pipeline](stacks/rag-pipeline/)** | Ollama + LiteLLM + Embeddings | ~3 GB | Semantic search + LLM Q&A |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/)** | Ollama + LiteLLM + Embeddings + Docling | ~4 GB | Document parsing + semantic search + LLM Q&A |
 | **[ai-tools](stacks/ai-tools/)** | Ollama + LiteLLM + MCP Gateway | ~3 GB | AI coding assistant with tool access |
 | **[chat-only](stacks/chat-only/)** | Ollama + LiteLLM | ~2.5 GB | Minimal local ChatGPT replacement |
 
 ```bash
 git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/voice-pipeline  # or rag-pipeline, ai-tools, chat-only
+cd docker-ai-stack/stacks/voice-pipeline  # or rag-pipeline, rag-pipeline-full, ai-tools, chat-only
 docker compose up -d
 ```
 
@@ -315,7 +317,7 @@ docker exec mcp mcp_manage --showkey
 # Back up all volumes (stop services first)
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data; do
+for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data docling-data; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .

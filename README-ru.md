@@ -25,6 +25,7 @@
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Транскрибация речи в текст | `9000` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Преобразование текста в естественную речь | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
+| **[Docling](https://github.com/hwdsl2/docker-docling/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
 
 **Также доступно:**
 
@@ -121,12 +122,13 @@ docker compose -f docker-compose.cuda.yml up -d
 |---|---|---|---|
 | **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | Whisper + Ollama + LiteLLM + Kokoro | ~5 ГБ | Речь в текст → LLM → текст в речь |
 | **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | Ollama + LiteLLM + Embeddings | ~3 ГБ | Семантический поиск + LLM Q&A |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | Ollama + LiteLLM + Embeddings + Docling | ~4 ГБ | Разбор документов + семантический поиск + LLM Q&A |
 | **[ai-tools](stacks/ai-tools/README-ru.md)** | Ollama + LiteLLM + MCP Gateway | ~3 ГБ | AI-ассистент для разработки с доступом к инструментам |
 | **[chat-only](stacks/chat-only/README-ru.md)** | Ollama + LiteLLM | ~2.5 ГБ | Минимальная локальная замена ChatGPT |
 
 ```bash
 git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/voice-pipeline  # или rag-pipeline, ai-tools, chat-only
+cd docker-ai-stack/stacks/voice-pipeline  # или rag-pipeline, rag-pipeline-full, ai-tools, chat-only
 docker compose up -d
 ```
 
@@ -315,7 +317,7 @@ docker exec mcp mcp_manage --showkey
 # Резервное копирование всех томов (сначала остановите сервисы)
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data; do
+for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data docling-data; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .

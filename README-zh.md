@@ -25,6 +25,7 @@
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | 将语音转录为文本 | `9000` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | 将文本转换为自然语音 | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
+| **[Docling](https://github.com/hwdsl2/docker-docling/blob/main/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
 
 **另提供：**
 
@@ -121,12 +122,13 @@ docker compose -f docker-compose.cuda.yml up -d
 |---|---|---|---|
 | **[voice-pipeline](stacks/voice-pipeline/README-zh.md)** | Whisper + Ollama + LiteLLM + Kokoro | ~5 GB | 语音转文本 → LLM → 文本转语音 |
 | **[rag-pipeline](stacks/rag-pipeline/README-zh.md)** | Ollama + LiteLLM + Embeddings | ~3 GB | 语义搜索 + LLM 问答 |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh.md)** | Ollama + LiteLLM + Embeddings + Docling | ~4 GB | 文档解析 + 语义搜索 + LLM 问答 |
 | **[ai-tools](stacks/ai-tools/README-zh.md)** | Ollama + LiteLLM + MCP Gateway | ~3 GB | AI 编程助手，支持工具访问 |
 | **[chat-only](stacks/chat-only/README-zh.md)** | Ollama + LiteLLM | ~2.5 GB | 最小化本地 ChatGPT 替代方案 |
 
 ```bash
 git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/voice-pipeline  # 或 rag-pipeline、ai-tools、chat-only
+cd docker-ai-stack/stacks/voice-pipeline  # 或 rag-pipeline、rag-pipeline-full、ai-tools、chat-only
 docker compose up -d
 ```
 
@@ -315,7 +317,7 @@ docker exec mcp mcp_manage --showkey
 # 备份所有卷（先停止服务）
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data; do
+for vol in ollama-data litellm-data embeddings-data whisper-data kokoro-data mcp-data docling-data; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
