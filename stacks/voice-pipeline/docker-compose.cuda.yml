@@ -71,6 +71,24 @@ services:
               count: 1
               capabilities: [gpu]
 
+  # whisper-live:
+  #   image: hwdsl2/whisper-live-server:cuda
+  #   container_name: whisper-live
+  #   restart: always
+  #   ports:
+  #     - "127.0.0.1:9090:9090/tcp"  # WebSocket
+  #     - "127.0.0.1:9001:8000/tcp"  # REST API (host port 9001 avoids conflict with whisper)
+  #   volumes:
+  #     - whisper-live-data:/var/lib/whisper-live
+  #     # - ./whisper-live.env:/whisper-live.env:ro  # optional: custom config
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+
 volumes:
   ollama-data:
     name: ollama-data
@@ -82,3 +100,5 @@ volumes:
     name: whisper-data
   kokoro-data:
     name: kokoro-data
+  # whisper-live-data:
+  #   name: whisper-live-data

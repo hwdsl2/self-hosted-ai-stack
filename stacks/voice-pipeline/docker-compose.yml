@@ -50,6 +50,17 @@ services:
       - kokoro-data:/var/lib/kokoro
       # - ./kokoro.env:/kokoro.env:ro  # optional: custom config
 
+  # whisper-live:
+  #   image: hwdsl2/whisper-live-server
+  #   container_name: whisper-live
+  #   restart: always
+  #   ports:
+  #     - "127.0.0.1:9090:9090/tcp"  # WebSocket
+  #     - "127.0.0.1:9001:8000/tcp"  # REST API (host port 9001 avoids conflict with whisper)
+  #   volumes:
+  #     - whisper-live-data:/var/lib/whisper-live
+  #     # - ./whisper-live.env:/whisper-live.env:ro  # optional: custom config
+
 volumes:
   ollama-data:
     name: ollama-data
@@ -61,3 +72,5 @@ volumes:
     name: whisper-data
   kokoro-data:
     name: kokoro-data
+  # whisper-live-data:
+  #   name: whisper-live-data

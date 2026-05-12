@@ -104,6 +104,41 @@ services:
       start_period: 60s
       retries: 3
 
+  # docling:
+  #   image: hwdsl2/docling-server:cuda
+  #   container_name: docling
+  #   restart: always
+  #   ports:
+  #     - "127.0.0.1:5001:5001/tcp"
+  #   volumes:
+  #     - docling-data:/var/lib/docling
+  #     # - ./docling.env:/docling.env:ro  # optional: custom config
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+
+  # whisper-live:
+  #   image: hwdsl2/whisper-live-server:cuda
+  #   container_name: whisper-live
+  #   restart: always
+  #   ports:
+  #     - "127.0.0.1:9090:9090/tcp"  # WebSocket
+  #     - "127.0.0.1:8001:8000/tcp"  # REST API (host port 8001 avoids conflict with embeddings)
+  #   volumes:
+  #     - whisper-live-data:/var/lib/whisper-live
+  #     # - ./whisper-live.env:/whisper-live.env:ro  # optional: custom config
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+
 volumes:
   ollama-data:
     name: ollama-data
@@ -121,3 +156,7 @@ volumes:
     name: mcp-data
   mcp-shared:
     name: mcp-shared
+  # docling-data:
+  #   name: docling-data
+  # whisper-live-data:
+  #   name: whisper-live-data
