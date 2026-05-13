@@ -251,6 +251,26 @@ fi
 
 echo ""
 
+# ── WhisperLive (STT) ───────────────────────────────────
+WHISPERLIVE=$(find_service "whisper-live" "hwdsl2/whisper-live-server")
+if [ -n "$WHISPERLIVE" ]; then
+  info "WhisperLive STT ($WHISPERLIVE)"
+
+  pass "Container running"
+
+  # Check REST API docs endpoint (indicates server is ready)
+  if http_ok "http://localhost:8001/docs"; then
+    pass "REST API endpoint responds"
+  else
+    warn "Could not verify REST API endpoint (service may still be loading)"
+  fi
+
+else
+  info "WhisperLive STT — not running (skipped)"
+fi
+
+echo ""
+
 # ── Docling ──────────────────────────────────────────────
 DOCLING=$(find_service "docling" "hwdsl2/docling-server")
 if [ -n "$DOCLING" ]; then
