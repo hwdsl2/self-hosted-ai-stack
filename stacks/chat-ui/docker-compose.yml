@@ -14,6 +14,22 @@ services:
       start_period: 60s
       retries: 3
 
+  db:
+    image: postgres:18
+    container_name: litellm-db
+    restart: always
+    environment:
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: litellm
+      POSTGRES_DB: litellm
+    volumes:
+      - litellm-db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   litellm:
     image: hwdsl2/litellm-server
     container_name: litellm
@@ -22,6 +38,7 @@ services:
       - "4000:4000/tcp"
     environment:
       - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
+      - LITELLM_DATABASE_URL=postgresql://litellm:litellm@db:5432/litellm
     volumes:
       - litellm-data:/etc/litellm
       - ollama-shared:/var/lib/ollama-shared:ro
@@ -29,6 +46,8 @@ services:
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
     depends_on:
       ollama:
+        condition: service_healthy
+      db:
         condition: service_healthy
 
   anythingllm:
@@ -65,3 +84,5 @@ volumes:
     name: litellm-shared
   anythingllm-data:
     name: anythingllm-data
+  litellm-db:
+    name: litellm-db
