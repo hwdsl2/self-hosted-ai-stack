@@ -21,7 +21,7 @@ graph LR
 | Service | Role | Default port |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway — routes requests to Ollama and 100+ providers | `4000` |
+| **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 
 ## Quick start
 
@@ -90,6 +90,10 @@ After starting the stack, you can verify that all services are running correctly
 ../../stack-check.sh
 ```
 
+**Access the LiteLLM Admin UI:**
+
+Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
+
 ## Customization
 
 Each service can be configured with an optional env file. Copy the example env file from the respective repository, edit it, and uncomment the volume mount in `docker-compose.yml`:
@@ -115,7 +119,7 @@ Your data is preserved in the Docker volumes.
 ## Example
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 curl http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $LITELLM_KEY" \

@@ -99,6 +99,10 @@ docker exec litellm litellm_manage --showkey
 docker exec mcp mcp_manage --showkey
 ```
 
+**Access the LiteLLM Admin UI:**
+
+Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
+
 **Stop the stack:**
 
 ```bash
@@ -228,7 +232,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 # Step 1: Transcribe audio to text (Whisper)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
@@ -253,7 +257,7 @@ curl -s http://localhost:8880/v1/audio/speech \
 Embed documents for semantic search, retrieve context, then answer questions with a local Ollama model:
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 # Step 1: Embed a document chunk and store the vector in your vector DB
 curl -s http://localhost:8000/v1/embeddings \
@@ -333,7 +337,7 @@ docker exec mcp mcp_manage --showkey
 # Back up all volumes (stop services first)
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data; do
+for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .

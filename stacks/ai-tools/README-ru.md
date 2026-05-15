@@ -23,7 +23,7 @@ graph LR
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
+| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-ru.md)** | Предоставляет MCP-инструменты (файловая система, fetch, GitHub, поиск, БД) AI-клиентам | `3000` |
 
 ## Быстрый старт
@@ -99,6 +99,10 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 ../../stack-check.sh
 ```
 
+**Доступ к панели администратора LiteLLM:**
+
+Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и вашим мастер-ключом LiteLLM в качестве пароля. Панель администратора предоставляет управление виртуальными ключами, отслеживание расходов и настройку моделей.
+
 ## Настройка
 
 Каждый сервис можно настроить с помощью опционального env-файла. Скопируйте пример env-файла из соответствующего репозитория, отредактируйте его и раскомментируйте монтирование тома в `docker-compose.yml`:
@@ -143,7 +147,7 @@ docker compose restart litellm
 
 ```bash
 # Получение API-ключей
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 
 # Используйте с AI-клиентом (например, Cline в VS Code):

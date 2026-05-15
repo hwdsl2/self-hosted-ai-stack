@@ -22,7 +22,7 @@ graph LR
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз — маршрутизация запросов к Ollama и 100+ провайдерам | `4000` |
+| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизация запросов к Ollama и 100+ провайдерам | `4000` |
 | **[AnythingLLM](https://github.com/Mintplex-Labs/anything-llm)** | Веб-интерфейс для чата с рабочими пространствами, RAG и агентами | `3001` |
 
 ## Быстрый старт
@@ -113,6 +113,10 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 ../../stack-check.sh
 ```
 
+**Доступ к панели администратора LiteLLM:**
+
+Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и вашим мастер-ключом LiteLLM в качестве пароля. Панель администратора предоставляет управление виртуальными ключами, отслеживание расходов и настройку моделей.
+
 ## Настройка
 
 Каждый сервис можно настроить с помощью необязательного env-файла. Скопируйте пример env-файла из соответствующего репозитория, отредактируйте его и раскомментируйте монтирование тома в `docker-compose.yml`:
@@ -191,7 +195,7 @@ open http://localhost:3001
 Или используйте API LiteLLM напрямую:
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 curl http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $LITELLM_KEY" \

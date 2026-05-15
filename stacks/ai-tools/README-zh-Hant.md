@@ -23,7 +23,7 @@ graph LR
 | 服務 | 用途 | 預設連接埠 |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md)** | AI 閘道 — 將請求路由至 Ollama 及 100+ 供應商 | `4000` |
+| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 Ollama 及 100+ 供應商 | `4000` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、fetch、GitHub、搜尋、資料庫） | `3000` |
 
 ## 快速開始
@@ -99,6 +99,10 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 ../../stack-check.sh
 ```
 
+**存取 LiteLLM 管理介面：**
+
+在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 LiteLLM 主密鑰作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
+
 ## 自訂設定
 
 每個服務可以透過可選的 env 檔案進行設定。從相應儲存庫複製範例 env 檔案，編輯後取消 `docker-compose.yml` 中的磁碟區掛載註解：
@@ -143,7 +147,7 @@ docker compose restart litellm
 
 ```bash
 # 取得 API 金鑰
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 
 # 在 AI 用戶端中使用（例如 VS Code 中的 Cline）：

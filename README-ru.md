@@ -99,6 +99,10 @@ docker exec litellm litellm_manage --showkey
 docker exec mcp mcp_manage --showkey
 ```
 
+**Доступ к панели администратора LiteLLM:**
+
+Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и вашим мастер-ключом LiteLLM в качестве пароля. Панель администратора предоставляет управление виртуальными ключами, отслеживание расходов и настройку моделей.
+
 **Остановка стека:**
 
 ```bash
@@ -228,7 +232,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 # Шаг 1: Транскрибация аудио в текст (Whisper)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
@@ -253,7 +257,7 @@ curl -s http://localhost:8880/v1/audio/speech \
 Создание эмбеддингов документов для семантического поиска, извлечение контекста и ответы на вопросы с помощью локальной модели Ollama:
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 # Шаг 1: Создание эмбеддинга фрагмента документа и сохранение вектора в векторной БД
 curl -s http://localhost:8000/v1/embeddings \
@@ -333,7 +337,7 @@ docker exec mcp mcp_manage --showkey
 # Резервное копирование всех томов (сначала остановите сервисы)
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data; do
+for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .

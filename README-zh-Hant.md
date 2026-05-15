@@ -99,6 +99,10 @@ docker exec litellm litellm_manage --showkey
 docker exec mcp mcp_manage --showkey
 ```
 
+**存取 LiteLLM 管理介面：**
+
+在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 LiteLLM 主密鑰作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
+
 **停止技術堆疊：**
 
 ```bash
@@ -228,7 +232,7 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 # 第 1 步：將音訊轉錄為文字（Whisper）
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
@@ -253,7 +257,7 @@ curl -s http://localhost:8880/v1/audio/speech \
 嵌入文件用於語意搜尋，擷取上下文，然後使用本機 Ollama 模型回答問題：
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --showkey | grep '^sk-' | head -1)
+LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 
 # 第 1 步：嵌入文件片段並將向量儲存到向量資料庫
 curl -s http://localhost:8000/v1/embeddings \
@@ -333,7 +337,7 @@ docker exec mcp mcp_manage --showkey
 # 備份所有磁碟區（先停止服務）
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data; do
+for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
