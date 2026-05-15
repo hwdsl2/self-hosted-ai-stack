@@ -139,6 +139,7 @@ if [ -n "$LITELLM" ]; then
     LITELLM_KEY=$(docker exec "$LITELLM" litellm_manage --showkey 2>/dev/null | sed 's/^ //' | grep '^sk-' | head -1) || LITELLM_KEY=""
     if [ -n "$LITELLM_KEY" ]; then
       FIRST_MODEL=$(docker exec "$OLLAMA" ollama_manage --listmodels | awk 'NF >= 4 && $2 ~ /^[a-f0-9]+$/ { print $1 }' | head -1)
+      echo -e "  ${CYAN}…${NC} Testing LLM routing (please wait)..."
       if http_post_ok "http://localhost:4000/v1/chat/completions" \
         -H "Authorization: Bearer $LITELLM_KEY" \
         -H "Content-Type: application/json" \
@@ -231,7 +232,7 @@ if [ -n "$MCP" ]; then
     pass "API key generated"
 
     # Test MCP initialize handshake
-    INIT_RESP=$(curl -sf --max-time 10 "http://localhost:3000/mcp" \
+    INIT_RESP=$(docker exec "$MCP" curl -sf --max-time 10 "http://127.0.0.1:3000/mcp" \
       -X POST \
       -H "Authorization: Bearer $MCP_KEY" \
       -H "Content-Type: application/json" \
@@ -323,6 +324,7 @@ echo ""
 
 if [ "$FAIL" -gt 0 ]; then
   echo -e "${RED}Some checks failed. Review the output above.${NC}"
+  echo -e "${YELLOW}If you just started the stack, wait a few minutes and run this check again.${NC}"
   exit 1
 elif [ "$WARN" -gt 0 ]; then
   echo -e "${YELLOW}All checks passed with warnings.${NC}"
