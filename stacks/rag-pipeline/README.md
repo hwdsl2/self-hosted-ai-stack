@@ -108,7 +108,7 @@ Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` 
 
 **Try it in the Playground:**
 
-In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — this is the quickest way to verify your local LLM is working end-to-end.
+In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — this is a quick way to verify your local LLM is working end-to-end.
 
 ## Customization
 

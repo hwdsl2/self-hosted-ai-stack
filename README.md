@@ -20,6 +20,7 @@ Deploy a complete, self-hosted AI stack on your own server with a single command
 | Service | Role | Default port |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
+| **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Web-based chat UI — works instantly with no login required | `3001` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway — routes requests to Ollama, OpenAI, Anthropic, and 100+ providers | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | Converts text to vectors for semantic search and RAG | `8000` |
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Transcribes spoken audio to text | `9000` |
@@ -99,6 +100,14 @@ docker exec litellm litellm_manage --showkey
 docker exec mcp mcp_manage --showkey
 ```
 
+**Access AnythingLLM (Chat UI):**
+
+Open `http://<server-ip>:3001` in your browser. AnythingLLM is pre-configured to connect to your local LLM via LiteLLM — no login or setup required. Start chatting immediately.
+
+**Note:** On first start, AnythingLLM may take a few minutes to become available while it waits for the LiteLLM API key. Check progress with `docker logs anythingllm`.
+
+**Note:** For internet-facing deployments, using a [reverse proxy](#internet-facing-deployments) to add HTTPS is **strongly recommended**. In that case, also change `"3001:3001/tcp"` to `"127.0.0.1:3001:3001/tcp"` in `docker-compose.yml`, to prevent direct access to the unencrypted port. [Set a password](https://docs.useanything.com/features/security-and-access) to protect AnythingLLM, especially when the server is accessible from the public internet.
+
 **Access the LiteLLM Admin UI:**
 
 Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
@@ -107,7 +116,7 @@ Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` 
 
 **Try it in the Playground:**
 
-In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — this is the quickest way to verify your local LLM is working end-to-end.
+In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — this is a quick way to verify your local LLM is working end-to-end.
 
 **Stop the stack:**
 

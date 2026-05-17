@@ -20,6 +20,7 @@
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md)** | 运行本地大语言模型（llama3、qwen、mistral 等） | `11434` |
+| **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于 Web 的聊天界面 — 无需登录即可立即使用 | `3001` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | AI 网关 — 将请求路由至 Ollama、OpenAI、Anthropic 及 100+ 提供商 | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md)** | 将语音转录为文本 | `9000` |
@@ -99,6 +100,14 @@ docker exec litellm litellm_manage --showkey
 docker exec mcp mcp_manage --showkey
 ```
 
+**访问 AnythingLLM（聊天界面）：**
+
+在浏览器中打开 `http://<server-ip>:3001`。AnythingLLM 已预配置通过 LiteLLM 连接本地大语言模型 — 无需登录或设置，即可立即开始对话。
+
+**注：** 首次启动时，AnythingLLM 可能需要几分钟才能就绪（等待 LiteLLM API 密钥）。可使用 `docker logs anythingllm` 查看进度。
+
+**注：** 对于面向互联网的部署，强烈建议使用[反向代理](#面向互联网的部署)添加 HTTPS。在这种情况下，还需将 `docker-compose.yml` 中的 `"3001:3001/tcp"` 改为 `"127.0.0.1:3001:3001/tcp"`，以防止直接访问未加密端口。请[设置密码](https://docs.useanything.com/features/security-and-access)保护 AnythingLLM，尤其是在服务器可从公网访问时。
+
 **访问 LiteLLM 管理界面：**
 
 在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM 主密钥作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
@@ -107,7 +116,7 @@ docker exec mcp mcp_manage --showkey
 
 **在 Playground 中试用：**
 
-在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama/llama3.2:3b`）并开始对话 — 这是验证本地大语言模型端到端正常工作的最快方式。
+在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama/llama3.2:3b`）并开始对话 — 这是验证本地大语言模型端到端正常工作的一种快速方式。
 
 **停止技术栈：**
 

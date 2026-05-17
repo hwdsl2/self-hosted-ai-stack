@@ -118,7 +118,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 **在 Playground 中試用：**
 
-在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的最快方式。
+在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的一種快速方式。
 
 ## 自訂設定
 

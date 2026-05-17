@@ -43,6 +43,8 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 AnythingLLM 已預先設定連線到 LiteLLM。API 金鑰透過 Docker 卷自動共享 — 無需手動設定。
 
+**注：** 首次啟動時，AnythingLLM 可能需要幾分鐘才能就緒（等待 LiteLLM API 金鑰）。可使用 `docker logs anythingllm` 檢視進度。
+
 在瀏覽器中開啟 `http://<伺服器IP>:3001` — 即可直接開始聊天。LLM 供應商、基礎 URL 和模型已預先設定。
 
 **注：** 對於面向公網的部署，**強烈建議**使用[反向代理](#使用反向代理)新增 HTTPS。在這種情況下，還應將 `docker-compose.yml` 中的 `"3001:3001/tcp"` 改為 `"127.0.0.1:3001:3001/tcp"`，並將 `"4000:4000/tcp"` 改為 `"127.0.0.1:4000:4000/tcp"`，以防止直接存取未加密的連接埠。請[設定密碼](https://docs.useanything.com/features/security-and-access)保護 AnythingLLM，尤其是在伺服器可從公網存取時。
@@ -119,7 +121,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 **在 Playground 中試用：**
 
-在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的最快方式。
+在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的一種快速方式。
 
 ## 自訂設定
 
