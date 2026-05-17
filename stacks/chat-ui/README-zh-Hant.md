@@ -43,9 +43,9 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 AnythingLLM 已預先設定連線到 LiteLLM。API 金鑰透過 Docker 卷自動共享 — 無需手動設定。
 
-在瀏覽器中開啟 `http://<伺服器IP>:3001` 並完成初始設定。LLM 供應商、基礎 URL 和模型已預先設定。
+在瀏覽器中開啟 `http://<伺服器IP>:3001` — 即可直接開始聊天。LLM 供應商、基礎 URL 和模型已預先設定。
 
-**注：** 對於面向公網的部署，**強烈建議**使用[反向代理](#使用反向代理)新增 HTTPS。在這種情況下，還應將 `docker-compose.yml` 中的 `"3001:3001/tcp"` 改為 `"127.0.0.1:3001:3001/tcp"`，以防止直接存取未加密的連接埠。將服務暴露到網際網路時，請在 AnythingLLM 首次設定時設定強密碼。
+**注：** 對於面向公網的部署，**強烈建議**使用[反向代理](#使用反向代理)新增 HTTPS。在這種情況下，還應將 `docker-compose.yml` 中的 `"3001:3001/tcp"` 改為 `"127.0.0.1:3001:3001/tcp"`，並將 `"4000:4000/tcp"` 改為 `"127.0.0.1:4000:4000/tcp"`，以防止直接存取未加密的連接埠。請[設定密碼](https://docs.useanything.com/features/security-and-access)保護 AnythingLLM，尤其是在伺服器可從公網存取時。
 
 ## GPU 加速 (NVIDIA CUDA)
 

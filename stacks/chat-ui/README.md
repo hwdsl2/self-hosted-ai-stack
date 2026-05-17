@@ -43,9 +43,9 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 AnythingLLM is pre-configured to connect to LiteLLM. The API key is shared automatically via a Docker volume — no manual setup needed.
 
-Open `http://<server-ip>:3001` in your browser and complete the initial setup. The LLM provider, base URL, and model are pre-configured.
+Open `http://<server-ip>:3001` in your browser — you can start chatting right away. The LLM provider, base URL, and model are pre-configured.
 
-**Note:** For internet-facing deployments, using a [reverse proxy](#using-a-reverse-proxy) to add HTTPS is **strongly recommended**. In that case, also change `"3001:3001/tcp"` to `"127.0.0.1:3001:3001/tcp"` in `docker-compose.yml`, to prevent direct access to the unencrypted port. Set a strong password in AnythingLLM on first setup when the server is accessible from the public internet.
+**Note:** For internet-facing deployments, using a [reverse proxy](#using-a-reverse-proxy) to add HTTPS is **strongly recommended**. In that case, also change `"3001:3001/tcp"` to `"127.0.0.1:3001:3001/tcp"` and `"4000:4000/tcp"` to `"127.0.0.1:4000:4000/tcp"` in `docker-compose.yml`, to prevent direct access to the unencrypted ports. [Set a password](https://docs.useanything.com/features/security-and-access) to protect AnythingLLM, especially when the server is accessible from the public internet.
 
 ## GPU acceleration (NVIDIA CUDA)
 
