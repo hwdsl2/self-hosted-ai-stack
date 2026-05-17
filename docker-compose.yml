@@ -46,6 +46,7 @@ services:
       - litellm-data:/etc/litellm
       - ollama-shared:/var/lib/ollama-shared:ro
       - mcp-shared:/var/lib/mcp-shared:ro
+      - litellm-shared:/var/lib/litellm-shared
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
     depends_on:
       ollama:
@@ -102,6 +103,29 @@ services:
       start_period: 60s
       retries: 3
 
+  anythingllm:
+    image: mintplexlabs/anythingllm
+    container_name: anythingllm
+    restart: always
+    ports:
+      - "3001:3001/tcp"  # For a host-based reverse proxy, change to "127.0.0.1:3001:3001/tcp"
+    environment:
+      - STORAGE_DIR=/app/server/storage
+      - LLM_PROVIDER=generic-openai
+      - GENERIC_OPEN_AI_BASE_PATH=http://litellm:4000/v1
+      - GENERIC_OPEN_AI_MODEL_PREF=ollama/llama3.2:3b
+      - GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=131072
+      - EMBEDDING_ENGINE=native
+    volumes:
+      - anythingllm-data:/app/server/storage
+      - litellm-shared:/var/lib/litellm-shared:ro
+      - ./chat-ui-bootstrap.sh:/usr/local/bin/chat-ui-bootstrap.sh:ro
+    entrypoint: ["/bin/bash", "/usr/local/bin/chat-ui-bootstrap.sh"]
+    # cap_add:
+    #   - SYS_ADMIN  # Uncomment if you need AnythingLLM's built-in web scraping (uses Chromium)
+    depends_on:
+      - litellm
+
   # docling:
   #   image: hwdsl2/docling-server
   #   container_name: docling
@@ -140,6 +164,10 @@ volumes:
     name: mcp-data
   mcp-shared:
     name: mcp-shared
+  litellm-shared:
+    name: litellm-shared
+  anythingllm-data:
+    name: anythingllm-data
   litellm-db:
     name: litellm-db
   # docling-data:
