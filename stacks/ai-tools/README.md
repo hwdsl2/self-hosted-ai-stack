@@ -12,7 +12,8 @@ Local LLM with MCP tool access for AI coding assistants (Cline, Claude, Cursor, 
 
 ```mermaid
 graph LR
-    C["🤖 AI client<br/>(Cline, Claude, etc.)"] -->|MCP tools| M["MCP Gateway<br/>(MCP endpoint)"]
+    U["👤 User"] -->|use| C["🤖 AI client<br/>(Cline, Claude, etc.)"]
+    C -->|MCP tools| M["MCP Gateway<br/>(MCP endpoint)"]
     C -->|chat| L["LiteLLM<br/>(AI gateway)"]
     L -->|routes to| O["Ollama<br/>(local LLM)"]
     L -->|MCP protocol| M

@@ -12,7 +12,8 @@
 
 ```mermaid
 graph LR
-    C["🤖 AI-клиент<br/>(Cline, Claude и др.)"] -->|MCP-инструменты| M["MCP Gateway<br/>(MCP-эндпоинт)"]
+    U["👤 Пользователь"] -->|использует| C["🤖 AI-клиент<br/>(Cline, Claude и др.)"]
+    C -->|MCP-инструменты| M["MCP Gateway<br/>(MCP-эндпоинт)"]
     C -->|чат| L["LiteLLM<br/>(AI-шлюз)"]
     L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
     L -->|MCP-протокол| M

@@ -50,6 +50,12 @@ graph LR
     C["🤖 AI 客户端<br/>(Cline, Claude 等)"] -->|MCP 工具| M["MCP Gateway<br/>(MCP 端点)"]
     C -->|对话| L
     L -->|MCP 协议| M
+    U["👤 用户"] -->|对话| AN["AnythingLLM<br/>(聊天界面)"]
+    AN -->|LLM 请求| L
+    AN -->|MCP 工具| M
+    U -->|使用| C
+    U -->|讲话| A
+    U -->|上传| D
 ```
 
 ## 快速开始

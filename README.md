@@ -50,6 +50,12 @@ graph LR
     C["🤖 AI client<br/>(Cline, Claude, etc.)"] -->|MCP tools| M["MCP Gateway<br/>(MCP endpoint)"]
     C -->|chat| L
     L -->|MCP protocol| M
+    U["👤 User"] -->|chat| AN["AnythingLLM<br/>(chat UI)"]
+    AN -->|LLM requests| L
+    AN -->|MCP tools| M
+    U -->|use| C
+    U -->|speak| A
+    U -->|upload| D
 ```
 
 ## Quick start

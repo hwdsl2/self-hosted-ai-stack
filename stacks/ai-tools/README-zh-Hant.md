@@ -12,7 +12,8 @@
 
 ```mermaid
 graph LR
-    C["🤖 AI 用戶端<br/>(Cline, Claude 等)"] -->|MCP 工具| M["MCP Gateway<br/>(MCP 端點)"]
+    U["👤 使用者"] -->|使用| C["🤖 AI 用戶端<br/>(Cline, Claude 等)"]
+    C -->|MCP 工具| M["MCP Gateway<br/>(MCP 端點)"]
     C -->|聊天| L["LiteLLM<br/>(AI 閘道)"]
     L -->|路由至| O["Ollama<br/>(本機 LLM)"]
     L -->|MCP 協定| M
