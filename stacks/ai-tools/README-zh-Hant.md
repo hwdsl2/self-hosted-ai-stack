@@ -62,25 +62,40 @@ docker network create ai-stack
 然後在共享網路上啟動各服務：
 
 ```bash
+# PostgreSQL (required by LiteLLM)
+docker run -d --name litellm-db --restart always \
+    --network ai-stack \
+    -e POSTGRES_USER=litellm \
+    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_DB=litellm \
+    -v litellm-db:/var/lib/postgresql \
+    postgres:18
+
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
+    -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
+
+# MCP Gateway
+docker run -d --name mcp --restart always \
+    --network ai-stack \
+    -v mcp-data:/var/lib/mcp \
+    -v mcp-shared:/var/lib/mcp-shared \
+    hwdsl2/mcp-gateway
 
 # LiteLLM (AI 閘道)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -e LITELLM_MCP_URL=http://mcp:3000/mcp \
+    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
     -v litellm-data:/etc/litellm \
+    -v ollama-shared:/var/lib/ollama-shared:ro \
+    -v mcp-shared:/var/lib/mcp-shared:ro \
     hwdsl2/litellm-server
-
-# MCP Gateway
-docker run -d --name mcp --restart always \
-    --network ai-stack \
-    -v mcp-data:/var/lib/mcp \
-    hwdsl2/mcp-gateway
 ```
 
 **注：** 共享網路允許服務透過容器名稱互相存取（例如 LiteLLM 透過 `http://ollama:11434` 連接 Ollama）。
@@ -139,20 +154,14 @@ docker compose up -d
 
 ## 將 MCP Gateway 連接到 LiteLLM
 
-LiteLLM 和 MCP Gateway 已在 compose 檔案中**自動接入**。`LITELLM_MCP_URL=http://mcp:3000/mcp` 已預設，因此 LiteLLM 在設定 API 金鑰後會自動注入 `mcp_servers:` 區塊。
+使用 compose 檔案或上方的 `docker run` 命令時，LiteLLM 和 MCP Gateway 均**自動接入**——無需手動設定金鑰。
 
-完成接入只需在首次啟動後設定 MCP API 金鑰：
+API 金鑰透過 Docker 共享磁碟區在服務間自動共享：
 
-```bash
-# 1. 取得 MCP Gateway API 金鑰
-docker exec mcp mcp_manage --showkey
+- MCP Gateway 在首次啟動時產生 API 金鑰，並將其複製到 `mcp-shared` 磁碟區
+- LiteLLM 在啟動時從共享磁碟區讀取 MCP 金鑰
 
-# 2. 將金鑰新增至 litellm.env（或作為環境變數傳入）並重新啟動：
-#    LITELLM_MCP_API_KEY=mcp-xxxx...
-docker compose restart litellm
-```
-
-或者，在啟動前在 `mcp.env` 中預設 `MCP_API_KEY=my-key`，並在 `litellm.env` 中為 `LITELLM_MCP_API_KEY` 使用相同的值——這樣就無需重新啟動。
+`LITELLM_MCP_URL=http://mcp:3000/mcp` 環境變數已預設，所有服務均自動連接。
 
 ## 使用方式
 

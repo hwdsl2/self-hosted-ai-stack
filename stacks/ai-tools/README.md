@@ -62,25 +62,40 @@ docker network create ai-stack
 Then start each service on the shared network:
 
 ```bash
+# PostgreSQL (required by LiteLLM)
+docker run -d --name litellm-db --restart always \
+    --network ai-stack \
+    -e POSTGRES_USER=litellm \
+    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_DB=litellm \
+    -v litellm-db:/var/lib/postgresql \
+    postgres:18
+
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
+    -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
+
+# MCP Gateway
+docker run -d --name mcp --restart always \
+    --network ai-stack \
+    -v mcp-data:/var/lib/mcp \
+    -v mcp-shared:/var/lib/mcp-shared \
+    hwdsl2/mcp-gateway
 
 # LiteLLM (AI gateway)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -e LITELLM_MCP_URL=http://mcp:3000/mcp \
+    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
     -v litellm-data:/etc/litellm \
+    -v ollama-shared:/var/lib/ollama-shared:ro \
+    -v mcp-shared:/var/lib/mcp-shared:ro \
     hwdsl2/litellm-server
-
-# MCP Gateway
-docker run -d --name mcp --restart always \
-    --network ai-stack \
-    -v mcp-data:/var/lib/mcp \
-    hwdsl2/mcp-gateway
 ```
 
 **Note:** The shared network allows services to reach each other by container name (e.g., LiteLLM connects to Ollama via `http://ollama:11434`).
@@ -139,20 +154,14 @@ Your data is preserved in the Docker volumes.
 
 ## Connect MCP Gateway to LiteLLM
 
-LiteLLM and MCP Gateway are **automatically wired** in the compose file. `LITELLM_MCP_URL=http://mcp:3000/mcp` is pre-configured, so LiteLLM injects the `mcp_servers:` block once the API key is also set.
+LiteLLM and MCP Gateway are **automatically wired** when using the compose file or the `docker run` commands above — no manual key setup is needed.
 
-To complete the wiring, set the MCP API key after first start:
+API keys are shared automatically between services via Docker shared volumes:
 
-```bash
-# 1. Get the MCP Gateway API key
-docker exec mcp mcp_manage --showkey
+- MCP Gateway generates an API key on first start and copies it to the `mcp-shared` volume
+- LiteLLM reads the MCP key from the shared volume on startup
 
-# 2. Add it to litellm.env (or set as environment variable) and restart:
-#    LITELLM_MCP_API_KEY=mcp-xxxx...
-docker compose restart litellm
-```
-
-Alternatively, pre-set `MCP_API_KEY=my-key` in `mcp.env` and use the same value for `LITELLM_MCP_API_KEY` in `litellm.env` before first start — then no restart is needed.
+The `LITELLM_MCP_URL=http://mcp:3000/mcp` environment variable is pre-configured, so all services are connected automatically.
 
 ## Usage
 

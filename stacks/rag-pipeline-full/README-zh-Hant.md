@@ -63,10 +63,20 @@ docker network create ai-stack
 然後在共享網路上啟動各服務：
 
 ```bash
+# PostgreSQL (required by LiteLLM)
+docker run -d --name litellm-db --restart always \
+    --network ai-stack \
+    -e POSTGRES_USER=litellm \
+    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_DB=litellm \
+    -v litellm-db:/var/lib/postgresql \
+    postgres:18
+
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
+    -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
 # LiteLLM (AI 閘道)
@@ -74,7 +84,9 @@ docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
     -v litellm-data:/etc/litellm \
+    -v ollama-shared:/var/lib/ollama-shared:ro \
     hwdsl2/litellm-server
 
 # Embeddings

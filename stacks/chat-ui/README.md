@@ -70,10 +70,20 @@ docker network create ai-stack
 Then start each service on the shared network:
 
 ```bash
+# PostgreSQL (required by LiteLLM)
+docker run -d --name litellm-db --restart always \
+    --network ai-stack \
+    -e POSTGRES_USER=litellm \
+    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_DB=litellm \
+    -v litellm-db:/var/lib/postgresql \
+    postgres:18
+
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
+    -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
 # LiteLLM (AI gateway)
@@ -81,7 +91,10 @@ docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
     -v litellm-data:/etc/litellm \
+    -v ollama-shared:/var/lib/ollama-shared:ro \
+    -v litellm-shared:/var/lib/litellm-shared \
     hwdsl2/litellm-server
 
 # AnythingLLM (chat UI)
@@ -94,8 +107,13 @@ docker run -d --name anythingllm --restart always \
     -e GENERIC_OPEN_AI_MODEL_PREF=ollama/llama3.2:3b \
     -e GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=131072 \
     -e EMBEDDING_ENGINE=native \
+    -e DISABLE_TELEMETRY=true \
     -v anythingllm-data:/app/server/storage \
-    mintplexlabs/anythingllm
+    -v litellm-shared:/var/lib/litellm-shared:ro \
+    -v "$(pwd)/chat-ui-bootstrap.sh:/usr/local/bin/chat-ui-bootstrap.sh:ro" \
+    --entrypoint /bin/bash \
+    mintplexlabs/anythingllm \
+    /usr/local/bin/chat-ui-bootstrap.sh
 ```
 
 **Note:** The shared network allows services to reach each other by container name (e.g., AnythingLLM connects to LiteLLM via `http://litellm:4000`).

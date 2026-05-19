@@ -62,25 +62,40 @@ docker network create ai-stack
 Затем запустите каждый сервис в общей сети:
 
 ```bash
+# PostgreSQL (required by LiteLLM)
+docker run -d --name litellm-db --restart always \
+    --network ai-stack \
+    -e POSTGRES_USER=litellm \
+    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_DB=litellm \
+    -v litellm-db:/var/lib/postgresql \
+    postgres:18
+
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
+    -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
+
+# MCP Gateway
+docker run -d --name mcp --restart always \
+    --network ai-stack \
+    -v mcp-data:/var/lib/mcp \
+    -v mcp-shared:/var/lib/mcp-shared \
+    hwdsl2/mcp-gateway
 
 # LiteLLM (AI-шлюз)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -e LITELLM_MCP_URL=http://mcp:3000/mcp \
+    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
     -v litellm-data:/etc/litellm \
+    -v ollama-shared:/var/lib/ollama-shared:ro \
+    -v mcp-shared:/var/lib/mcp-shared:ro \
     hwdsl2/litellm-server
-
-# MCP Gateway
-docker run -d --name mcp --restart always \
-    --network ai-stack \
-    -v mcp-data:/var/lib/mcp \
-    hwdsl2/mcp-gateway
 ```
 
 **Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, LiteLLM подключается к Ollama через `http://ollama:11434`).
@@ -139,20 +154,14 @@ docker compose up -d
 
 ## Подключение MCP Gateway к LiteLLM
 
-LiteLLM и MCP Gateway **автоматически подключены** в compose-файле. `LITELLM_MCP_URL=http://mcp:3000/mcp` уже задан, поэтому LiteLLM автоматически добавляет блок `mcp_servers:` в конфигурацию после установки API-ключа.
+LiteLLM и MCP Gateway **автоматически подключены** при использовании compose-файла или команд `docker run` выше — ручная настройка ключей не требуется.
 
-Для завершения настройки задайте API-ключ MCP после первого запуска:
+API-ключи автоматически передаются между сервисами через общие тома Docker:
 
-```bash
-# 1. Получите API-ключ MCP Gateway
-docker exec mcp mcp_manage --showkey
+- MCP Gateway генерирует API-ключ при первом запуске и копирует его в том `mcp-shared`
+- LiteLLM читает ключ MCP из общего тома при запуске
 
-# 2. Добавьте его в litellm.env (или передайте как переменную окружения) и перезапустите:
-#    LITELLM_MCP_API_KEY=mcp-xxxx...
-docker compose restart litellm
-```
-
-Альтернативно: задайте `MCP_API_KEY=my-key` в `mcp.env` и укажите то же значение для `LITELLM_MCP_API_KEY` в `litellm.env` до запуска — тогда перезапуск не потребуется.
+Переменная окружения `LITELLM_MCP_URL=http://mcp:3000/mcp` уже задана, все сервисы подключаются автоматически.
 
 ## Использование
 

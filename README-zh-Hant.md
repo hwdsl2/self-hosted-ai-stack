@@ -170,18 +170,40 @@ docker network create ai-stack
 然後在共享網路上啟動各服務：
 
 ```bash
+# PostgreSQL (required by LiteLLM)
+docker run -d --name litellm-db --restart always \
+    --network ai-stack \
+    -e POSTGRES_USER=litellm \
+    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_DB=litellm \
+    -v litellm-db:/var/lib/postgresql \
+    postgres:18
+
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
+    -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
+
+# MCP Gateway
+docker run -d --name mcp --restart always \
+    --network ai-stack \
+    -v mcp-data:/var/lib/mcp \
+    -v mcp-shared:/var/lib/mcp-shared \
+    hwdsl2/mcp-gateway
 
 # LiteLLM (AI 閘道)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
+    -e LITELLM_MCP_URL=http://mcp:3000/mcp \
+    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
     -v litellm-data:/etc/litellm \
+    -v ollama-shared:/var/lib/ollama-shared:ro \
+    -v mcp-shared:/var/lib/mcp-shared:ro \
+    -v litellm-shared:/var/lib/litellm-shared \
     hwdsl2/litellm-server
 
 # Embeddings
@@ -198,6 +220,24 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
+# AnythingLLM (聊天介面)
+docker run -d --name anythingllm --restart always \
+    --network ai-stack \
+    -p 3001:3001 \
+    -e STORAGE_DIR=/app/server/storage \
+    -e LLM_PROVIDER=generic-openai \
+    -e GENERIC_OPEN_AI_BASE_PATH=http://litellm:4000/v1 \
+    -e GENERIC_OPEN_AI_MODEL_PREF=ollama/llama3.2:3b \
+    -e GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=131072 \
+    -e EMBEDDING_ENGINE=native \
+    -e DISABLE_TELEMETRY=true \
+    -v anythingllm-data:/app/server/storage \
+    -v litellm-shared:/var/lib/litellm-shared:ro \
+    -v "$(pwd)/chat-ui-bootstrap.sh:/usr/local/bin/chat-ui-bootstrap.sh:ro" \
+    --entrypoint /bin/bash \
+    mintplexlabs/anythingllm \
+    /usr/local/bin/chat-ui-bootstrap.sh
+
 # Kokoro (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
@@ -211,12 +251,6 @@ docker run -d --name docling --restart always \
     -p 127.0.0.1:5001:5001 \
     -v docling-data:/var/lib/docling \
     hwdsl2/docling-server
-
-# MCP Gateway
-docker run -d --name mcp --restart always \
-    --network ai-stack \
-    -v mcp-data:/var/lib/mcp \
-    hwdsl2/mcp-gateway
 ```
 
 **注：** 共享網路允許服務透過容器名稱互相存取（例如 LiteLLM 透過 `http://ollama:11434` 連接 Ollama）。您可以只啟動需要的服務 — 不必全部執行。
