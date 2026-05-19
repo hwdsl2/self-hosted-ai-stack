@@ -63,6 +63,7 @@ services:
       - GENERIC_OPEN_AI_MODEL_PREF=ollama/llama3.2:3b
       - GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=131072
       - EMBEDDING_ENGINE=native
+      - DISABLE_TELEMETRY=true
     volumes:
       - anythingllm-data:/app/server/storage
       - litellm-shared:/var/lib/litellm-shared:ro
