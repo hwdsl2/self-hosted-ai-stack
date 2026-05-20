@@ -148,14 +148,16 @@ docker compose -f docker-compose.cuda.yml up -d
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/README-zh.md)** | Ollama + LiteLLM + AnythingLLM | ~5 GB | 基于 Web 的 ChatGPT 式聊天界面 |
 | **[voice-pipeline](stacks/voice-pipeline/README-zh.md)** | Whisper + Ollama + LiteLLM + Kokoro | ~6 GB | 语音转文本 → LLM → 文本转语音 |
+| **[voice-chat](stacks/voice-chat/README-zh.md)** | Whisper + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
 | **[rag-pipeline](stacks/rag-pipeline/README-zh.md)** | Ollama + LiteLLM + Embeddings | ~5 GB | 语义搜索 + LLM 问答 |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh.md)** | Ollama + LiteLLM + Embeddings + Docling | ~6 GB | 文档解析 + 语义搜索 + LLM 问答 |
+| **[code-assistant](stacks/code-assistant/README-zh.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 GB | AI 编程，支持工具 + 语义代码搜索 |
 | **[ai-tools](stacks/ai-tools/README-zh.md)** | Ollama + LiteLLM + MCP Gateway | ~5 GB | AI 编程助手，支持工具访问 |
 | **[chat-only](stacks/chat-only/README-zh.md)** | Ollama + LiteLLM | ~4.5 GB | 最小化本地 ChatGPT 替代方案 |
 
 ```bash
 git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/chat-ui  # 或 voice-pipeline、rag-pipeline、rag-pipeline-full、ai-tools、chat-only
+cd docker-ai-stack/stacks/chat-ui  # 或 voice-pipeline、voice-chat、rag-pipeline、rag-pipeline-full、code-assistant、ai-tools、chat-only
 docker compose up -d
 ```
 

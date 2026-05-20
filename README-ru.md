@@ -148,14 +148,16 @@ docker compose -f docker-compose.cuda.yml up -d
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/README-ru.md)** | Ollama + LiteLLM + AnythingLLM | ~5 ГБ | Веб-интерфейс для чата в стиле ChatGPT |
 | **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | Whisper + Ollama + LiteLLM + Kokoro | ~6 ГБ | Речь в текст → LLM → текст в речь |
+| **[voice-chat](stacks/voice-chat/README-ru.md)** | Whisper + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
 | **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | Ollama + LiteLLM + Embeddings | ~5 ГБ | Семантический поиск + LLM Q&A |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | Ollama + LiteLLM + Embeddings + Docling | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
+| **[code-assistant](stacks/code-assistant/README-ru.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
 | **[ai-tools](stacks/ai-tools/README-ru.md)** | Ollama + LiteLLM + MCP Gateway | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
 | **[chat-only](stacks/chat-only/README-ru.md)** | Ollama + LiteLLM | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
 
 ```bash
 git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/chat-ui  # или voice-pipeline, rag-pipeline, rag-pipeline-full, ai-tools, chat-only
+cd docker-ai-stack/stacks/chat-ui  # или voice-pipeline, voice-chat, rag-pipeline, rag-pipeline-full, code-assistant, ai-tools, chat-only
 docker compose up -d
 ```
 
