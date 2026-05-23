@@ -150,7 +150,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
 
-AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**.
+AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
 
 **Совет:** Если вы также запускаете другие подстеки (например, [voice-pipeline](../voice-pipeline/README-ru.md), [rag-pipeline](../rag-pipeline/README-ru.md)), вы можете направить AnythingLLM на эти сервисы через страницу настроек — например, использовать `docker-whisper` для распознавания речи или `docker-embeddings` для векторных эмбеддингов.
 

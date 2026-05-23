@@ -150,7 +150,7 @@ Each service can be configured with an optional env file. Copy the example env f
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
 
-AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**.
+AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
 
 **Tip:** If you also run other sub-stacks (e.g., [voice-pipeline](../voice-pipeline/), [rag-pipeline](../rag-pipeline/)), you can point AnythingLLM at those services via its Settings page — for example, using `docker-whisper` for speech-to-text or `docker-embeddings` for vector embeddings.
 

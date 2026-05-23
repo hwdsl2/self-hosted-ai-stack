@@ -172,7 +172,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md) |
 
-AnythingLLM настраивается через веб-интерфейс `http://<server-ip>:3001`. Вы можете изменить провайдер LLM, модель, движок эмбеддингов и другие параметры в **Settings**.
+AnythingLLM настраивается через веб-интерфейс `http://<server-ip>:3001`. Вы можете изменить провайдер LLM, модель, движок эмбеддингов и другие параметры в **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 

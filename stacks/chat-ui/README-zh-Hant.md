@@ -150,7 +150,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md) |
 
-AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您可以在 **Settings** 中變更 LLM 供應商、模型、嵌入引擎和其他設定。
+AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您可以在 **Settings** 中變更 LLM 供應商、模型、嵌入引擎和其他設定。詳情請參閱 [AnythingLLM 文件](https://docs.useanything.com/)。
 
 **提示：** 如果您同時執行其他子棧（例如 [voice-pipeline](../voice-pipeline/README-zh-Hant.md)、[rag-pipeline](../rag-pipeline/README-zh-Hant.md)），可以透過 AnythingLLM 的設定頁面將其指向這些服務 — 例如使用 `docker-whisper` 進行語音轉文字，或使用 `docker-embeddings` 進行向量嵌入。
 

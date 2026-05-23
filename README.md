@@ -379,6 +379,8 @@ Each service can be configured with an optional env file. Copy the example env f
 | MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway) |
 | Docling | `docling.env` | [docker-docling](https://github.com/hwdsl2/docker-docling) |
 
+AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
+
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
 ## Internet-facing deployments
