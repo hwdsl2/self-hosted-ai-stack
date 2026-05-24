@@ -35,7 +35,8 @@
 
 ## 社区
 
-- 讨论与展示：[r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/)
+- 订阅项目更新：[Self-Hosted Stack](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai)
+- 社区讨论与展示：[r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/)
 
 ## 架构
 

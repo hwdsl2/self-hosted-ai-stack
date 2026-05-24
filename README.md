@@ -35,7 +35,8 @@ Deploy a complete, self-hosted AI stack on your own server with a single command
 
 ## Community
 
-- Discussions and showcases: [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/)
+- Subscribe for project updates: [Self-Hosted Stack](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai)
+- Community discussions and showcases: [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/)
 
 ## Architecture
 

@@ -35,7 +35,8 @@
 
 ## Сообщество
 
-- Обсуждения и примеры: [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/)
+- Подпишитесь на обновления проекта: [Self-Hosted Stack](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai)
+- Обсуждения и примеры в сообществе: [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/)
 
 ## Архитектура
 
