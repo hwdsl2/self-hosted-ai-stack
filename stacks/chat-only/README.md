@@ -8,6 +8,8 @@ Minimal local chat setup — a local LLM with an OpenAI-compatible API gateway.
 
 **Memory:** ~4.5 GB RAM (with a 3B model)
 
+**Platforms:** `linux/amd64`, `linux/arm64`
+
 ## Architecture
 
 ```mermaid

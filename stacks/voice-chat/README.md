@@ -8,6 +8,8 @@ Web-based chat UI with voice input (speech-to-text) and voice output (text-to-sp
 
 **Memory:** ~6.5 GB RAM (with a 3B model)
 
+**Platforms:** `linux/amd64`, `linux/arm64`
+
 ## Architecture
 
 ```mermaid

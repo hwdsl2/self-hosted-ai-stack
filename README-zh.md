@@ -12,6 +12,7 @@
 - 可选认证：Whisper、WhisperLive、Kokoro、Embeddings 和 Docling 默认无需 API 密钥（面向公网部署时可通过 env 文件设置密钥）
 - 提供[轻量级技术栈](#轻量级技术栈)，降低内存要求（最低约 4.5 GB）
 - 支持 NVIDIA CUDA GPU 加速
+- 多架构：`linux/amd64`、`linux/arm64`
 
 **注：** 当使用 LiteLLM 连接外部提供商（如 OpenAI、Anthropic）时，您的数据将发送给这些提供商。
 

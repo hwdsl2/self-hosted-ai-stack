@@ -8,6 +8,8 @@ Local LLM with MCP tool access and semantic code search for AI coding assistants
 
 **Memory:** ~5 GB RAM (with a 3B model)
 
+**Platforms:** `linux/amd64`, `linux/arm64`
+
 ## Architecture
 
 ```mermaid

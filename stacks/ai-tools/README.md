@@ -8,6 +8,8 @@ Local LLM with MCP tool access for AI coding assistants (Cline, Claude, Cursor, 
 
 **Memory:** ~5 GB RAM (with a 3B model)
 
+**Platforms:** `linux/amd64`, `linux/arm64`
+
 ## Architecture
 
 ```mermaid

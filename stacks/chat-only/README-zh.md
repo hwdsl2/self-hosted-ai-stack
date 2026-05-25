@@ -8,6 +8,8 @@
 
 **内存：** ~4.5 GB RAM（使用 3B 模型）
 
+**平台：** `linux/amd64`、`linux/arm64`
+
 ## 架构
 
 ```mermaid

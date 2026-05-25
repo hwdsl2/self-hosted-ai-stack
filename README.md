@@ -12,6 +12,7 @@ Deploy a complete, self-hosted AI stack on your own server with a single command
 - Optional auth: Whisper, WhisperLive, Kokoro, Embeddings, and Docling work without API keys by default (set keys via env files for public deployments)
 - [Lightweight stacks](#lightweight-stacks) for lower memory requirements (as low as ~4.5 GB)
 - GPU acceleration via NVIDIA CUDA
+- Multi-arch: `linux/amd64`, `linux/arm64`
 
 **Note:** When using LiteLLM with external providers (e.g., OpenAI, Anthropic), your data will be sent to those providers.
 

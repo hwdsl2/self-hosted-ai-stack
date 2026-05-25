@@ -12,6 +12,7 @@
 - 可選驗證：Whisper、WhisperLive、Kokoro、Embeddings 和 Docling 預設無需 API 金鑰（對外網路部署時可透過 env 檔案設定金鑰）
 - 提供[輕量級技術堆疊](#輕量級技術堆疊)，降低記憶體需求（最低約 4.5 GB）
 - 支援 NVIDIA CUDA GPU 加速
+- 多架構：`linux/amd64`、`linux/arm64`
 
 **注：** 當使用 LiteLLM 連接外部提供商（如 OpenAI、Anthropic）時，您的資料將發送給這些提供商。
 
