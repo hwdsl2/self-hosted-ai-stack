@@ -36,7 +36,7 @@
 
 ## 社群
 
-- [訂閱專案更新](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai)（每月 1–2 封郵件）——獲取免費的 AI 和 VPN 部署指南（PDF，英文）
+- [訂閱專案更新](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai-zh-hant)（每月 1–2 封郵件）——獲取免費的 AI 和 VPN 部署指南（PDF，英文）
 - 加入 [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) 社群，參與討論與專案展示
 
 ## 架構

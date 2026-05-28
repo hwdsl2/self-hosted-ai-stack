@@ -36,7 +36,7 @@
 
 ## 社区
 
-- [订阅项目更新](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai)（每月 1–2 封邮件）——获取免费的 AI 和 VPN 部署指南（PDF，英文）
+- [订阅项目更新](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai-zh)（每月 1–2 封邮件）——获取免费的 AI 和 VPN 部署指南（PDF，英文）
 - 加入 [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) 社区，参与讨论和项目展示
 
 ## 架构
