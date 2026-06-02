@@ -53,6 +53,14 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker compose -f docker-compose.cuda.yml up -d
 ```
 
+> **提示：** 为避免在后续每个 `docker compose` 命令（`down`、`pull`、`logs` 等）中都添加 `-f docker-compose.cuda.yml`，可在当前 shell 会话中设置一次：
+>
+> ```bash
+> export COMPOSE_FILE=docker-compose.cuda.yml
+> ```
+>
+> 之后照常运行普通的 `docker compose` 命令。如需持久化，请在本目录的 `.env` 文件中添加 `COMPOSE_FILE=docker-compose.cuda.yml`。运行 `unset COMPOSE_FILE` 可切回 CPU 配置。
+
 **要求：** NVIDIA GPU、[NVIDIA 驱动](https://www.nvidia.com/en-us/drivers/) 535+，以及在宿主机上安装 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 镜像仅支持 `linux/amd64`。
 
 ## 不使用 Docker Compose 运行
@@ -66,14 +74,14 @@ docker network create ai-stack
 然后在共享网络上启动各服务：
 
 ```bash
-# PostgreSQL (required by LiteLLM)
+# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
     -e POSTGRES_PASSWORD=litellm \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
-    postgres:18
+    pgvector/pgvector:pg18-trixie
 
 # Ollama (LLM)
 docker run -d --name ollama --restart always \

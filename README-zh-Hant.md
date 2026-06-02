@@ -119,6 +119,14 @@ docker compose down
 docker compose -f docker-compose.cuda.yml up -d
 ```
 
+> **提示：** 為避免在後續每個 `docker compose` 指令（`down`、`pull`、`logs` 等）中都加上 `-f docker-compose.cuda.yml`，可在目前的 shell 工作階段中設定一次：
+>
+> ```bash
+> export COMPOSE_FILE=docker-compose.cuda.yml
+> ```
+>
+> 之後照常執行一般的 `docker compose` 指令。若要持久化，請在本目錄的 `.env` 檔案中加入 `COMPOSE_FILE=docker-compose.cuda.yml`。執行 `unset COMPOSE_FILE` 即可切回 CPU 設定。
+
 **需求：** NVIDIA GPU、[NVIDIA 驅動程式](https://www.nvidia.com/en-us/drivers/) 535+，以及在主機上安裝 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 映像檔僅支援 `linux/amd64`。
 
 ## 輕量級技術堆疊
@@ -149,7 +157,7 @@ graph LR
     A["🎤 音訊輸入"] -->|轉錄| W["Whisper<br/>(語音轉文字)"]
     D["📄 文件"] -->|解析| DC["Docling<br/>(文件 → 文字)"]
     DC -->|嵌入| E["Embeddings<br/>(文字 → 向量)"]
-    E -->|儲存| VDB["外部向量資料庫<br/>(Qdrant, Chroma)"]
+    E -->|儲存| VDB["pgvector<br/>(共享 Postgres 中)"]
     W -->|查詢| E
     VDB -->|上下文| L["LiteLLM<br/>(AI 閘道)"]
     W -->|文字| L
@@ -183,14 +191,14 @@ docker network create ai-stack
 然後在共享網路上啟動各服務：
 
 ```bash
-# PostgreSQL (required by LiteLLM)
+# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
     -e POSTGRES_PASSWORD=litellm \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
-    postgres:18
+    pgvector/pgvector:pg18-trixie
 
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
@@ -329,6 +337,24 @@ curl -s http://localhost:8880/v1/audio/speech \
     --output response.mp3
 ```
 
+## 向量資料庫
+
+本棧的 PostgreSQL 已內建 [pgvector](https://github.com/pgvector/pgvector) 擴充功能，因此您可以在 LiteLLM 使用的同一個資料庫中儲存與查詢嵌入向量 — 無需單獨的向量資料庫。
+
+啟用擴充功能（只需執行一次，資料庫會持久保存）：
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+```
+
+驗證是否已啟用：
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion FROM pg_extension WHERE extname='vector';"
+```
+
+隨後即可建立帶有 `vector` 欄位的資料表（維度需與嵌入模型一致 — 例如預設 `BAAI/bge-small-en-v1.5` 為 `384`），並使用 `<=>` 運算子進行相似度搜尋。如需更大規模或混合檢索，也可改用 Qdrant、Chroma 等專用向量資料庫。
+
 ## RAG 管道範例
 
 嵌入文件用於語意搜尋，擷取上下文，然後使用本機 Ollama 模型回答問題：
@@ -341,7 +367,7 @@ curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
-# → 將傳回的向量與來源文字一起儲存到 Qdrant、Chroma、pgvector 等。
+# → 將傳回的向量與來源文字一起儲存到 pgvector（已包含在本棧的 Postgres 中），或 Qdrant、Chroma 等其他向量資料庫。
 
 # 第 2 步：查詢時，嵌入問題，從向量資料庫中擷取最符合的片段，
 #          然後透過 LiteLLM 將問題和擷取到的上下文傳送至 Ollama。

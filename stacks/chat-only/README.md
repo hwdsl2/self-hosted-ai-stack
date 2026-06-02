@@ -47,6 +47,14 @@ For NVIDIA GPU acceleration, use the CUDA compose file:
 docker compose -f docker-compose.cuda.yml up -d
 ```
 
+> **Tip:** To avoid adding `-f docker-compose.cuda.yml` to every subsequent `docker compose` command (`down`, `pull`, `logs`, etc.), set it once for your shell session:
+>
+> ```bash
+> export COMPOSE_FILE=docker-compose.cuda.yml
+> ```
+>
+> Then run plain `docker compose` commands as usual. To make it persistent, add `COMPOSE_FILE=docker-compose.cuda.yml` to a `.env` file in this directory. Run `unset COMPOSE_FILE` to switch back to the CPU configuration.
+
 **Requirements:** NVIDIA GPU, [NVIDIA driver](https://www.nvidia.com/en-us/drivers/) 535+, and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed on the host. CUDA images are `linux/amd64` only.
 
 ## Running without Docker Compose
@@ -60,14 +68,14 @@ docker network create ai-stack
 Then start each service on the shared network:
 
 ```bash
-# PostgreSQL (required by LiteLLM)
+# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
     -e POSTGRES_PASSWORD=litellm \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
-    postgres:18
+    pgvector/pgvector:pg18-trixie
 
 # Ollama (LLM)
 docker run -d --name ollama --restart always \

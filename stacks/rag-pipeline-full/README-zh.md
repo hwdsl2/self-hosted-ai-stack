@@ -16,7 +16,7 @@
 graph LR
     D["📄 文档<br/>(PDF、DOCX 等)"] -->|解析| DC["Docling<br/>(文档 → 文本)"]
     DC -->|嵌入| E["Embeddings<br/>(文本 → 向量)"]
-    E -->|存储| VDB["外部向量数据库<br/>(Qdrant, Chroma)"]
+    E -->|存储| VDB["pgvector<br/>(共享 Postgres 中)"]
     VDB -->|上下文| L["LiteLLM<br/>(AI 网关)"]
     L -->|路由至| O["Ollama<br/>(本地 LLM)"]
 ```
@@ -52,6 +52,14 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker compose -f docker-compose.cuda.yml up -d
 ```
 
+> **提示：** 为避免在后续每个 `docker compose` 命令（`down`、`pull`、`logs` 等）中都添加 `-f docker-compose.cuda.yml`，可在当前 shell 会话中设置一次：
+>
+> ```bash
+> export COMPOSE_FILE=docker-compose.cuda.yml
+> ```
+>
+> 之后照常运行普通的 `docker compose` 命令。如需持久化，请在本目录的 `.env` 文件中添加 `COMPOSE_FILE=docker-compose.cuda.yml`。运行 `unset COMPOSE_FILE` 可切回 CPU 配置。
+
 **要求：** NVIDIA GPU、[NVIDIA 驱动](https://www.nvidia.com/en-us/drivers/) 535+，以及在宿主机上安装 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 镜像仅支持 `linux/amd64`。
 
 ## 不使用 Docker Compose 运行
@@ -65,14 +73,14 @@ docker network create ai-stack
 然后在共享网络上启动各服务：
 
 ```bash
-# PostgreSQL (required by LiteLLM)
+# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
     -e POSTGRES_PASSWORD=litellm \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
-    postgres:18
+    pgvector/pgvector:pg18-trixie
 
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
@@ -163,6 +171,24 @@ docker compose up -d
 
 您的数据保存在 Docker 卷中。 **升级前务必先[备份](../../docs/backup-restore-zh.md)。**
 
+## 向量数据库
+
+本栈的 PostgreSQL 已内置 [pgvector](https://github.com/pgvector/pgvector) 扩展，因此您可以在 LiteLLM 使用的同一个数据库中存储和查询嵌入向量 — 无需单独的向量数据库。
+
+启用扩展（只需执行一次，数据库会持久保存）：
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+```
+
+验证是否已启用：
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion FROM pg_extension WHERE extname='vector';"
+```
+
+随后即可创建带有 `vector` 列的表（维度需与嵌入模型一致 — 例如默认 `BAAI/bge-small-en-v1.5` 为 `384`），并使用 `<=>` 运算符进行相似度搜索。如需更大规模或混合检索，也可改用 Qdrant、Chroma 等专用向量数据库。
+
 ## 示例
 
 ```bash
@@ -178,7 +204,7 @@ curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
-# → 将向量与源文本一起存储到 Qdrant、Chroma、pgvector 等。
+# → 将向量与源文本一起存储到 pgvector（已包含在本栈的 Postgres 中），或 Qdrant、Chroma 等其他向量数据库。
 
 # 第 3 步：查询 — 嵌入问题，从向量数据库检索上下文，然后询问 LLM
 curl -s http://localhost:4000/v1/chat/completions \

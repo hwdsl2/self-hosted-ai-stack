@@ -119,6 +119,14 @@ For NVIDIA GPU acceleration, use the CUDA compose file:
 docker compose -f docker-compose.cuda.yml up -d
 ```
 
+> **Tip:** To avoid adding `-f docker-compose.cuda.yml` to every subsequent `docker compose` command (`down`, `pull`, `logs`, etc.), set it once for your shell session:
+>
+> ```bash
+> export COMPOSE_FILE=docker-compose.cuda.yml
+> ```
+>
+> Then run plain `docker compose` commands as usual. To make it persistent, add `COMPOSE_FILE=docker-compose.cuda.yml` to a `.env` file in this directory. Run `unset COMPOSE_FILE` to switch back to the CPU configuration.
+
 **Requirements:** NVIDIA GPU, [NVIDIA driver](https://www.nvidia.com/en-us/drivers/) 535+, and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed on the host. CUDA images are `linux/amd64` only.
 
 ## Lightweight stacks
@@ -149,7 +157,7 @@ graph LR
     A["🎤 Audio input"] -->|transcribe| W["Whisper<br/>(speech-to-text)"]
     D["📄 Documents"] -->|parse| DC["Docling<br/>(document → text)"]
     DC -->|embed| E["Embeddings<br/>(text → vectors)"]
-    E -->|store| VDB["External Vector DB<br/>(Qdrant, Chroma)"]
+    E -->|store| VDB["pgvector<br/>(in shared Postgres)"]
     W -->|query| E
     VDB -->|context| L["LiteLLM<br/>(AI gateway)"]
     W -->|text| L
@@ -183,14 +191,14 @@ docker network create ai-stack
 Then start each service on the shared network:
 
 ```bash
-# PostgreSQL (required by LiteLLM)
+# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
     -e POSTGRES_PASSWORD=litellm \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
-    postgres:18
+    pgvector/pgvector:pg18-trixie
 
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
@@ -329,6 +337,24 @@ curl -s http://localhost:8880/v1/audio/speech \
     --output response.mp3
 ```
 
+## Vector database
+
+The stack's PostgreSQL ships with the [pgvector](https://github.com/pgvector/pgvector) extension, so you can store and query embeddings in the same database that LiteLLM uses — no separate vector database required.
+
+Enable the extension once (the database persists, so this only needs to be done a single time):
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+```
+
+Verify it is enabled:
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion FROM pg_extension WHERE extname='vector';"
+```
+
+You can then create a table with a `vector` column (use the dimension of your embedding model — e.g. `384` for the default `BAAI/bge-small-en-v1.5`) and run similarity search with the `<=>` operator. For larger-scale or hybrid search, you can run a dedicated vector database such as Qdrant or Chroma instead.
+
 ## RAG pipeline example
 
 Embed documents for semantic search, retrieve context, then answer questions with a local Ollama model:
@@ -341,7 +367,7 @@ curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
-# → Store the returned vector alongside the source text in Qdrant, Chroma, pgvector, etc.
+# → Store the returned vector alongside the source text in pgvector (included in the stack's Postgres), or another vector DB such as Qdrant or Chroma.
 
 # Step 2: At query time, embed the question, retrieve the top matching chunks from
 #          the vector DB, then send the question and retrieved context to Ollama via LiteLLM.

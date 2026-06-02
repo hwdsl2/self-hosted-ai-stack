@@ -119,6 +119,14 @@ docker compose down
 docker compose -f docker-compose.cuda.yml up -d
 ```
 
+> **Совет:** Чтобы не добавлять `-f docker-compose.cuda.yml` к каждой последующей команде `docker compose` (`down`, `pull`, `logs` и т. д.), задайте её один раз для текущей сессии shell:
+>
+> ```bash
+> export COMPOSE_FILE=docker-compose.cuda.yml
+> ```
+>
+> Затем выполняйте обычные команды `docker compose` как всегда. Чтобы сделать это постоянным, добавьте `COMPOSE_FILE=docker-compose.cuda.yml` в файл `.env` в этом каталоге. Выполните `unset COMPOSE_FILE`, чтобы вернуться к конфигурации CPU.
+
 **Требования:** GPU NVIDIA, [драйвер NVIDIA](https://www.nvidia.com/en-us/drivers/) 535+, и [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html), установленный на хосте. CUDA-образы поддерживают только `linux/amd64`.
 
 ## Облегчённые стеки
@@ -149,7 +157,7 @@ graph LR
     A["🎤 Аудиовход"] -->|транскрибация| W["Whisper<br/>(речь в текст)"]
     D["📄 Документы"] -->|разбор| DC["Docling<br/>(документ → текст)"]
     DC -->|эмбеддинг| E["Embeddings<br/>(текст → векторы)"]
-    E -->|хранение| VDB["Внешняя векторная база данных<br/>(Qdrant, Chroma)"]
+    E -->|хранение| VDB["pgvector<br/>(в общем Postgres)"]
     W -->|запрос| E
     VDB -->|контекст| L["LiteLLM<br/>(AI-шлюз)"]
     W -->|текст| L
@@ -183,14 +191,14 @@ docker network create ai-stack
 Затем запустите каждый сервис в общей сети:
 
 ```bash
-# PostgreSQL (required by LiteLLM)
+# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
     -e POSTGRES_PASSWORD=litellm \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
-    postgres:18
+    pgvector/pgvector:pg18-trixie
 
 # Ollama (LLM)
 docker run -d --name ollama --restart always \
@@ -329,6 +337,24 @@ curl -s http://localhost:8880/v1/audio/speech \
     --output response.mp3
 ```
 
+## Векторная база данных
+
+PostgreSQL в этом стеке поставляется с расширением [pgvector](https://github.com/pgvector/pgvector), поэтому вы можете хранить и запрашивать эмбеддинги в той же базе данных, которую использует LiteLLM — отдельная векторная база данных не требуется.
+
+Включите расширение один раз (база данных сохраняется, поэтому это нужно сделать только однажды):
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+```
+
+Проверьте, что оно включено:
+
+```bash
+docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion FROM pg_extension WHERE extname='vector';"
+```
+
+Затем можно создать таблицу со столбцом `vector` (используйте размерность вашей модели эмбеддингов — например, `384` для модели по умолчанию `BAAI/bge-small-en-v1.5`) и выполнять поиск по сходству с помощью оператора `<=>`. Для большего масштаба или гибридного поиска можно использовать отдельную векторную базу данных, например Qdrant или Chroma.
+
 ## Пример RAG-конвейера
 
 Создание эмбеддингов документов для семантического поиска, извлечение контекста и ответы на вопросы с помощью локальной модели Ollama:
@@ -341,7 +367,7 @@ curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
-# → Сохраните возвращённый вектор вместе с исходным текстом в Qdrant, Chroma, pgvector и т.д.
+# → Сохраните возвращённый вектор вместе с исходным текстом в pgvector (входит в Postgres этого стека) или в другую векторную БД, например Qdrant или Chroma.
 
 # Шаг 2: При запросе создайте эмбеддинг вопроса, извлеките наиболее релевантные фрагменты
 #          из векторной БД, затем отправьте вопрос и контекст в Ollama через LiteLLM.
