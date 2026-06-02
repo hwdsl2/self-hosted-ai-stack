@@ -73,7 +73,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **提示：** 首次啟動時，服務可能需要幾分鐘完成初始化。如有檢查失敗，請稍等後再次執行 `./stack-check.sh`。使用 `docker compose logs` 檢視進度。
 
-**取得 LiteLLM API 金鑰**（用於登入管理介面和 LLM 請求）：
+**取得 LiteLLM 主密鑰**（用於登入管理介面和 LLM 請求）：
 
 ```bash
 docker exec litellm litellm_manage --showkey
