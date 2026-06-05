@@ -285,6 +285,12 @@ docker run -d --name docling --restart always \
 
 **Note:** The shared network allows services to reach each other by container name (e.g., LiteLLM connects to Ollama via `http://ollama:11434`). You can start only the services you need — they don't all have to run together.
 
+**Pull a model** (required before making LLM requests):
+
+```bash
+docker exec ollama ollama_manage --pull llama3.2:3b
+```
+
 ## Using Podman
 
 The stack runs under [Podman](https://podman.io/) on a best-effort basis. The CPU compose files work as-is; GPU acceleration and SELinux-enabled hosts need a couple of extra steps described below. Podman **4.1+** is recommended.
@@ -347,11 +353,7 @@ For a plain `podman run` command, add `--device nvidia.com/gpu=all`.
 
 Named volumes do not need relabeling.
 
-**Pull a model** (required before making LLM requests):
-
-```bash
-docker exec ollama ollama_manage --pull llama3.2:3b
-```
+**Next steps:** Pull a model and access the services — follow the instructions in [Quick start](#quick-start) starting from "Pull a model." With the `podman-docker` shim installed, all commands work unchanged.
 
 ## Connect MCP Gateway to LiteLLM
 

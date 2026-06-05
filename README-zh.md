@@ -285,6 +285,12 @@ docker run -d --name docling --restart always \
 
 **注：** 共享网络允许服务通过容器名称互相访问（例如 LiteLLM 通过 `http://ollama:11434` 连接 Ollama）。您可以只启动需要的服务 — 不必全部运行。
 
+**拉取模型**（发出 LLM 请求前必须执行）：
+
+```bash
+docker exec ollama ollama_manage --pull llama3.2:3b
+```
+
 ## 使用 Podman
 
 本技术栈在尽力支持的基础上可在 [Podman](https://podman.io/) 上运行。CPU 编排文件无需修改即可使用；GPU 加速和启用了 SELinux 的宿主机需要下文所述的几个额外步骤。建议使用 Podman **4.1+**。
@@ -347,11 +353,7 @@ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 
 命名卷无需重新打标签。
 
-**拉取模型**（发出 LLM 请求前必须执行）：
-
-```bash
-docker exec ollama ollama_manage --pull llama3.2:3b
-```
+**后续步骤：** 拉取模型并访问服务 — 请按照[快速开始](#快速开始)中"拉取模型"之后的说明操作。安装 `podman-docker` 兼容层后，所有命令无需修改即可使用。
 
 ## 将 MCP Gateway 连接到 LiteLLM
 
