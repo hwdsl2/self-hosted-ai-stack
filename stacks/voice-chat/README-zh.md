@@ -67,9 +67,7 @@ docker compose logs anythingllm | grep -A2 "FIRST RUN"
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
 ```
 
-> **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请在前面放置带 TLS 的反向代理，以加密传输中的密码。请参阅下方 [使用反向代理](#使用反向代理)。
-
-> **注：** 对于面向互联网的部署，强烈建议使用[反向代理](#使用反向代理)添加 HTTPS。将 `docker-compose.yml` 中的 `"3001:3001/tcp"` 和 `"4000:4000/tcp"` 分别改为 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`，以防止直接访问未加密端口。
+> **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请在前面放置带 TLS 的反向代理，以加密传输中的密码。对于面向互联网的部署，还需将 `docker-compose.yml` 中的 `"3001:3001/tcp"` 和 `"4000:4000/tcp"` 分别改为 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`，以防止直接访问未加密端口。请参阅下方 [使用反向代理](#使用反向代理)。
 
 ## GPU 加速 (NVIDIA CUDA)
 

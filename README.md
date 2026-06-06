@@ -106,15 +106,13 @@ docker compose logs anythingllm | grep -A2 "FIRST RUN"
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
 ```
 
-> **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, put it behind a reverse proxy with TLS so the password is encrypted in transit. See [Internet-facing deployments](#internet-facing-deployments) below.
+> **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, put it behind a reverse proxy with TLS so the password is encrypted in transit. For internet-facing deployments, also change `"3001:3001/tcp"` and `"4000:4000/tcp"` to `"127.0.0.1:3001:3001/tcp"` and `"127.0.0.1:4000:4000/tcp"` in `docker-compose.yml` to prevent direct access to unencrypted ports. See [Internet-facing deployments](#internet-facing-deployments) below.
 
 **Access the LiteLLM Admin UI:**
 
 Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
 
 > **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
-
-> **Note:** For internet-facing deployments, using a [reverse proxy](#internet-facing-deployments) to add HTTPS is **strongly recommended**. Change `"3001:3001/tcp"` and `"4000:4000/tcp"` to `"127.0.0.1:3001:3001/tcp"` and `"127.0.0.1:4000:4000/tcp"` in `docker-compose.yml` to prevent direct access to unencrypted ports.
 
 **Stop the stack:**
 
@@ -499,6 +497,8 @@ Each service can be configured with an optional env file. Copy the example env f
 
 AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
 
+**Use the stack's Embeddings service (optional).** By default AnythingLLM embeds documents in-process with its bundled MiniLM model and stores the vectors in its own LanceDB. To use the stack's [Embeddings](https://github.com/hwdsl2/docker-embeddings) service (BAAI/bge-small-en-v1.5) and/or the stack's pgvector-enabled Postgres instead, edit the `anythingllm` service in `docker-compose.yml`: comment out `EMBEDDING_ENGINE=native` and uncomment the opt-in block beneath it. Also uncomment the `depends_on` note so the embeddings/db services start first. The opt-in block points at `http://embeddings:8000/v1` and `postgresql://litellm:litellm@db:5432/litellm`; AnythingLLM auto-creates the `vector` extension and `anythingllm_vectors` table on first use. ⚠️ Switching the embedder or vector store on an existing deployment makes previously embedded documents incompatible — re-embed your workspaces after the change.
+
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
 ## Internet-facing deployments
@@ -537,10 +537,13 @@ For restore instructions, server migration, and the full pre-upgrade checklist, 
 To update all services to the latest versions:
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ./stack-check.sh
 ```
+
+`git pull` updates all project files (including any changes to compose files); `docker compose pull` updates the service images. If you've customized `docker-compose.yml`, `git pull` will merge changes automatically, or prompt you to resolve conflicts on the same lines.
 
 Your data is preserved in the Docker volumes. **Always [back up](#backup-and-restore) before upgrading.**
 

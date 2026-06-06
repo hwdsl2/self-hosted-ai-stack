@@ -106,15 +106,13 @@ docker compose logs anythingllm | grep -A2 "FIRST RUN"
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
 ```
 
-> **提示：** 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請在前面放置帶 TLS 的反向代理，以加密傳輸中的密碼。請參閱下方 [面向網際網路的部署](#面向網際網路的部署)。
+> **提示：** 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請在前面放置帶 TLS 的反向代理，以加密傳輸中的密碼。對於面向網際網路的部署，還需將 `docker-compose.yml` 中的 `"3001:3001/tcp"` 和 `"4000:4000/tcp"` 分別改為 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`，以防止直接存取未加密連接埠。請參閱下方 [面向網際網路的部署](#面向網際網路的部署)。
 
 **存取 LiteLLM 管理介面：**
 
 在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 LiteLLM 主密鑰作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的一種快速方式。
-
-> **注：** 對於面向網際網路的部署，強烈建議使用[反向代理](#面向網際網路的部署)新增 HTTPS。將 `docker-compose.yml` 中的 `"3001:3001/tcp"` 和 `"4000:4000/tcp"` 分別改為 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`，以防止直接存取未加密連接埠。
 
 **停止技術堆疊：**
 
@@ -499,6 +497,8 @@ curl -s http://localhost:3000/mcp \
 
 AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您可以在 **Settings** 中變更 LLM 供應商、模型、嵌入引擎和其他設定。詳情請參閱 [AnythingLLM 文件](https://docs.useanything.com/)。
 
+**使用本技術堆疊的 Embeddings 服務（選用）。** 預設情況下，AnythingLLM 使用其內建的 MiniLM 模型進行行程內嵌入，並將向量儲存在自帶的 LanceDB 中。若要改用本技術堆疊的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服務（BAAI/bge-small-en-v1.5）和/或本技術堆疊啟用了 pgvector 的 Postgres，請編輯 `docker-compose.yml` 中的 `anythingllm` 服務：註解掉 `EMBEDDING_ENGINE=native` 並取消註解下方的選用啟用程式碼區塊。同時取消註解 `depends_on` 備註，以便 embeddings/db 服務先啟動。該啟用區塊指向 `http://embeddings:8000/v1` 和 `postgresql://litellm:litellm@db:5432/litellm`；AnythingLLM 首次使用時會自動建立 `vector` 擴充功能和 `anythingllm_vectors` 資料表。⚠️ 在現有部署上切換嵌入引擎或向量儲存會使先前嵌入的文件不相容 — 切換後請重新嵌入您的工作區。
+
 有關詳細設定選項、API 參考和模型管理，請參閱各服務儲存庫的文件。
 
 ## 面向網際網路的部署
@@ -537,10 +537,13 @@ done
 將所有服務更新到最新版本：
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ./stack-check.sh
 ```
+
+`git pull` 用於更新所有專案檔案（包括 compose 檔案的變更）；`docker compose pull` 用於更新服務映像檔。如果您自訂過 `docker-compose.yml`，`git pull` 將自動合併變更，或在同一行存在衝突時提示您解決衝突。
 
 您的資料保存在 Docker 磁碟區中。**升級前請務必[備份](#備份與還原)。**
 

@@ -106,15 +106,13 @@ docker compose logs anythingllm | grep -A2 "FIRST RUN"
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
 ```
 
-> **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请在前面放置带 TLS 的反向代理，以加密传输中的密码。请参阅下方 [面向互联网的部署](#面向互联网的部署)。
+> **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请在前面放置带 TLS 的反向代理，以加密传输中的密码。对于面向互联网的部署，还需将 `docker-compose.yml` 中的 `"3001:3001/tcp"` 和 `"4000:4000/tcp"` 分别改为 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`，以防止直接访问未加密端口。请参阅下方 [面向互联网的部署](#面向互联网的部署)。
 
 **访问 LiteLLM 管理界面：**
 
 在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM 主密钥作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
 
 > **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama/llama3.2:3b`）并开始对话 — 这是验证本地大语言模型端到端正常工作的一种快速方式。
-
-> **注：** 对于面向互联网的部署，强烈建议使用[反向代理](#面向互联网的部署)添加 HTTPS。将 `docker-compose.yml` 中的 `"3001:3001/tcp"` 和 `"4000:4000/tcp"` 分别改为 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`，以防止直接访问未加密端口。
 
 **停止技术栈：**
 
@@ -499,6 +497,8 @@ curl -s http://localhost:3000/mcp \
 
 AnythingLLM 通过其 Web 界面 `http://<服务器IP>:3001` 进行配置。您可以在 **Settings** 中更改 LLM 供应商、模型、嵌入引擎和其他设置。详情请参阅 [AnythingLLM 文档](https://docs.useanything.com/)。
 
+**使用本技术栈的 Embeddings 服务（可选）。** 默认情况下，AnythingLLM 使用其内置的 MiniLM 模型进行进程内嵌入，并将向量存储在自带的 LanceDB 中。若要改用本技术栈的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服务（BAAI/bge-small-en-v1.5）和/或本技术栈启用了 pgvector 的 Postgres，请编辑 `docker-compose.yml` 中的 `anythingllm` 服务：注释掉 `EMBEDDING_ENGINE=native` 并取消注释下方的可选启用代码块。同时取消注释 `depends_on` 备注，以便 embeddings/db 服务先启动。该启用块指向 `http://embeddings:8000/v1` 和 `postgresql://litellm:litellm@db:5432/litellm`；AnythingLLM 首次使用时会自动创建 `vector` 扩展和 `anythingllm_vectors` 表。⚠️ 在现有部署上切换嵌入引擎或向量存储会使之前嵌入的文档不兼容 — 切换后请重新嵌入您的工作区。
+
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 
 ## 面向互联网的部署
@@ -537,10 +537,13 @@ done
 将所有服务更新到最新版本：
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ./stack-check.sh
 ```
+
+`git pull` 用于更新所有项目文件（包括 compose 文件的更改）；`docker compose pull` 用于更新服务镜像。如果您自定义过 `docker-compose.yml`，`git pull` 将自动合并更改，或在同一行存在冲突时提示您解决冲突。
 
 您的数据保存在 Docker 卷中。**升级前请务必[备份](#备份与恢复)。**
 

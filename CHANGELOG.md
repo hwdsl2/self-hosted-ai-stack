@@ -2,6 +2,28 @@
 
 All notable changes to docker-ai-stack are documented here.
 
+## 2026-06-06
+
+### Added
+
+- **Opt-in: switch AnythingLLM to the stack's Embeddings service and
+  pgvector storage.** Edit the `anythingllm` service in
+  `docker-compose.yml`: comment out `EMBEDDING_ENGINE=native` and
+  uncomment the new block to use BAAI/bge-small-en-v1.5 via the
+  Embeddings service and/or store vectors in the shared pgvector
+  Postgres. AnythingLLM auto-creates the `vector` extension and
+  `anythingllm_vectors` table on first use. Default behavior is
+  unchanged (bundled MiniLM + LanceDB). ⚠️ Switching the embedder or
+  vector store on an existing deployment makes previously embedded
+  documents incompatible. Re-embed your workspaces after the change.
+
+### Changed
+
+- Raised healthcheck `interval` from 5s to 15s across all services and
+  stacks to reduce steady-state probe overhead. Existing `start_period`
+  settings remain unchanged to accommodate slow-starting services
+  such as Ollama.
+
 ## 2026-06-05
 
 ### Added
