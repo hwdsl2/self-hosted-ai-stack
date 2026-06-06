@@ -9,7 +9,7 @@ services:
       # - ./ollama.env:/ollama.env:ro  # optional: custom config
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:11434/"]
-      interval: 5s
+      interval: 15s
       timeout: 3s
       start_period: 60s
       retries: 3
@@ -26,7 +26,7 @@ services:
       - litellm-db:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U litellm"]
-      interval: 5s
+      interval: 15s
       timeout: 5s
       retries: 5
 
@@ -65,7 +65,7 @@ services:
       # - ./mcp.env:/mcp.env:ro  # optional: custom config
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:3000/health"]
-      interval: 5s
+      interval: 15s
       timeout: 3s
       start_period: 60s
       retries: 3
