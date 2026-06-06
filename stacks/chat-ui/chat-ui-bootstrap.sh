@@ -45,6 +45,47 @@ if [ ! -f "$PERSISTENT_ENV" ]; then
     touch "$PERSISTENT_ENV"
   fi
   chmod 600 "$PERSISTENT_ENV" 2>/dev/null || true
+
+  # Fresh-install detection: seed an admin password if no prior data exists.
+  # AnythingLLM runs `prisma migrate deploy` on every boot, so absence of
+  # anythingllm.db proves this volume has never been used.
+  if [ ! -f "$STORAGE_DIR/anythingllm.db" ]; then
+    ADMIN_PASS=$(LC_CTYPE=C tr -dc 'A-HJ-NPR-Za-km-z2-9' </dev/urandom 2>/dev/null | head -c 20)
+
+    if [ -r /proc/sys/kernel/random/uuid ]; then
+      JWT_SEC=$(cat /proc/sys/kernel/random/uuid)
+    else
+      HEX=$(LC_CTYPE=C tr -dc '0-9a-f' </dev/urandom 2>/dev/null | head -c 32)
+      if [ "${#HEX}" -eq 32 ]; then
+        JWT_SEC="${HEX:0:8}-${HEX:8:4}-4${HEX:13:3}-8${HEX:17:3}-${HEX:20:12}"
+      fi
+    fi
+
+    if [ -z "$ADMIN_PASS" ] || [ -z "$JWT_SEC" ]; then
+      echo "ERROR: Failed to generate admin password / JWT secret." >&2
+      echo "Skipping password seeding. AnythingLLM will start without auth." >&2
+      echo "To set a password manually, log in and visit Settings -> Security." >&2
+    else
+      cat >> "$PERSISTENT_ENV" <<EOF
+AUTH_TOKEN='$ADMIN_PASS'
+JWT_SECRET='$JWT_SEC'
+EOF
+      echo "$ADMIN_PASS" > "$STORAGE_DIR/.initial_admin_password"
+      chmod 600 "$STORAGE_DIR/.initial_admin_password" 2>/dev/null || true
+
+      printf '\n'
+      printf '================================================================\n'
+      printf '  AnythingLLM admin password (FIRST RUN - shown once)\n'
+      printf '\n'
+      printf '      %s\n' "$ADMIN_PASS"
+      printf '\n'
+      printf '  Retrieve later from inside the container:\n'
+      printf '    docker exec anythingllm cat /app/server/storage/.initial_admin_password\n'
+      printf '  Change it any time: log in -> Settings -> Security\n'
+      printf '================================================================\n'
+      printf '\n'
+    fi
+  fi
 fi
 ln -sf "$PERSISTENT_ENV" "$LIVE_ENV"
 
