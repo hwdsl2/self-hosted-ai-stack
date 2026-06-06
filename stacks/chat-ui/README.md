@@ -45,11 +45,23 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 AnythingLLM is pre-configured to connect to LiteLLM. The API key is shared automatically via a Docker volume — no manual setup needed.
 
-Open `http://<server-ip>:3001` in your browser — you can start chatting right away. The LLM provider, base URL, and model are pre-configured.
+Open `http://<server-ip>:3001` in your browser. The LLM provider, base URL, and model are pre-configured.
 
 On first start, AnythingLLM may take a few minutes to become available (check progress with `docker logs anythingllm`).
 
-> **Tip:** [Set a password](https://docs.useanything.com/features/security-and-access) to protect AnythingLLM, especially when the server is accessible from the public internet.
+**Password-protected by default.** A random admin password is auto-generated on first start, printed once to `docker logs anythingllm`, and saved to `/app/server/storage/.initial_admin_password` inside the `anythingllm-data` volume. It persists across container upgrades. Change it any time from **Settings → Security**.
+
+Retrieve the auto-generated password:
+
+```bash
+# From the live logs (only shown on first start):
+docker compose logs anythingllm | grep -A2 "FIRST RUN"
+
+# Or at any time from the data volume:
+docker exec anythingllm cat /app/server/storage/.initial_admin_password
+```
+
+> **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, put it behind a reverse proxy with TLS so the password is encrypted in transit. See [Using a reverse proxy](#using-a-reverse-proxy) below.
 
 > **Note:** For internet-facing deployments, using a [reverse proxy](#using-a-reverse-proxy) to add HTTPS is **strongly recommended**. Change `"3001:3001/tcp"` and `"4000:4000/tcp"` to `"127.0.0.1:3001:3001/tcp"` and `"127.0.0.1:4000:4000/tcp"` in `docker-compose.yml` to prevent direct access to unencrypted ports.
 

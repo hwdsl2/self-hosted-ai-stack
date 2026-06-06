@@ -51,11 +51,23 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 AnythingLLM 已預設連接到 LiteLLM。API 金鑰透過 Docker 磁碟區自動共享 — 無需手動設定。
 
-在瀏覽器中開啟 `http://<server-ip>:3001` — 可以立即開始聊天。LLM 供應商、基礎 URL 和模型均已預設。
+在瀏覽器中開啟 `http://<server-ip>:3001`。LLM 供應商、基礎 URL 和模型均已預設。
 
 首次啟動時，AnythingLLM 可能需要幾分鐘才能就緒（使用 `docker logs anythingllm` 檢視進度）。
 
-> **提示：** 請[設定密碼](https://docs.useanything.com/features/security-and-access)保護 AnythingLLM，尤其是在伺服器可從公網存取時。
+**預設啟用密碼保護。** 首次啟動時會自動產生隨機管理員密碼，僅列印一次到 `docker logs anythingllm`，並儲存到 `anythingllm-data` 資料卷中的 `/app/server/storage/.initial_admin_password` 檔案。密碼在容器升級後持久保留。可隨時在 **Settings → Security** 中變更。
+
+取得自動產生的密碼：
+
+```bash
+# 從即時日誌中取得（僅在首次啟動時顯示）：
+docker compose logs anythingllm | grep -A2 "FIRST RUN"
+
+# 或隨時從資料卷中取得：
+docker exec anythingllm cat /app/server/storage/.initial_admin_password
+```
+
+> **提示：** 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請在前面放置帶 TLS 的反向代理，以加密傳輸中的密碼。請參閱下方 [使用反向代理](#使用反向代理)。
 
 > **注：** 對於面向網際網路的部署，強烈建議使用[反向代理](#使用反向代理)新增 HTTPS。將 `docker-compose.yml` 中的 `"3001:3001/tcp"` 和 `"4000:4000/tcp"` 分別改為 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`，以防止直接存取未加密連接埠。
 

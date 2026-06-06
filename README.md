@@ -92,9 +92,21 @@ docker exec mcp mcp_manage --showkey
 
 **Access AnythingLLM (Chat UI):**
 
-Open `http://<server-ip>:3001` in your browser. AnythingLLM is pre-configured to connect to your local LLM via LiteLLM — no login or setup required. Start chatting immediately. On first start, it may take a few minutes to become available (check progress with `docker logs anythingllm`).
+Open `http://<server-ip>:3001` in your browser. AnythingLLM is pre-configured to connect to your local LLM via LiteLLM. On first start, it may take a few minutes to become available (check progress with `docker logs anythingllm`).
 
-> **Tip:** [Set a password](https://docs.useanything.com/features/security-and-access) to protect AnythingLLM, especially when the server is accessible from the public internet.
+**Password-protected by default.** A random admin password is auto-generated on first start, printed once to `docker logs anythingllm`, and saved to `/app/server/storage/.initial_admin_password` inside the `anythingllm-data` volume. It persists across container upgrades. Change it any time from **Settings → Security**.
+
+Retrieve the auto-generated password:
+
+```bash
+# From the live logs (only shown on first start):
+docker compose logs anythingllm | grep -A2 "FIRST RUN"
+
+# Or at any time from the data volume:
+docker exec anythingllm cat /app/server/storage/.initial_admin_password
+```
+
+> **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, put it behind a reverse proxy with TLS so the password is encrypted in transit. See [Internet-facing deployments](#internet-facing-deployments) below.
 
 **Access the LiteLLM Admin UI:**
 

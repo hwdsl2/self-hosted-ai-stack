@@ -19,9 +19,11 @@
 | `kokoro-data` | Kokoro | TTS 模型/語音快取 |
 | `mcp-data` | MCP Gateway | API 金鑰、工具設定 |
 | `docling-data` | Docling | 文件轉換模型快取 |
-| `anythingllm-data` | AnythingLLM | 聊天記錄、工作區、設定、上傳的文件 |
+| `anythingllm-data` | AnythingLLM | 聊天記錄、工作區、設定、上傳的文件、**管理員密碼**（`server/.env` 中的 `AUTH_TOKEN`/`JWT_SECRET`，以及 `.initial_admin_password`） |
 
 **重要提示：** Ollama、LiteLLM 和 MCP Gateway 的 API 金鑰在首次啟動時自動產生，儲存在這些磁碟區中。如果遺失磁碟區，金鑰也會遺失。已連線的用戶端需要更新為新金鑰。
+
+**重要提示（AnythingLLM）：** 自動產生的管理員密碼及其 `JWT_SECRET` 位於 `anythingllm-data` 磁碟區中（`server/.env` 和 `.initial_admin_password`）。備份此磁碟區會保留密碼。在其他主機上還原時會重用相同的密碼 — 無需重新產生。
 
 **注：** `ollama-shared`、`mcp-shared` 和 `litellm-shared` 磁碟區是用於在服務之間自動傳遞 API 金鑰的臨時共享卷，無需備份——金鑰已分別儲存在 `ollama-data`、`mcp-data` 和 `litellm-data` 中，每次容器啟動時會重新複製。
 

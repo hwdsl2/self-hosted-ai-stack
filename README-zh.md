@@ -92,9 +92,21 @@ docker exec mcp mcp_manage --showkey
 
 **访问 AnythingLLM（聊天界面）：**
 
-在浏览器中打开 `http://<server-ip>:3001`。AnythingLLM 已预配置通过 LiteLLM 连接本地大语言模型 — 无需登录或设置，即可立即开始对话。首次启动时，可能需要几分钟才能就绪（使用 `docker logs anythingllm` 查看进度）。
+在浏览器中打开 `http://<server-ip>:3001`。AnythingLLM 已预配置通过 LiteLLM 连接本地大语言模型。首次启动时，可能需要几分钟才能就绪（使用 `docker logs anythingllm` 查看进度）。
 
-> **提示：** 请[设置密码](https://docs.useanything.com/features/security-and-access)保护 AnythingLLM，尤其是在服务器可从公网访问时。
+**默认启用密码保护。** 首次启动时会自动生成随机管理员密码，仅打印一次到 `docker logs anythingllm`，并保存到 `anythingllm-data` 数据卷中的 `/app/server/storage/.initial_admin_password` 文件。密码在容器升级后持久保留。可随时在 **Settings → Security** 中更改。
+
+获取自动生成的密码：
+
+```bash
+# 从实时日志中获取（仅在首次启动时显示）：
+docker compose logs anythingllm | grep -A2 "FIRST RUN"
+
+# 或随时从数据卷中获取：
+docker exec anythingllm cat /app/server/storage/.initial_admin_password
+```
+
+> **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请在前面放置带 TLS 的反向代理，以加密传输中的密码。请参阅下方 [面向互联网的部署](#面向互联网的部署)。
 
 **访问 LiteLLM 管理界面：**
 

@@ -19,9 +19,11 @@
 | `kokoro-data` | Kokoro | TTS 模型/语音缓存 |
 | `mcp-data` | MCP Gateway | API 密钥、工具配置 |
 | `docling-data` | Docling | 文档转换模型缓存 |
-| `anythingllm-data` | AnythingLLM | 聊天记录、工作区、设置、上传的文档 |
+| `anythingllm-data` | AnythingLLM | 聊天记录、工作区、设置、上传的文档、**管理员密码**（`server/.env` 中的 `AUTH_TOKEN`/`JWT_SECRET`，以及 `.initial_admin_password`） |
 
 **重要提示：** Ollama、LiteLLM 和 MCP Gateway 的 API 密钥在首次启动时自动生成，存储在这些卷中。如果丢失卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
+
+**重要提示（AnythingLLM）：** 自动生成的管理员密码及其 `JWT_SECRET` 位于 `anythingllm-data` 卷中（`server/.env` 和 `.initial_admin_password`）。备份此卷会保留密码。在其他主机上恢复时会重用相同的密码 — 无需重新生成。
 
 **注：** `ollama-shared`、`mcp-shared` 和 `litellm-shared` 卷是用于在服务之间自动传递 API 密钥的临时共享卷，无需备份——密钥已分别存储在 `ollama-data`、`mcp-data` 和 `litellm-data` 中，每次容器启动时会重新复制。
 

@@ -4,6 +4,31 @@ All notable changes to docker-ai-stack are documented here.
 
 ## 2026-06-05
 
+### Added
+
+- **Password-protected first run for AnythingLLM.** Fresh installs now
+  auto-generate a 20-character admin password on first start. The password
+  is printed once to `docker logs anythingllm` and saved to
+  `/app/server/storage/.initial_admin_password` inside the
+  `anythingllm-data` volume (mode `0600`). Change it any time from
+  **Settings → Security** — changes persist across container upgrades
+  thanks to the `.env` persistence fix below.
+
+  Existing installations are **not** affected: detection is based on the
+  absence of `anythingllm.db` in the data volume, so any pre-existing
+  AnythingLLM install triggers a skip and the auth state is left exactly
+  as it was.
+
+  Retrieve the auto-generated password:
+
+  ```bash
+  # From the live logs (only shown on first start):
+  docker compose logs anythingllm | grep -A2 "FIRST RUN"
+
+  # Or at any time from the data volume:
+  docker exec anythingllm cat /app/server/storage/.initial_admin_password
+  ```
+
 ### Fixed
 
 - AnythingLLM `server/.env` now persists across container recreation via the
