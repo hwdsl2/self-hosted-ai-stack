@@ -79,6 +79,8 @@ EOF
       printf '\n'
       printf '      %s\n' "$ADMIN_PASS"
       printf '\n'
+      printf '  Open http://<server-ip>:3001 and use this password to log in.\n'
+      printf '\n'
       printf '  Retrieve later from inside the container:\n'
       printf '    docker exec anythingllm cat /app/server/storage/.initial_admin_password\n'
       printf '  Change it any time: log in -> Settings -> Security\n'
