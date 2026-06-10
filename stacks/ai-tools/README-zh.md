@@ -158,9 +158,12 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 将所有服务更新到最新版本：
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` 用于更新此仓库，包括此子栈使用的所有 compose 文件或辅助脚本；`docker compose pull` 用于更新服务镜像。
 
 您的数据保存在 Docker 卷中。 **升级前务必先[备份](../../docs/backup-restore-zh.md)。**
 
@@ -185,3 +188,5 @@ MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 # 在 AI 客户端中使用（例如 VS Code 中的 Cline）：
 # LLM 端点：http://localhost:4000（使用 LITELLM_KEY）
 # MCP 端点：http://localhost:3000/mcp（使用 MCP_KEY）
+
+```

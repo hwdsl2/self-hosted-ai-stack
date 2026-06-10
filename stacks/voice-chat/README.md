@@ -49,9 +49,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 **Open the chat UI:**
 
-AnythingLLM is pre-configured to connect to LiteLLM. The API key is shared automatically via a Docker volume — no manual setup needed.
-
-Open `http://<server-ip>:3001` in your browser. The LLM provider, base URL, and model are pre-configured.
+AnythingLLM is pre-configured to connect to LiteLLM. The API key is shared automatically via a Docker volume — no manual setup needed. The LLM provider, base URL, and model are pre-configured.
 
 On first start, AnythingLLM may take a few minutes to become available (check progress with `docker logs anythingllm`).
 
@@ -60,12 +58,14 @@ On first start, AnythingLLM may take a few minutes to become available (check pr
 Retrieve the auto-generated password:
 
 ```bash
-# From the live logs (only shown on first start):
-docker compose logs anythingllm | grep -A2 "FIRST RUN"
-
-# Or at any time from the data volume:
+# At any time from the data volume:
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
+
+# Or from the live logs (only shown on first start):
+docker compose logs anythingllm | grep -A4 "FIRST RUN"
 ```
+
+Open `http://<server-ip>:3001` in your browser and log in with the password above.
 
 > **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Using a reverse proxy](#using-a-reverse-proxy) below.
 
@@ -286,9 +286,14 @@ For backup/restore instructions, see the [Backup and Restore](../../docs/backup-
 To update all services to the latest versions:
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` updates this repository, including any compose files or helper scripts used by this sub-stack; `docker compose pull` updates the service images.
+
+**One-time note for older installs:** If you set an AnythingLLM password before the `.env` persistence fix, the first container recreation after upgrading may clear that password and leave AnythingLLM unprotected. After updating, open AnythingLLM immediately and confirm password protection is still enabled. If it is not, set a new password in **Settings → Security**. Future container recreations will preserve it.
 
 AnythingLLM is pinned to a stable release tag instead of `latest` because the upstream `latest` image tracks the master branch. When a newer AnythingLLM release is available, back up first, update the tag in the compose files, then run the commands above.
 
@@ -324,3 +329,5 @@ curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
+
+```

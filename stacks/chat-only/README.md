@@ -144,9 +144,12 @@ For backup/restore instructions, see the [Backup and Restore](../../docs/backup-
 To update all services to the latest versions:
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` updates this repository, including any compose files or helper scripts used by this sub-stack; `docker compose pull` updates the service images.
 
 Your data is preserved in the Docker volumes. **Always [back up](../../docs/backup-restore.md) before upgrading.**
 
@@ -162,3 +165,5 @@ curl http://localhost:4000/v1/chat/completions \
       "model": "ollama/llama3.2:3b",
       "messages": [{"role": "user", "content": "Hello, how are you?"}]
     }' | jq -r '.choices[0].message.content'
+
+```

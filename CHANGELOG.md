@@ -61,11 +61,11 @@ All notable changes to docker-ai-stack are documented here.
   Retrieve the auto-generated password:
 
   ```bash
-  # From the live logs (only shown on first start):
-  docker compose logs anythingllm | grep -A2 "FIRST RUN"
-
-  # Or at any time from the data volume:
+  # At any time from the data volume:
   docker exec anythingllm cat /app/server/storage/.initial_admin_password
+
+  # Or from the live logs (only shown on first start):
+  docker compose logs anythingllm | grep -A4 "FIRST RUN"
   ```
 
 ### Fixed

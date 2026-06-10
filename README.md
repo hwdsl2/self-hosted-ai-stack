@@ -34,7 +34,7 @@ Docker AI Stack is maintained by the author of [Setup IPsec VPN](https://github.
 | Service | Role | Default port |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
-| **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Web-based chat UI — works instantly with no login required | `3001` |
+| **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Web-based chat UI — password-protected by default | `3001` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | Converts text to vectors for semantic search and RAG | `8000` |
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Transcribes spoken audio to text | `9000` |
@@ -93,19 +93,21 @@ docker exec mcp mcp_manage --showkey
 
 **Access AnythingLLM (Chat UI):**
 
-Open `http://<server-ip>:3001` in your browser. AnythingLLM is pre-configured to connect to your local LLM via LiteLLM. On first start, it may take a few minutes to become available (check progress with `docker logs anythingllm`).
+AnythingLLM is pre-configured to connect to your local LLM via LiteLLM. On first start, it may take a few minutes to become available (check progress with `docker logs anythingllm`).
 
 **Password-protected by default.** A random admin password is auto-generated on first start, printed once to `docker logs anythingllm`, and saved to `/app/server/storage/.initial_admin_password` inside the `anythingllm-data` volume. It persists across container upgrades. Change it any time from **Settings → Security**.
 
 Retrieve the auto-generated password:
 
 ```bash
-# From the live logs (only shown on first start):
-docker compose logs anythingllm | grep -A2 "FIRST RUN"
-
-# Or at any time from the data volume:
+# At any time from the data volume:
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
+
+# Or from the live logs (only shown on first start):
+docker compose logs anythingllm | grep -A4 "FIRST RUN"
 ```
+
+Open `http://<server-ip>:3001` in your browser and log in with the password above.
 
 > **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Internet-facing deployments](#internet-facing-deployments) below.
 
@@ -582,6 +584,8 @@ docker compose up -d
 ```
 
 `git pull` updates all project files (including any changes to compose files); `docker compose pull` updates the service images. If you've customized `docker-compose.yml`, `git pull` will merge changes automatically, or prompt you to resolve conflicts on the same lines.
+
+**One-time note for older installs:** If you set an AnythingLLM password before the `.env` persistence fix, the first container recreation after upgrading may clear that password and leave AnythingLLM unprotected. After updating, open AnythingLLM immediately and confirm password protection is still enabled. If it is not, set a new password in **Settings → Security**. Future container recreations will preserve it.
 
 AnythingLLM is pinned to a stable release tag instead of `latest` because the upstream `latest` image tracks the master branch. When a newer AnythingLLM release is available, back up first, update the tag in the compose files, then run the commands above.
 

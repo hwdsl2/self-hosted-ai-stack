@@ -165,9 +165,12 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 將所有服務更新到最新版本：
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` 用於更新此儲存庫，包括此子堆疊使用的所有 compose 檔案或輔助腳本；`docker compose pull` 用於更新服務映像檔。
 
 您的資料保存在 Docker 磁碟區中。 **升級前務必先[備份](../../docs/backup-restore-zh-Hant.md)。**
 
@@ -218,3 +221,5 @@ curl -s http://localhost:4000/v1/chat/completions \
       ]
     }' \
     | jq -r '.choices[0].message.content'
+
+```

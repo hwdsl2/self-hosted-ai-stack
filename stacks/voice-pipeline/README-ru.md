@@ -176,9 +176,12 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 Обновление всех сервисов до последних версий:
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` обновляет этот репозиторий, включая compose-файлы или вспомогательные скрипты, используемые этим подстеком; `docker compose pull` обновляет образы сервисов.
 
 Ваши данные сохраняются в Docker-томах. **Всегда делайте [резервную копию](../../docs/backup-restore-ru.md) перед обновлением.**
 
@@ -210,3 +213,5 @@ curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
+
+```

@@ -34,7 +34,7 @@ Docker AI Stack 由 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn)
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md)** | 运行本地大语言模型（llama3、qwen、mistral 等） | `11434` |
-| **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于 Web 的聊天界面 — 无需登录即可立即使用 | `3001` |
+| **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于 Web 的聊天界面 — 默认启用密码保护 | `3001` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | AI 网关（含管理界面）— 将请求路由至 Ollama 及 100+ 提供商 | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md)** | 将语音转录为文本 | `9000` |
@@ -93,19 +93,21 @@ docker exec mcp mcp_manage --showkey
 
 **访问 AnythingLLM（聊天界面）：**
 
-在浏览器中打开 `http://<server-ip>:3001`。AnythingLLM 已预配置通过 LiteLLM 连接本地大语言模型。首次启动时，可能需要几分钟才能就绪（使用 `docker logs anythingllm` 查看进度）。
+AnythingLLM 已预配置通过 LiteLLM 连接本地大语言模型。首次启动时，可能需要几分钟才能就绪（使用 `docker logs anythingllm` 查看进度）。
 
 **默认启用密码保护。** 首次启动时会自动生成随机管理员密码，仅打印一次到 `docker logs anythingllm`，并保存到 `anythingllm-data` 数据卷中的 `/app/server/storage/.initial_admin_password` 文件。密码在容器升级后持久保留。可随时在 **Settings → Security** 中更改。
 
 获取自动生成的密码：
 
 ```bash
-# 从实时日志中获取（仅在首次启动时显示）：
-docker compose logs anythingllm | grep -A2 "FIRST RUN"
-
-# 或随时从数据卷中获取：
+# 随时从数据卷中获取：
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
+
+# 或从实时日志中获取（仅在首次启动时显示）：
+docker compose logs anythingllm | grep -A4 "FIRST RUN"
 ```
+
+在浏览器中打开 `http://<server-ip>:3001`，并使用上面的密码登录。
 
 > **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [面向互联网的部署](#面向互联网的部署)。
 
@@ -582,6 +584,8 @@ docker compose up -d
 ```
 
 `git pull` 用于更新所有项目文件（包括 compose 文件的更改）；`docker compose pull` 用于更新服务镜像。如果您自定义过 `docker-compose.yml`，`git pull` 将自动合并更改，或在同一行存在冲突时提示您解决冲突。
+
+**旧安装的一次性提示：** 如果您在 `.env` 持久化修复之前设置过 AnythingLLM 密码，升级后的第一次容器重建可能会清除该密码，使 AnythingLLM 处于未受保护状态。更新后，请立即打开 AnythingLLM 并确认密码保护仍然启用。如果没有，请在 **Settings → Security** 中设置新密码。之后的容器重建会保留该密码。
 
 AnythingLLM 固定为稳定发布标签，而不是 `latest`，因为上游 `latest` 镜像跟踪 master 分支。有新的 AnythingLLM 发布版本时，请先备份，更新 compose 文件中的标签，然后运行上述命令。
 

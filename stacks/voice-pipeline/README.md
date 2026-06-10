@@ -176,9 +176,12 @@ For backup/restore instructions, see the [Backup and Restore](../../docs/backup-
 To update all services to the latest versions:
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` updates this repository, including any compose files or helper scripts used by this sub-stack; `docker compose pull` updates the service images.
 
 Your data is preserved in the Docker volumes. **Always [back up](../../docs/backup-restore.md) before upgrading.**
 
@@ -210,3 +213,5 @@ curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
+
+```

@@ -158,9 +158,12 @@ For backup/restore instructions, see the [Backup and Restore](../../docs/backup-
 To update all services to the latest versions:
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` updates this repository, including any compose files or helper scripts used by this sub-stack; `docker compose pull` updates the service images.
 
 Your data is preserved in the Docker volumes. **Always [back up](../../docs/backup-restore.md) before upgrading.**
 
@@ -185,3 +188,5 @@ MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 # Use with an AI client (e.g., Cline in VS Code):
 # LLM endpoint: http://localhost:4000 (with LITELLM_KEY)
 # MCP endpoint: http://localhost:3000/mcp (with MCP_KEY)
+
+```

@@ -168,9 +168,12 @@ For backup/restore instructions, see the [Backup and Restore](../../docs/backup-
 To update all services to the latest versions:
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` updates this repository, including any compose files or helper scripts used by this sub-stack; `docker compose pull` updates the service images.
 
 Your data is preserved in the Docker volumes. **Always [back up](../../docs/backup-restore.md) before upgrading.**
 
@@ -201,3 +204,5 @@ curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
     -d '{"input": "function to handle authentication", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding[:5]'
+
+```

@@ -168,9 +168,12 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 将所有服务更新到最新版本：
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` 用于更新此仓库，包括此子栈使用的所有 compose 文件或辅助脚本；`docker compose pull` 用于更新服务镜像。
 
 您的数据保存在 Docker 卷中。 **升级前务必先[备份](../../docs/backup-restore-zh.md)。**
 
@@ -201,3 +204,5 @@ curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
     -d '{"input": "function to handle authentication", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding[:5]'
+
+```

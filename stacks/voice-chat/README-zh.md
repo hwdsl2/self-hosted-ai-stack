@@ -49,9 +49,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 **打开聊天界面：**
 
-AnythingLLM 已预配置连接到 LiteLLM。API 密钥通过 Docker 卷自动共享 — 无需手动设置。
-
-在浏览器中打开 `http://<server-ip>:3001`。LLM 供应商、基础 URL 和模型均已预配置。
+AnythingLLM 已预配置连接到 LiteLLM。API 密钥通过 Docker 卷自动共享 — 无需手动设置。LLM 供应商、基础 URL 和模型均已预配置。
 
 首次启动时，AnythingLLM 可能需要几分钟才能就绪（使用 `docker logs anythingllm` 查看进度）。
 
@@ -60,12 +58,14 @@ AnythingLLM 已预配置连接到 LiteLLM。API 密钥通过 Docker 卷自动共
 获取自动生成的密码：
 
 ```bash
-# 从实时日志中获取（仅在首次启动时显示）：
-docker compose logs anythingllm | grep -A2 "FIRST RUN"
-
-# 或随时从数据卷中获取：
+# 随时从数据卷中获取：
 docker exec anythingllm cat /app/server/storage/.initial_admin_password
+
+# 或从实时日志中获取（仅在首次启动时显示）：
+docker compose logs anythingllm | grep -A4 "FIRST RUN"
 ```
+
+在浏览器中打开 `http://<server-ip>:3001`，并使用上面的密码登录。
 
 > **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [使用反向代理](#使用反向代理)。
 
@@ -286,9 +286,14 @@ server {
 将所有服务更新到最新版本：
 
 ```bash
+git pull
 docker compose pull
 docker compose up -d
 ```
+
+`git pull` 用于更新此仓库，包括此子栈使用的所有 compose 文件或辅助脚本；`docker compose pull` 用于更新服务镜像。
+
+**旧安装的一次性提示：** 如果您在 `.env` 持久化修复之前设置过 AnythingLLM 密码，升级后的第一次容器重建可能会清除该密码，使 AnythingLLM 处于未受保护状态。更新后，请立即打开 AnythingLLM 并确认密码保护仍然启用。如果没有，请在 **Settings → Security** 中设置新密码。之后的容器重建会保留该密码。
 
 AnythingLLM 固定为稳定发布标签，而不是 `latest`，因为上游 `latest` 镜像跟踪 master 分支。有新的 AnythingLLM 发布版本时，请先备份，更新 compose 文件中的标签，然后运行上述命令。
 
@@ -324,3 +329,5 @@ curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
+
+```
