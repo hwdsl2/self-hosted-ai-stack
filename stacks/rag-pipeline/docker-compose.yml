@@ -35,7 +35,7 @@ services:
     container_name: litellm
     restart: always
     ports:
-      - "4000:4000/tcp"
+      - "4000:4000/tcp"  # For a host-based reverse proxy, change to "127.0.0.1:4000:4000/tcp"
     environment:
       - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
       - LITELLM_DATABASE_URL=postgresql://litellm:litellm@db:5432/litellm
@@ -43,6 +43,12 @@ services:
       - litellm-data:/etc/litellm
       - ollama-shared:/var/lib/ollama-shared:ro
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:4000/health/liveliness"]
+      interval: 15s
+      timeout: 5s
+      start_period: 180s
+      retries: 5
     depends_on:
       ollama:
         condition: service_healthy

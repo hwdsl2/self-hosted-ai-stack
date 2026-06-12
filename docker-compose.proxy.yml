@@ -16,7 +16,10 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
-      - anythingllm
+      anythingllm:
+        condition: service_started
+      litellm:
+        condition: service_healthy
 
   anythingllm:
     ports: !override

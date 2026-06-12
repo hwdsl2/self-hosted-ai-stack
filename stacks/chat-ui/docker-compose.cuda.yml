@@ -51,6 +51,12 @@ services:
       - ollama-shared:/var/lib/ollama-shared:ro
       - litellm-shared:/var/lib/litellm-shared
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:4000/health/liveliness"]
+      interval: 15s
+      timeout: 5s
+      start_period: 180s
+      retries: 5
     depends_on:
       ollama:
         condition: service_healthy
@@ -79,7 +85,8 @@ services:
     # cap_add:
     #   - SYS_ADMIN  # Uncomment if you need AnythingLLM's built-in web scraping (uses Chromium)
     depends_on:
-      - litellm
+      litellm:
+        condition: service_healthy
 
 volumes:
   ollama-data:

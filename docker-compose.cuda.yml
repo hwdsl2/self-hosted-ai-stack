@@ -44,7 +44,7 @@ services:
     container_name: litellm
     restart: always
     ports:
-      - "4000:4000/tcp"
+      - "4000:4000/tcp"  # For a host-based reverse proxy, change to "127.0.0.1:4000:4000/tcp"
     environment:
       - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
       - LITELLM_MCP_URL=http://mcp:3000/mcp
@@ -55,6 +55,12 @@ services:
       - mcp-shared:/var/lib/mcp-shared:ro
       - litellm-shared:/var/lib/litellm-shared
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:4000/health/liveliness"]
+      interval: 15s
+      timeout: 5s
+      start_period: 180s
+      retries: 5
     depends_on:
       ollama:
         condition: service_healthy
@@ -148,10 +154,13 @@ services:
     # cap_add:
     #   - SYS_ADMIN  # Uncomment if you need AnythingLLM's built-in web scraping (uses Chromium)
     depends_on:
-      - litellm
+      litellm:
+        condition: service_healthy
       # When opting into the Embeddings service or pgvector above, also add:
-      # - embeddings
-      # - db
+      # embeddings:
+      #   condition: service_started
+      # db:
+      #   condition: service_healthy
 
   # docling:  # Uncomment to enable document parsing (PDF, DOCX, etc.); also uncomment docling-data volume below
   #   image: hwdsl2/docling-server:cuda
