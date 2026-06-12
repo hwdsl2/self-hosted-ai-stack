@@ -19,13 +19,13 @@
 | `kokoro-data` | Kokoro | TTS 模型/语音缓存 |
 | `mcp-data` | MCP Gateway | API 密钥、工具配置 |
 | `docling-data` | Docling | 文档转换模型缓存 |
-| `anythingllm-data` | AnythingLLM | 聊天记录、工作区、设置、上传的文档、**管理员密码**（`server/.env` 中的 `AUTH_TOKEN`/`JWT_SECRET`，以及 `.initial_admin_password`） |
+| `anythingllm-data` | AnythingLLM | 聊天记录、工作区、设置、上传的文档、**管理员密码**（`server/.env` 中的 `AUTH_TOKEN`/`JWT_SECRET`，以及首次运行时生成的 `.initial_admin_password` 副本） |
 | `caddy-data` | Caddy | TLS 证书、私钥、OCSP staple、ACME 账户状态 |
 | `caddy-config` | Caddy | Caddy 内部配置存储 |
 
 **重要提示：** Ollama、LiteLLM 和 MCP Gateway 的 API 密钥在首次启动时自动生成，存储在这些卷中。如果丢失卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
 
-**重要提示（AnythingLLM）：** 自动生成的管理员密码及其 `JWT_SECRET` 位于 `anythingllm-data` 卷中（`server/.env` 和 `.initial_admin_password`）。备份此卷会保留密码。在其他主机上恢复时会重用相同的密码 — 无需重新生成。
+**重要提示（AnythingLLM）：** 当前管理员密码及其 `JWT_SECRET` 位于 `anythingllm-data` 卷中的 `server/.env`。`.initial_admin_password` 只是首次运行时的密码副本；如果你已在 Settings 中更改密码，该文件可能已经过期。备份此卷会保留当前密码。在其他主机上恢复时会重用相同的密码 — 无需重新生成。
 
 **重要提示（Caddy）：** 如果使用 HTTPS 代理叠加文件，请备份 `caddy-data`。它包含证书私钥和 ACME 账户状态。删除该卷会强制重新签发证书，并可能触发证书颁发机构的速率限制。
 

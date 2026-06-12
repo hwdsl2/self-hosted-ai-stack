@@ -2,6 +2,28 @@
 
 All notable changes to docker-ai-stack are documented here.
 
+## 2026-06-11
+
+### Added
+
+- Added Docker healthchecks for LiteLLM across the root stack and all
+  lightweight stacks. AnythingLLM now waits for LiteLLM to become healthy
+  before starting, reducing first-run connection races.
+- Added a PostgreSQL readiness check to `stack-check.sh`.
+
+### Changed
+
+- Added localhost reverse-proxy hints to LiteLLM port mappings in compose
+  files while keeping the default direct `4000` listener unchanged.
+- Hardened AnythingLLM first-run password seeding. The bootstrap script now
+  uses Node.js crypto first, falls back to OS entropy sources, and refuses to
+  start AnythingLLM without authentication if secret generation fails.
+- Standardized the commented WhisperLive REST API host port in the
+  `voice-pipeline` stack to `8001`.
+- Clarified manual `docker run` startup ordering, default PostgreSQL
+  credential guidance, and that `.initial_admin_password` is only the
+  first-run AnythingLLM password copy.
+
 ## 2026-06-07
 
 ### Added

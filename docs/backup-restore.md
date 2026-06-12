@@ -19,13 +19,13 @@ Each service stores its data in a named Docker volume:
 | `kokoro-data` | Kokoro | TTS model/voice cache |
 | `mcp-data` | MCP Gateway | API key, tool configuration |
 | `docling-data` | Docling | Document conversion model cache |
-| `anythingllm-data` | AnythingLLM | Chat history, workspaces, settings, uploaded documents, **admin password** (`server/.env` with `AUTH_TOKEN`/`JWT_SECRET`, plus `.initial_admin_password`) |
+| `anythingllm-data` | AnythingLLM | Chat history, workspaces, settings, uploaded documents, **admin password** (`server/.env` with `AUTH_TOKEN`/`JWT_SECRET`, plus the first-run `.initial_admin_password` copy) |
 | `caddy-data` | Caddy | TLS certificates, private keys, OCSP staples, ACME account state |
 | `caddy-config` | Caddy | Internal Caddy configuration storage |
 
 **Important:** API keys for Ollama, LiteLLM, and MCP Gateway are auto-generated on first start and stored inside these volumes. If you lose the volume, you lose the key. Connected clients will need to be updated with new keys.
 
-**Important (AnythingLLM):** The auto-generated admin password and its `JWT_SECRET` live in `anythingllm-data` (`server/.env` and `.initial_admin_password`). Backing up this volume preserves the password. Restoring it on a different host re-uses the same password — no need to re-seed.
+**Important (AnythingLLM):** The current admin password and its `JWT_SECRET` live in `anythingllm-data` (`server/.env`). The `.initial_admin_password` file is only the first-run password copy and may be stale if you changed the password in Settings. Backing up this volume preserves the current password. Restoring it on a different host re-uses the same password — no need to re-seed.
 
 **Important (Caddy):** If you use the HTTPS proxy overlay, back up `caddy-data`. It contains certificate private keys and ACME account state. Deleting it forces certificate reissuance and may run into certificate authority rate limits.
 

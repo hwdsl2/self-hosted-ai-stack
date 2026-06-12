@@ -75,6 +75,8 @@ docker network create ai-stack
 
 Затем запустите каждый сервис в общей сети:
 
+> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). Для production-сред или общих Docker-сетей измените стандартный пароль PostgreSQL перед первым запуском и обновите все соответствующие строки подключения.
+
 ```bash
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \

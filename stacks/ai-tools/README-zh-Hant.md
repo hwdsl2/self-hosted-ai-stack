@@ -71,6 +71,8 @@ docker network create ai-stack
 
 然後在共享網路上啟動各服務：
 
+> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 Ollama 或 MCP），再啟動 LiteLLM；如果使用 AnythingLLM，請先等待 LiteLLM 就緒再啟動它）。對於生產環境或共享 Docker 網路，請在首次啟動前變更預設 PostgreSQL 密碼，並同步更新所有相關連接字串。
+
 ```bash
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \

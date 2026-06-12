@@ -53,7 +53,7 @@ AnythingLLM is pre-configured to connect to LiteLLM. The API key is shared autom
 
 On first start, AnythingLLM may take a few minutes to become available (check progress with `docker logs anythingllm`).
 
-**Password-protected by default.** A random admin password is auto-generated on first start, printed once to `docker logs anythingllm`, and saved to `/app/server/storage/.initial_admin_password` inside the `anythingllm-data` volume. It persists across container upgrades. Change it any time from **Settings → Security**.
+**Password-protected by default.** A random admin password is auto-generated on first start, printed once to `docker logs anythingllm`, and saved to `/app/server/storage/.initial_admin_password` inside the `anythingllm-data` volume. The seeded password persists across container upgrades. Change it any time from **Settings → Security**; after you do, `.initial_admin_password` may no longer match the current login password.
 
 Retrieve the auto-generated password:
 
@@ -96,6 +96,8 @@ docker network create ai-stack
 ```
 
 Then start each service on the shared network:
+
+> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as Ollama or MCP, before LiteLLM; if using AnythingLLM, wait for LiteLLM before starting it). For production or shared Docker networks, change the default PostgreSQL password before first start and update every matching connection string.
 
 ```bash
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
@@ -198,7 +200,7 @@ For detailed configuration options, API reference, and model management, see the
 
 ## Using a reverse proxy
 
-For internet-facing deployments, use the included Caddy overlay to add automatic HTTPS. Run these commands from the `stacks/voice-chat` directory. In proxy mode, Caddy is the only public listener on ports `80` and `443`; the direct AnythingLLM and LiteLLM ports are rebound to `127.0.0.1`. The proxy exposes only AnythingLLM by default; Whisper and Kokoro remain bound according to the sub-stack compose file.
+For internet-facing deployments, use the included Caddy overlay to add automatic HTTPS. Run these commands from the `stacks/voice-chat` directory. The root `../../docker-compose.proxy.yml` overlay intentionally mounts this stack's local `caddy/Caddyfile`. In proxy mode, Caddy is the only public listener on ports `80` and `443`; the direct AnythingLLM and LiteLLM ports are rebound to `127.0.0.1`. The proxy exposes only AnythingLLM by default; Whisper and Kokoro remain bound according to the sub-stack compose file.
 
 Prerequisites:
 

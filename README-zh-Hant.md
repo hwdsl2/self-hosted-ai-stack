@@ -95,7 +95,7 @@ docker exec mcp mcp_manage --showkey
 
 AnythingLLM 已預設透過 LiteLLM 連接本機大型語言模型。首次啟動時，可能需要幾分鐘才能就緒（使用 `docker logs anythingllm` 檢視進度）。
 
-**預設啟用密碼保護。** 首次啟動時會自動產生隨機管理員密碼，僅列印一次到 `docker logs anythingllm`，並儲存到 `anythingllm-data` 資料卷中的 `/app/server/storage/.initial_admin_password` 檔案。密碼在容器升級後持久保留。可隨時在 **Settings → Security** 中變更。
+**預設啟用密碼保護。** 首次啟動時會自動產生隨機管理員密碼，僅列印一次到 `docker logs anythingllm`，並儲存到 `anythingllm-data` 資料卷中的 `/app/server/storage/.initial_admin_password` 檔案。種子密碼會在容器升級後持久保留。可隨時在 **Settings → Security** 中變更；變更後，`.initial_admin_password` 可能不再與目前登入密碼一致。
 
 取得自動產生的密碼：
 
@@ -204,6 +204,8 @@ docker network create ai-stack
 ```
 
 然後在共享網路上啟動各服務：
+
+> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 Ollama 或 MCP），再啟動 LiteLLM；如果使用 AnythingLLM，請先等待 LiteLLM 就緒再啟動它）。對於生產環境或共享 Docker 網路，請在首次啟動前變更預設 PostgreSQL 密碼，並同步更新所有相關連接字串。
 
 ```bash
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
