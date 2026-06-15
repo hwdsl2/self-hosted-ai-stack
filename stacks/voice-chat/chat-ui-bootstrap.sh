@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# Bootstrap script for AnythingLLM in docker-ai-stack
+# Bootstrap script for AnythingLLM in self-hosted-ai-stack
 # Reads the LiteLLM API key from the shared volume and starts AnythingLLM
 #
-# This file is part of Docker AI Stack, available at:
-# https://github.com/hwdsl2/docker-ai-stack
+# This file is part of Self-Hosted AI Stack, available at:
+# https://github.com/hwdsl2/self-hosted-ai-stack
 #
 # Copyright (C) 2026 Lin Song <linsongui@gmail.com>
 #

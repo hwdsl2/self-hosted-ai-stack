@@ -2,8 +2,8 @@
 #
 # Script to verify that all running AI stack services are healthy
 #
-# This file is part of Docker AI Stack, available at:
-# https://github.com/hwdsl2/docker-ai-stack
+# This file is part of Self-Hosted AI Stack, available at:
+# https://github.com/hwdsl2/self-hosted-ai-stack
 #
 # Copyright (C) 2026 Lin Song <linsongui@gmail.com>
 #
@@ -116,7 +116,7 @@ http_post_ok() {
 }
 
 echo ""
-echo "Docker AI Stack — Health Check"
+echo "Self-Hosted AI Stack — Health Check"
 echo "==============================="
 echo ""
 
