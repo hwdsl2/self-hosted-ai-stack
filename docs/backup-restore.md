@@ -2,7 +2,7 @@
 
 # Backup and Restore
 
-This guide covers how to back up and restore your Docker AI Stack data, including API keys, model weights, and service configurations. **Always back up before upgrading images.**
+This guide covers how to back up and restore your Self-Hosted AI Stack data, including API keys, model weights, and service configurations. **Always back up before upgrading images.**
 
 ## What's stored in volumes
 
@@ -187,8 +187,8 @@ docker compose up -d
 3. **On the new server:**
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 
 # Copy backup files into place
 cp -r /path/to/backups ./backups

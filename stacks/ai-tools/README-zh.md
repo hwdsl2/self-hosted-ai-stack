@@ -32,8 +32,8 @@ graph LR
 ## 快速开始
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/ai-tools
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack/stacks/ai-tools
 docker compose up -d
 ```
 
@@ -123,7 +123,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 启动后，可以验证所有服务是否正常运行：
 
 ```bash
-# 在 docker-ai-stack 根目录中运行
+# 在 self-hosted-ai-stack 根目录中运行
 ../../stack-check.sh
 ```
 

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Docker AI Stack. This repository maintains the multi-service Docker Compose stack; changes that only affect one service image usually belong in that service's repository.
+Thanks for helping improve Self-Hosted AI Stack. This repository maintains the multi-service Docker Compose stack; changes that only affect one service image usually belong in that service's repository.
 
 ## Before You Start
 

@@ -2,7 +2,7 @@
 
 # Troubleshooting
 
-This guide helps diagnose Docker AI Stack issues before changing configuration or opening an issue.
+This guide helps diagnose Self-Hosted AI Stack issues before changing configuration or opening an issue.
 
 ## Quick triage
 
@@ -241,7 +241,7 @@ docker compose up -d
 
 ## Where to file issues
 
-File an issue in `docker-ai-stack` for:
+File an issue in `self-hosted-ai-stack` for:
 
 - Compose file problems
 - Cross-service wiring issues

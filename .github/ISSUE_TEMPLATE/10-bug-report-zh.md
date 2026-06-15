@@ -8,9 +8,9 @@ assignees: ''
 ---
 **任务列表**
 
-- [ ] 我已阅读[自述文件](https://github.com/hwdsl2/docker-ai-stack/blob/main/README-zh.md)或相关 stack README
-- [ ] 我搜索了已有的 [Issues](https://github.com/hwdsl2/docker-ai-stack/issues?q=is%3Aissue)
-- [ ] 这个问题是关于 docker-ai-stack、技术栈集成，或者我不确定哪个服务受影响
+- [ ] 我已阅读[自述文件](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README-zh.md)或相关 stack README
+- [ ] 我搜索了已有的 [Issues](https://github.com/hwdsl2/self-hosted-ai-stack/issues?q=is%3Aissue)
+- [ ] 这个问题是关于 self-hosted-ai-stack、技术栈集成，或者我不确定哪个服务受影响
 
 **问题描述**
 使用清楚简明的语言描述这个问题。
@@ -61,7 +61,7 @@ docker compose logs
 docker compose logs <service>
 ```
 
-**是否可在 docker-ai-stack 之外重现？**
+**是否可在 self-hosted-ai-stack 之外重现？**
 如果你知道这个问题是否也会在单个服务仓库中出现，请在这里说明。
 
 **其它信息**

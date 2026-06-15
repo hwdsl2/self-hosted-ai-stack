@@ -2,7 +2,7 @@
 
 # 备份与恢复
 
-本指南介绍如何备份和恢复 Docker AI Stack 数据，包括 API 密钥、模型权重和服务配置。**升级镜像前请务必备份。**
+本指南介绍如何备份和恢复 Self-Hosted AI Stack 数据，包括 API 密钥、模型权重和服务配置。**升级镜像前请务必备份。**
 
 ## 卷中存储的内容
 
@@ -187,8 +187,8 @@ docker compose up -d
 3. **在新服务器上：**
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 
 # 将备份文件复制到位
 cp -r /path/to/backups ./backups

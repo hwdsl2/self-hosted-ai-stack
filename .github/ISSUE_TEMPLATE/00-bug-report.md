@@ -8,9 +8,9 @@ assignees: ''
 ---
 **Checklist**
 
-- [ ] I read the [README](https://github.com/hwdsl2/docker-ai-stack/blob/main/README.md) or the relevant stack README
-- [ ] I searched existing [Issues](https://github.com/hwdsl2/docker-ai-stack/issues?q=is%3Aissue)
-- [ ] This issue is about docker-ai-stack, a stack integration, or I am not sure which service is affected
+- [ ] I read the [README](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README.md) or the relevant stack README
+- [ ] I searched existing [Issues](https://github.com/hwdsl2/self-hosted-ai-stack/issues?q=is%3Aissue)
+- [ ] This issue is about self-hosted-ai-stack, a stack integration, or I am not sure which service is affected
 
 **Describe the issue**
 A clear and concise description of the problem.
@@ -61,7 +61,7 @@ For one affected service, include:
 docker compose logs <service>
 ```
 
-**Reproduces outside docker-ai-stack?**
+**Reproduces outside self-hosted-ai-stack?**
 If you know whether this also happens in an individual service repo, mention it here.
 
 **Additional context**

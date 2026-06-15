@@ -1,12 +1,12 @@
 [English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
 
-# Docker AI Stack
+# Self-Hosted AI Stack
 
-[![Docker Compose AI Stack](docs/images/ai-stack.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![Лицензия: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![Powered by Docker Compose](docs/images/powered-by-docker-compose.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![Лицензия: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <img src="docs/images/docker-ai-stack-overview.png"
-       alt="Docker AI Stack: разверните полный self-hosted AI-стек одной командой"
+  <img src="docs/images/self-hosted-ai-stack-overview.png"
+       alt="Self-Hosted AI Stack: разверните полный self-hosted AI-стек одной командой"
        width="100%">
 </p>
 
@@ -27,7 +27,7 @@
 - 💬 Присоединяйтесь к сообществу [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) для обсуждений и демонстрации проектов
 - ⭐ Поставьте звезду репозиторию, если он оказался вам полезен — это поможет другим пользователям его найти.
 
-Docker AI Stack поддерживается автором [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md) (28k+ звёзд).
+Self-Hosted AI Stack поддерживается автором [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md) (28k+ звёзд).
 
 ## Включённые сервисы
 
@@ -55,10 +55,12 @@ Docker AI Stack поддерживается автором [Setup IPsec VPN](ht
 
 ```bash
 # Клонируйте репозиторий для получения compose-файлов
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 docker compose up -d
 ```
+
+> **Существующие установки:** Если вы клонировали проект до переименования из `docker-ai-stack`, существующий checkout и развёртывание продолжают работать. GitHub перенаправляет старый URL репозитория, и вам не нужно переименовывать локальный каталог, контейнеры, тома или сети.
 
 **Загрузка модели** (обязательно перед отправкой LLM-запросов):
 
@@ -162,8 +164,8 @@ docker compose -f docker-compose.cuda.yml up -d
 | **[chat-only](stacks/chat-only/README-ru.md)** | Ollama + LiteLLM | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/chat-ui  # или voice-pipeline, voice-chat, rag-pipeline, rag-pipeline-full, code-assistant, ai-tools, chat-only
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack/stacks/chat-ui  # или voice-pipeline, voice-chat, rag-pipeline, rag-pipeline-full, code-assistant, ai-tools, chat-only
 docker compose up -d
 ```
 
@@ -337,8 +339,8 @@ sudo apt-get install -y podman-compose
 **3. Запустите стек.** При установленном слое совместимости каждая команда из этого README работает без изменений. Без него замените `docker` на `podman`:
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 podman compose up -d
 ```
 
@@ -600,4 +602,4 @@ AnythingLLM закреплен на стабильном теге релиза, 
 Copyright (C) 2026 Lin Song   
 Данный проект лицензирован на условиях [лицензии MIT](https://opensource.org/licenses/MIT).
 
-Данный проект представляет собой независимую Docker-конфигурацию и не аффилирован с Ollama, Berri AI (LiteLLM), Hugging Face, hexgrad (Kokoro), OpenAI, SYSTRAN или MCPHub, не одобрен и не спонсирован ими.
+Данный проект представляет собой независимую Docker-конфигурацию и не аффилирован с Docker, Inc., Ollama, Berri AI (LiteLLM), Hugging Face, hexgrad (Kokoro), OpenAI, SYSTRAN или MCPHub, не одобрен и не спонсирован ими. Docker является товарным знаком или зарегистрированным товарным знаком Docker, Inc.

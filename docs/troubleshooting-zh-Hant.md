@@ -2,7 +2,7 @@
 
 # 疑難排解
 
-本指南協助你在變更設定或提交 issue 之前診斷 Docker AI Stack 問題。
+本指南協助你在變更設定或提交 issue 之前診斷 Self-Hosted AI Stack 問題。
 
 ## 快速排查
 
@@ -241,7 +241,7 @@ docker compose up -d
 
 ## 在哪裡提交 issue
 
-以下問題請提交到 `docker-ai-stack`：
+以下問題請提交到 `self-hosted-ai-stack`：
 
 - compose 檔案問題
 - 跨服務連接問題

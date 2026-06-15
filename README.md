@@ -1,12 +1,12 @@
 [English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
 
-# Docker AI Stack
+# Self-Hosted AI Stack
 
-[![Docker Compose AI Stack](docs/images/ai-stack.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![Powered by Docker Compose](docs/images/powered-by-docker-compose.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <img src="docs/images/docker-ai-stack-overview.png"
-       alt="Docker AI Stack: deploy a complete self-hosted AI stack with one command"
+  <img src="docs/images/self-hosted-ai-stack-overview.png"
+       alt="Self-Hosted AI Stack: deploy a complete self-hosted AI stack with one command"
        width="100%">
 </p>
 
@@ -27,7 +27,7 @@ Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling
 - 💬 Join the [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) community for discussions and showcases
 - ⭐ Star the repository if you find it useful — it helps others discover it
 
-Docker AI Stack is maintained by the author of [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) (28k+ stars).
+Self-Hosted AI Stack is maintained by the author of [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn) (28k+ stars).
 
 ## Included services
 
@@ -55,10 +55,12 @@ Docker AI Stack is maintained by the author of [Setup IPsec VPN](https://github.
 
 ```bash
 # Clone the repository to get the compose files
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 docker compose up -d
 ```
+
+> **Existing installs:** If you cloned this project before it was renamed from `docker-ai-stack`, your existing checkout and deployment continue to work. GitHub redirects the old repository URL, and you do not need to rename your local directory, containers, volumes, or networks.
 
 **Pull a model** (required before making LLM requests):
 
@@ -162,8 +164,8 @@ Don't need the full stack? Use a pre-configured subset from the `stacks/` folder
 | **[chat-only](stacks/chat-only/)** | Ollama + LiteLLM | ~4.5 GB | Minimal local ChatGPT replacement |
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/chat-ui  # or voice-pipeline, voice-chat, rag-pipeline, rag-pipeline-full, code-assistant, ai-tools, chat-only
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack/stacks/chat-ui  # or voice-pipeline, voice-chat, rag-pipeline, rag-pipeline-full, code-assistant, ai-tools, chat-only
 docker compose up -d
 ```
 
@@ -337,8 +339,8 @@ sudo apt-get install -y podman-compose
 **3. Start the stack.** With the shim installed, every command in this README works unchanged. Without it, substitute `podman` for `docker`:
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 podman compose up -d
 ```
 
@@ -600,4 +602,4 @@ Your data is preserved in the Docker volumes. **Always [back up](#backup-and-res
 Copyright (C) 2026 Lin Song   
 This work is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
-This project is an independent Docker configuration and is not affiliated with, endorsed by, or sponsored by Ollama, Berri AI (LiteLLM), Hugging Face, hexgrad (Kokoro), OpenAI, SYSTRAN, or MCPHub.
+This project is an independent Docker configuration and is not affiliated with, endorsed by, or sponsored by Docker, Inc., Ollama, Berri AI (LiteLLM), Hugging Face, hexgrad (Kokoro), OpenAI, SYSTRAN, or MCPHub. Docker is a trademark or registered trademark of Docker, Inc.

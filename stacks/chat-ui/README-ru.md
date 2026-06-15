@@ -30,8 +30,8 @@ graph LR
 ## Быстрый старт
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/chat-ui
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack/stacks/chat-ui
 docker compose up -d
 ```
 
@@ -153,7 +153,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 После запуска можно проверить, что все сервисы работают корректно:
 
 ```bash
-# Запустите из корневого каталога docker-ai-stack
+# Запустите из корневого каталога self-hosted-ai-stack
 ../../stack-check.sh
 ```
 

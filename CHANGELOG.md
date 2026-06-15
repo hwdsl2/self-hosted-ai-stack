@@ -1,6 +1,12 @@
 # Changelog
 
-All notable changes to docker-ai-stack are documented here.
+All notable changes to self-hosted-ai-stack are documented here.
+
+## 2026-06-14
+
+### Changed
+
+- Renamed the project from Docker AI Stack to Self-Hosted AI Stack. Existing installs cloned from `docker-ai-stack` continue to work through GitHub repository redirects, and no local directory, container, volume, or network rename is required.
 
 ## 2026-06-11
 
@@ -101,7 +107,7 @@ All notable changes to docker-ai-stack are documented here.
   (inside the volume) on every container start.
 
   **Action required to benefit from this fix:**
-  1. Pull the latest code: `cd docker-ai-stack && git pull`
+  1. Pull the latest code: `cd self-hosted-ai-stack && git pull`
   2. Recreate the AnythingLLM container so the updated bootstrap script
      runs: `docker compose up -d --force-recreate anythingllm`
 

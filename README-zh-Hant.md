@@ -1,12 +1,12 @@
 [English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
 
-# Docker AI Stack
+# Self-Hosted AI Stack
 
-[![Docker Compose AI Stack](docs/images/ai-stack.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![授權協議: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![Powered by Docker Compose](docs/images/powered-by-docker-compose.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![授權協議: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <img src="docs/images/docker-ai-stack-overview.png"
-       alt="Docker AI Stack：一鍵部署完整的自託管 AI 技術堆疊"
+  <img src="docs/images/self-hosted-ai-stack-overview.png"
+       alt="Self-Hosted AI Stack：一鍵部署完整的自託管 AI 技術堆疊"
        width="100%">
 </p>
 
@@ -27,7 +27,7 @@
 - 💬 加入 [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) 社群，參與討論與專案展示
 - ⭐ 如果你覺得本專案有用，請為儲存庫加星——這能幫助更多人發現它。
 
-Docker AI Stack 由 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh-Hant.md)（28k+ 星標）的作者維護。
+Self-Hosted AI Stack 由 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh-Hant.md)（28k+ 星標）的作者維護。
 
 ## 包含的服務
 
@@ -55,10 +55,12 @@ Docker AI Stack 由 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/
 
 ```bash
 # 複製儲存庫以取得編排檔案
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 docker compose up -d
 ```
+
+> **現有安裝：** 如果您在本專案從 `docker-ai-stack` 更名前已經複製，現有檢出和部署會繼續運作。GitHub 會重新導向舊儲存庫 URL，您無需重新命名本機目錄、容器、磁碟區或網路。
 
 **拉取模型**（發出 LLM 請求前必須執行）：
 
@@ -162,8 +164,8 @@ docker compose -f docker-compose.cuda.yml up -d
 | **[chat-only](stacks/chat-only/README-zh-Hant.md)** | Ollama + LiteLLM | ~4.5 GB | 最小化本機 ChatGPT 替代方案 |
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/chat-ui  # 或 voice-pipeline、voice-chat、rag-pipeline、rag-pipeline-full、code-assistant、ai-tools、chat-only
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack/stacks/chat-ui  # 或 voice-pipeline、voice-chat、rag-pipeline、rag-pipeline-full、code-assistant、ai-tools、chat-only
 docker compose up -d
 ```
 
@@ -337,8 +339,8 @@ sudo apt-get install -y podman-compose
 **3. 啟動技術堆疊。** 安裝相容層後，本 README 中的每條指令均可原樣執行。若未安裝，請將 `docker` 替換為 `podman`：
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 podman compose up -d
 ```
 
@@ -600,4 +602,4 @@ AnythingLLM 固定為穩定發布標籤，而不是 `latest`，因為上游 `lat
 Copyright (C) 2026 Lin Song   
 本專案以 [MIT 授權條款](https://opensource.org/licenses/MIT) 授權。
 
-本專案是獨立的 Docker 設定，與 Ollama、Berri AI（LiteLLM）、Hugging Face、hexgrad（Kokoro）、OpenAI、SYSTRAN 或 MCPHub 無關聯，未獲其背書或贊助。
+本專案是獨立的 Docker 設定，與 Docker, Inc.、Ollama、Berri AI（LiteLLM）、Hugging Face、hexgrad（Kokoro）、OpenAI、SYSTRAN 或 MCPHub 無關聯，未獲其背書或贊助。Docker 是 Docker, Inc. 的商標或註冊商標。

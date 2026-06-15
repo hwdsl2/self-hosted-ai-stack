@@ -4,7 +4,7 @@
 
 ## Checklist
 
-- [ ] This PR belongs in `docker-ai-stack` because it affects stack composition, service wiring, examples, or cross-service docs.
+- [ ] This PR belongs in `self-hosted-ai-stack` because it affects stack composition, service wiring, examples, or cross-service docs.
 - [ ] I updated README, CHANGELOG, env examples, stack examples, or docs if behavior changed.
 - [ ] I tested the affected path: root stack / CUDA stack / proxy overlay / lightweight stack / docs only.
 - [ ] I ran `docker compose config` for changed compose files, or explained why not.

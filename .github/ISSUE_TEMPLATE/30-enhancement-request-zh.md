@@ -8,8 +8,8 @@ assignees: ''
 ---
 **任务列表**
 
-- [ ] 我搜索了已有的 [Issues](https://github.com/hwdsl2/docker-ai-stack/issues?q=is%3Aissue)，没有找到类似的改进建议
-- [ ] 我已阅读[自述文件](https://github.com/hwdsl2/docker-ai-stack/blob/main/README-zh.md)或相关 stack README
+- [ ] 我搜索了已有的 [Issues](https://github.com/hwdsl2/self-hosted-ai-stack/issues?q=is%3Aissue)，没有找到类似的改进建议
+- [ ] 我已阅读[自述文件](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README-zh.md)或相关 stack README
 
 **描述改进建议**
 使用清楚简明的语言描述你的改进建议。

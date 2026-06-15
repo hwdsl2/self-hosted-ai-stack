@@ -2,7 +2,7 @@
 
 # 備份與還原
 
-本指南介紹如何備份和還原 Docker AI Stack 資料，包括 API 金鑰、模型權重和服務設定。**升級映像檔前請務必備份。**
+本指南介紹如何備份和還原 Self-Hosted AI Stack 資料，包括 API 金鑰、模型權重和服務設定。**升級映像檔前請務必備份。**
 
 ## 磁碟區中儲存的內容
 
@@ -187,8 +187,8 @@ docker compose up -d
 3. **在新伺服器上：**
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack
 
 # 將備份檔案複製到位
 cp -r /path/to/backups ./backups

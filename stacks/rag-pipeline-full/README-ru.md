@@ -33,8 +33,8 @@ graph LR
 ## Быстрый старт
 
 ```bash
-git clone https://github.com/hwdsl2/docker-ai-stack
-cd docker-ai-stack/stacks/rag-pipeline-full
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+cd self-hosted-ai-stack/stacks/rag-pipeline-full
 docker compose up -d
 ```
 
@@ -129,7 +129,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 После запуска стека можно проверить, что все сервисы работают корректно:
 
 ```bash
-# Запустите из корневой директории docker-ai-stack
+# Запустите из корневой директории self-hosted-ai-stack
 ../../stack-check.sh
 ```
 
