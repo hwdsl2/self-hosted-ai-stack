@@ -188,10 +188,12 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 
 # Создание эмбеддинга фрагмента документа
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Сохраните вектор в pgvector (входит в Postgres этого стека) или в другую векторную БД, например Qdrant или Chroma

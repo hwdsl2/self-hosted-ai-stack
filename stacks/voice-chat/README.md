@@ -314,9 +314,12 @@ curl -L -o sample_speech.wav \
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
+KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
 # Step 1: Transcribe audio to text (Whisper)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
+    -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
 # Step 2: Send text to Ollama via LiteLLM and get a response
@@ -329,6 +332,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
 # Step 3: Convert the response to speech (Kokoro TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $KOKORO_KEY" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
 

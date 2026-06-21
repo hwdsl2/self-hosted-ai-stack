@@ -13,10 +13,10 @@
 包含 Ollama、LiteLLM、AnythingLLM、Whisper、MCP Gateway、Embeddings、Docling 和 Kokoro — 使用 Docker Compose 完整配置，开箱即用。
 
 - 零配置：所有服务在首次启动时自动配置
-- 安全：AnythingLLM 默认启用密码保护，Ollama、LiteLLM 和 MCP Gateway 自动生成 API 密钥
+- 默认安全：AnythingLLM 默认启用密码保护，内置 API 服务会在使用持久化存储时自动生成 API 密钥
 - HTTPS 就绪：可选 Caddy 叠加文件提供自动 TLS，并将直接 HTTP 端口绑定到 localhost
 - 隐私：默认在本地运行，可通过 LiteLLM 选择性接入外部提供商
-- 可选认证：Whisper、WhisperLive、Kokoro、Embeddings 和 Docling 默认无需 API 密钥（面向公网部署时可通过 env 文件设置密钥）
+- 灵活配置：可通过简单的 env 文件自定义模型、端口、提供商和 API 密钥
 - 提供[轻量级技术栈](#轻量级技术栈)，降低内存要求（最低约 4.5 GB）
 - 支持 NVIDIA CUDA GPU 加速
 - 多架构：`linux/amd64`、`linux/arm64`
@@ -85,7 +85,7 @@ docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>显示所有 API 密钥（Ollama、LiteLLM、MCP Gateway）</summary>
+<summary>显示核心 API 密钥（Ollama、LiteLLM、MCP Gateway）</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -403,9 +403,12 @@ curl -L -o sample_speech.wav \
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
+KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
 # 第 1 步：将音频转录为文本（Whisper）
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
+    -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
 # 第 2 步：通过 LiteLLM 将文本发送至 Ollama 并获取响应
@@ -418,6 +421,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
 # 第 3 步：将响应转换为语音（Kokoro TTS）
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $KOKORO_KEY" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
 ```
@@ -446,10 +450,12 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 
 # 第 1 步：嵌入文档片段并将向量存储到向量数据库
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → 将返回的向量与源文本一起存储到 pgvector（已包含在本栈的 Postgres 中），或 Qdrant、Chroma 等其他向量数据库。
@@ -474,7 +480,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 使用 MCP Gateway 为您的 AI 助手提供文件、网络和 GitHub 访问：
 
 ```bash
-MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 
 # 在 AI 客户端中使用 MCP 端点（例如 VS Code 中的 Cline）
 # 设置 MCP 服务器 URL：http://localhost:3000/mcp
@@ -551,7 +557,7 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 旧版 Docker Compose 或 Podman 用户仍可使用主机上的反向代理：将直接 HTTP 端口绑定到 localhost（例如 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`），再反向代理到这些 localhost 端口。每个服务仓库都包含详细的[反向代理指南](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md#使用反向代理)，含 Caddy 和 nginx 示例。
 
-将服务暴露到互联网时，请通过相应的 env 文件为默认无需认证的服务（Whisper、WhisperLive、Kokoro、Embeddings、Docling）设置 API 密钥。
+将服务暴露到互联网时，请优先使用已生成的 API 密钥。对于已有且未设置密钥的部署，请先通过相应的 env 文件设置 API 密钥，再对外发布这些服务。
 
 ## 备份与恢复
 
@@ -559,9 +565,15 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 ```bash
 # 导出 API 密钥（在容器运行时）
-docker exec ollama ollama_manage --showkey
-docker exec litellm litellm_manage --showkey
-docker exec mcp mcp_manage --showkey
+docker exec ollama ollama_manage --getkey
+docker exec litellm litellm_manage --getkey
+docker exec mcp mcp_manage --getkey
+# 可选服务；如果容器未启用或未运行则忽略
+docker exec whisper whisper_manage --getkey 2>/dev/null || true
+docker exec whisper-live whisper_live_manage --getkey 2>/dev/null || true
+docker exec kokoro kokoro_manage --getkey 2>/dev/null || true
+docker exec embeddings embed_manage --getkey 2>/dev/null || true
+docker exec docling docling_manage --getkey 2>/dev/null || true
 
 # 备份所有卷（先停止服务）
 # 停止并移除所有容器（数据保留在 Docker 卷中）

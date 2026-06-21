@@ -13,17 +13,17 @@
 | `ollama-data` | Ollama | Загруженные модели, API-ключ, конфигурация порта/сервера |
 | `litellm-data` | LiteLLM | API-ключ, конфигурация прокси |
 | `litellm-db` | LiteLLM | База данных PostgreSQL (данные использования, журналы) |
-| `embeddings-data` | Embeddings | Кэш модели эмбеддингов |
-| `whisper-data` | Whisper | Кэш модели Whisper |
-| `whisper-live-data` | WhisperLive | Кэш модели STT в реальном времени |
-| `kokoro-data` | Kokoro | Кэш модели/голосов TTS |
+| `embeddings-data` | Embeddings | Кэш модели эмбеддингов, сгенерированный API-ключ |
+| `whisper-data` | Whisper | Кэш модели Whisper, сгенерированный API-ключ |
+| `whisper-live-data` | WhisperLive | Кэш модели STT в реальном времени, сгенерированный API-ключ |
+| `kokoro-data` | Kokoro | Кэш модели/голосов TTS, сгенерированный API-ключ |
 | `mcp-data` | MCP Gateway | API-ключ, конфигурация инструментов |
-| `docling-data` | Docling | Кэш моделей конвертации документов |
+| `docling-data` | Docling | Кэш моделей конвертации документов, сгенерированный API-ключ |
 | `anythingllm-data` | AnythingLLM | История чатов, рабочие пространства, настройки, загруженные документы, **пароль администратора** (`server/.env` с `AUTH_TOKEN`/`JWT_SECRET`, а также первая копия `.initial_admin_password`) |
 | `caddy-data` | Caddy | TLS-сертификаты, приватные ключи, OCSP staples, состояние ACME-аккаунта |
 | `caddy-config` | Caddy | Внутреннее хранилище конфигурации Caddy |
 
-**Важно:** API-ключи для Ollama, LiteLLM и MCP Gateway генерируются автоматически при первом запуске и хранятся в этих томах. Если вы потеряете том, вы потеряете ключ. Подключённым клиентам потребуется обновить ключи.
+**Важно:** API-ключи для Ollama, LiteLLM, MCP Gateway, а также для новых постоянных установок Whisper, WhisperLive, Kokoro, Embeddings и Docling хранятся в этих томах. Если вы потеряете том, вы потеряете ключ. Подключённым клиентам потребуется обновить ключи.
 
 **Важно (AnythingLLM):** Текущий пароль администратора и его `JWT_SECRET` находятся в `server/.env` в томе `anythingllm-data`. Файл `.initial_admin_password` содержит только пароль первого запуска и может устареть, если вы изменили пароль в Settings. Резервное копирование этого тома сохраняет текущий пароль. При восстановлении на другом хосте используется тот же пароль — повторное создание не требуется.
 
@@ -37,9 +37,14 @@
 
 ```bash
 echo "=== API Keys ===" > ai-stack-keys.txt
-echo "Ollama:  $(docker exec ollama ollama_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
-echo "LiteLLM: $(docker exec litellm litellm_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
-echo "MCP:     $(docker exec mcp mcp_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
+echo "Ollama:      $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "LiteLLM:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "MCP:         $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Whisper:     $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "WhisperLive: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Kokoro:      $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Embeddings:  $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Docling:     $(docker exec docling docling_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo ""
 echo "Keys saved to ai-stack-keys.txt"
 cat ai-stack-keys.txt
@@ -244,7 +249,7 @@ docker compose up -d
 
 - **Веса моделей** (в `ollama-data`) могут быть большими (несколько ГБ на модель). Создавайте резервную копию только если повторная загрузка затруднительна (медленный интернет, модели с пользовательской дообучкой).
 - **Кэш моделей** (`embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`) загружается автоматически при первом запуске. Если пропускная способность не является проблемой, резервное копирование можно пропустить — они будут загружены повторно.
-- **Критические тома**, которые всегда следует копировать: `ollama-data` (если есть пользовательские модели), `litellm-data`, `litellm-db`, `mcp-data` (содержат API-ключи и конфигурацию), `anythingllm-data` (история чатов и рабочие пространства), а также `caddy-data` (если используется HTTPS proxy overlay).
+- **Критические тома**, которые всегда следует копировать: тома с ключами/конфигурацией (`litellm-data`, `litellm-db`, `mcp-data`), сервисные тома, где нужно сохранить модели или сгенерированные ключи (`ollama-data`, `embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`), `anythingllm-data` (история чатов и рабочие пространства), а также `caddy-data` (если используется HTTPS proxy overlay).
 - Резервные копии — это стандартные архивы `.tar.gz`. Просмотреть содержимое можно командой: `tar tzf backups/ollama-data.tar.gz`
 
 ### Тома по стекам

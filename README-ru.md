@@ -13,10 +13,10 @@
 Включает Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling и Kokoro — полностью сконфигурирован и готов к запуску с Docker Compose.
 
 - Без настройки: все сервисы автоматически конфигурируются при первом запуске
-- Безопасность: защита AnythingLLM паролем включена по умолчанию, а Ollama, LiteLLM и MCP Gateway автоматически генерируют API-ключи
+- Безопасность по умолчанию: защита AnythingLLM паролем включена, а встроенные API-сервисы автоматически генерируют ключи при использовании постоянного хранилища
 - Готовность к HTTPS: опциональный Caddy overlay предоставляет автоматический TLS и привязывает прямые HTTP-порты к localhost
 - Приватность: по умолчанию работает локально с опциональной поддержкой внешних провайдеров через LiteLLM
-- Опциональная авторизация: Whisper, WhisperLive, Kokoro, Embeddings и Docling работают без API-ключей по умолчанию (задайте ключи через env-файлы для публичных развёртываний)
+- Гибкость: модели, порты, провайдеры и API-ключи настраиваются через простые env-файлы
 - [Облегчённые стеки](#облегчённые-стеки) с меньшими требованиями к памяти (от ~4.5 ГБ)
 - GPU-ускорение через NVIDIA CUDA
 - Мультиархитектурность: `linux/amd64`, `linux/arm64`
@@ -85,7 +85,7 @@ docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>Показать все API-ключи (Ollama, LiteLLM, MCP Gateway)</summary>
+<summary>Показать основные API-ключи (Ollama, LiteLLM, MCP Gateway)</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -403,9 +403,12 @@ curl -L -o sample_speech.wav \
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
+KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
 # Шаг 1: Транскрибация аудио в текст (Whisper)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
+    -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
 # Шаг 2: Отправка текста в Ollama через LiteLLM и получение ответа
@@ -418,6 +421,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
 # Шаг 3: Преобразование ответа в речь (Kokoro TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $KOKORO_KEY" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
 ```
@@ -446,10 +450,12 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 
 # Шаг 1: Создание эмбеддинга фрагмента документа и сохранение вектора в векторной БД
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Сохраните возвращённый вектор вместе с исходным текстом в pgvector (входит в Postgres этого стека) или в другую векторную БД, например Qdrant или Chroma.
@@ -474,7 +480,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 Используйте MCP Gateway для предоставления AI-ассистенту доступа к файлам, вебу и GitHub:
 
 ```bash
-MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 
 # Используйте MCP-эндпоинт с AI-клиентом (например, Cline в VS Code)
 # URL MCP-сервера: http://localhost:3000/mcp
@@ -551,7 +557,7 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 Пользователи старых версий Docker Compose или Podman по-прежнему могут использовать обратный прокси на хосте: привяжите прямые HTTP-порты к localhost (например, `"127.0.0.1:3001:3001/tcp"` и `"127.0.0.1:4000:4000/tcp"`) и проксируйте на эти localhost-порты. Каждый репозиторий сервиса содержит подробное [руководство по обратному прокси](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md#использование-обратного-прокси) с примерами для Caddy и nginx.
 
-При открытии сервисов в интернет установите API-ключи для сервисов с опциональной авторизацией (Whisper, WhisperLive, Kokoro, Embeddings, Docling) через соответствующие env-файлы.
+При открытии сервисов в интернет используйте сгенерированные API-ключи, если они есть. Для существующих развёртываний без ключей сначала задайте API-ключи через соответствующие env-файлы.
 
 ## Резервное копирование и восстановление
 
@@ -559,9 +565,15 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 ```bash
 # Экспорт API-ключей (при работающих контейнерах)
-docker exec ollama ollama_manage --showkey
-docker exec litellm litellm_manage --showkey
-docker exec mcp mcp_manage --showkey
+docker exec ollama ollama_manage --getkey
+docker exec litellm litellm_manage --getkey
+docker exec mcp mcp_manage --getkey
+# Опциональные сервисы; игнорируются, если контейнер не включён или не запущен
+docker exec whisper whisper_manage --getkey 2>/dev/null || true
+docker exec whisper-live whisper_live_manage --getkey 2>/dev/null || true
+docker exec kokoro kokoro_manage --getkey 2>/dev/null || true
+docker exec embeddings embed_manage --getkey 2>/dev/null || true
+docker exec docling docling_manage --getkey 2>/dev/null || true
 
 # Резервное копирование всех томов (сначала остановите сервисы)
 # Остановка и удаление всех контейнеров (данные сохраняются в Docker-томах)

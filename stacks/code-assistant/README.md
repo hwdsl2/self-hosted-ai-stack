@@ -195,7 +195,8 @@ The `LITELLM_MCP_URL=http://mcp:3000/mcp` environment variable is pre-configured
 ```bash
 # Get API keys
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 
 # Use with an AI client (e.g., Cline in VS Code):
 # LLM endpoint: http://localhost:4000 (with LITELLM_KEY)
@@ -204,6 +205,7 @@ MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 # Generate embeddings for semantic code search
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "function to handle authentication", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding[:5]'
 

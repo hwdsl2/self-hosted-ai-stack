@@ -13,17 +13,17 @@
 | `ollama-data` | Ollama | 已下载的模型、API 密钥、端口/服务器配置 |
 | `litellm-data` | LiteLLM | API 密钥、代理配置 |
 | `litellm-db` | LiteLLM | PostgreSQL 数据库（使用数据、日志） |
-| `embeddings-data` | Embeddings | 嵌入模型缓存 |
-| `whisper-data` | Whisper | Whisper 模型缓存 |
-| `whisper-live-data` | WhisperLive | 实时语音转文本模型缓存 |
-| `kokoro-data` | Kokoro | TTS 模型/语音缓存 |
+| `embeddings-data` | Embeddings | 嵌入模型缓存、已生成的 API 密钥 |
+| `whisper-data` | Whisper | Whisper 模型缓存、已生成的 API 密钥 |
+| `whisper-live-data` | WhisperLive | 实时语音转文本模型缓存、已生成的 API 密钥 |
+| `kokoro-data` | Kokoro | TTS 模型/语音缓存、已生成的 API 密钥 |
 | `mcp-data` | MCP Gateway | API 密钥、工具配置 |
-| `docling-data` | Docling | 文档转换模型缓存 |
+| `docling-data` | Docling | 文档转换模型缓存、已生成的 API 密钥 |
 | `anythingllm-data` | AnythingLLM | 聊天记录、工作区、设置、上传的文档、**管理员密码**（`server/.env` 中的 `AUTH_TOKEN`/`JWT_SECRET`，以及首次运行时生成的 `.initial_admin_password` 副本） |
 | `caddy-data` | Caddy | TLS 证书、私钥、OCSP staple、ACME 账户状态 |
 | `caddy-config` | Caddy | Caddy 内部配置存储 |
 
-**重要提示：** Ollama、LiteLLM 和 MCP Gateway 的 API 密钥在首次启动时自动生成，存储在这些卷中。如果丢失卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
+**重要提示：** Ollama、LiteLLM、MCP Gateway，以及 Whisper、WhisperLive、Kokoro、Embeddings 和 Docling 的新持久化安装所生成的 API 密钥，都会存储在这些卷中。如果丢失卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
 
 **重要提示（AnythingLLM）：** 当前管理员密码及其 `JWT_SECRET` 位于 `anythingllm-data` 卷中的 `server/.env`。`.initial_admin_password` 只是首次运行时的密码副本；如果你已在 Settings 中更改密码，该文件可能已经过期。备份此卷会保留当前密码。在其他主机上恢复时会重用相同的密码 — 无需重新生成。
 
@@ -37,9 +37,14 @@
 
 ```bash
 echo "=== API Keys ===" > ai-stack-keys.txt
-echo "Ollama:  $(docker exec ollama ollama_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
-echo "LiteLLM: $(docker exec litellm litellm_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
-echo "MCP:     $(docker exec mcp mcp_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
+echo "Ollama:      $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "LiteLLM:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "MCP:         $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Whisper:     $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "WhisperLive: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Kokoro:      $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Embeddings:  $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Docling:     $(docker exec docling docling_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo ""
 echo "Keys saved to ai-stack-keys.txt"
 cat ai-stack-keys.txt
@@ -244,7 +249,7 @@ docker compose up -d
 
 - **模型权重**（在 `ollama-data` 中）可能很大（每个模型数 GB）。仅在重新下载不便时才需备份（网速慢、自定义微调模型）。
 - **模型缓存**（`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`）在首次启动时自动下载。如果带宽不是问题，可以跳过备份 — 它们会被重新下载。
-- **关键卷**，应始终备份：`ollama-data`（如有自定义模型）、`litellm-data`、`litellm-db`、`mcp-data`（包含 API 密钥和配置）、`anythingllm-data`（聊天记录和工作区），以及 `caddy-data`（如果使用 HTTPS 代理叠加文件）。
+- **关键卷**，应始终备份：密钥/配置卷（`litellm-data`、`litellm-db`、`mcp-data`），需要保留模型或已生成密钥的服务数据卷（`ollama-data`、`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`），`anythingllm-data`（聊天记录和工作区），以及 `caddy-data`（如果使用 HTTPS 代理叠加文件）。
 - 备份文件是标准的 `.tar.gz` 压缩包。可以使用以下命令查看内容：`tar tzf backups/ollama-data.tar.gz`
 
 ### 各堆栈使用的卷

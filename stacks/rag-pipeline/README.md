@@ -188,10 +188,12 @@ You can then create a table with a `vector` column (use the dimension of your em
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 
 # Embed a document chunk
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Store the vector in pgvector (included in the stack's Postgres), or another vector DB such as Qdrant or Chroma.

@@ -13,10 +13,10 @@
 Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling, and Kokoro — fully configured and ready to run with Docker Compose.
 
 - Zero-config: all services auto-configure on first start
-- Secure: AnythingLLM password protection is enabled by default, and Ollama, LiteLLM, and MCP Gateway generate API keys automatically
+- Secure by default: AnythingLLM password protection is enabled, and bundled API services auto-generate keys when persistent storage is used
 - HTTPS-ready: optional Caddy overlay provides automatic TLS and binds direct HTTP ports to localhost
 - Private: runs locally by default with optional external provider support via LiteLLM
-- Optional auth: Whisper, WhisperLive, Kokoro, Embeddings, and Docling work without API keys by default (set keys via env files for public deployments)
+- Flexible: customize models, ports, providers, and API keys with simple env files
 - [Lightweight stacks](#lightweight-stacks) for lower memory requirements (as low as ~4.5 GB)
 - GPU acceleration via NVIDIA CUDA
 - Multi-arch: `linux/amd64`, `linux/arm64`
@@ -85,7 +85,7 @@ docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>Show all API keys (Ollama, LiteLLM, MCP Gateway)</summary>
+<summary>Show core API keys (Ollama, LiteLLM, MCP Gateway)</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -403,9 +403,12 @@ curl -L -o sample_speech.wav \
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
+KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
 # Step 1: Transcribe audio to text (Whisper)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
+    -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
 # Step 2: Send text to Ollama via LiteLLM and get a response
@@ -418,6 +421,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
 # Step 3: Convert the response to speech (Kokoro TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $KOKORO_KEY" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
 ```
@@ -446,10 +450,12 @@ Embed documents for semantic search, retrieve context, then answer questions wit
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 
 # Step 1: Embed a document chunk and store the vector in your vector DB
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Store the returned vector alongside the source text in pgvector (included in the stack's Postgres), or another vector DB such as Qdrant or Chroma.
@@ -474,7 +480,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 Use MCP Gateway to give your AI assistant access to files, web, and GitHub:
 
 ```bash
-MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 
 # Use MCP endpoint with an AI client (e.g., Cline in VS Code)
 # Set the MCP server URL: http://localhost:3000/mcp
@@ -551,7 +557,7 @@ If Caddy reports an unknown `request_body` directive, pull the current `caddy:2`
 
 For older Docker Compose versions or Podman, use a host-based reverse proxy instead: bind direct HTTP ports to localhost in the compose file (for example, `"127.0.0.1:3001:3001/tcp"` and `"127.0.0.1:4000:4000/tcp"`) and proxy to those localhost ports. Each service repository includes a detailed [reverse proxy guide](https://github.com/hwdsl2/docker-whisper#using-a-reverse-proxy) with Caddy and nginx examples.
 
-When exposing services to the internet, set API keys for services that are optional-auth by default (Whisper, WhisperLive, Kokoro, Embeddings, Docling) via their respective env files.
+When exposing services to the internet, use the generated API keys where present. For existing no-key deployments, set API keys via the relevant env files before publishing those services.
 
 ## Backup and restore
 
@@ -559,9 +565,15 @@ Your API keys, models, and configuration are stored in Docker volumes. Back up b
 
 ```bash
 # Export API keys (while containers are running)
-docker exec ollama ollama_manage --showkey
-docker exec litellm litellm_manage --showkey
-docker exec mcp mcp_manage --showkey
+docker exec ollama ollama_manage --getkey
+docker exec litellm litellm_manage --getkey
+docker exec mcp mcp_manage --getkey
+# Optional services; ignored if the container is not enabled/running
+docker exec whisper whisper_manage --getkey 2>/dev/null || true
+docker exec whisper-live whisper_live_manage --getkey 2>/dev/null || true
+docker exec kokoro kokoro_manage --getkey 2>/dev/null || true
+docker exec embeddings embed_manage --getkey 2>/dev/null || true
+docker exec docling docling_manage --getkey 2>/dev/null || true
 
 # Back up all volumes (stop services first)
 # Stop and remove all containers (data is preserved in Docker volumes)

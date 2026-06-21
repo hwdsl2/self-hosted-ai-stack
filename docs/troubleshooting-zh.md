@@ -219,7 +219,7 @@ docker logs ai-stack-caddy
 - 没有其他服务占用端口 `80` 或 `443`。
 - `DOMAIN` 和 `ACME_EMAIL` 的值正确。
 
-公网暴露可选服务时，请为默认允许本地无认证使用的服务设置 API 密钥或代理认证。
+公网暴露可选服务时，请优先使用已生成的 API 密钥。对于已有且未设置密钥的部署，请先通过相应的 env 文件设置 API 密钥，或将服务置于代理认证之后再对外发布。
 
 ## 卷、备份和更新
 
@@ -229,7 +229,7 @@ API 密钥、模型缓存、聊天记录、服务配置和 Caddy 证书状态存
 
 - [备份与恢复](backup-restore-zh.md)
 
-排查问题时，除非已有当前备份，否则不要删除卷。删除卷可能会移除 API 密钥、模型缓存、AnythingLLM 数据、LiteLLM 配置、MCP Gateway 设置和 Caddy 证书。
+排查问题时，除非已有当前备份，否则不要删除卷。删除卷可能会移除 API 密钥、模型缓存、AnythingLLM 数据、LiteLLM 配置、MCP Gateway 设置、可选服务密钥和 Caddy 证书。
 
 更新镜像后运行：
 

@@ -2,6 +2,17 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-06-20
+
+### Changed
+
+- Updated stack documentation and examples for generated API keys in
+  Whisper, WhisperLive, Kokoro, Embeddings, and Docling. The README,
+  lightweight stack guides, backup/restore guide, troubleshooting guide,
+  and translated documentation now show `--getkey` usage and the required
+  auth headers for services that auto-generate keys on fresh persistent
+  installs.
+
 ## 2026-06-14
 
 ### Changed

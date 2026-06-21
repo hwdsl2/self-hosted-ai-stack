@@ -13,17 +13,17 @@ Each service stores its data in a named Docker volume:
 | `ollama-data` | Ollama | Downloaded models, API key, port/server config |
 | `litellm-data` | LiteLLM | API key, proxy configuration |
 | `litellm-db` | LiteLLM | PostgreSQL database (usage data, logs) |
-| `embeddings-data` | Embeddings | Embedding model cache |
-| `whisper-data` | Whisper | Whisper model cache |
-| `whisper-live-data` | WhisperLive | Real-time STT model cache |
-| `kokoro-data` | Kokoro | TTS model/voice cache |
+| `embeddings-data` | Embeddings | Embedding model cache, generated API key |
+| `whisper-data` | Whisper | Whisper model cache, generated API key |
+| `whisper-live-data` | WhisperLive | Real-time STT model cache, generated API key |
+| `kokoro-data` | Kokoro | TTS model/voice cache, generated API key |
 | `mcp-data` | MCP Gateway | API key, tool configuration |
-| `docling-data` | Docling | Document conversion model cache |
+| `docling-data` | Docling | Document conversion model cache, generated API key |
 | `anythingllm-data` | AnythingLLM | Chat history, workspaces, settings, uploaded documents, **admin password** (`server/.env` with `AUTH_TOKEN`/`JWT_SECRET`, plus the first-run `.initial_admin_password` copy) |
 | `caddy-data` | Caddy | TLS certificates, private keys, OCSP staples, ACME account state |
 | `caddy-config` | Caddy | Internal Caddy configuration storage |
 
-**Important:** API keys for Ollama, LiteLLM, and MCP Gateway are auto-generated on first start and stored inside these volumes. If you lose the volume, you lose the key. Connected clients will need to be updated with new keys.
+**Important:** API keys for Ollama, LiteLLM, MCP Gateway, and fresh persistent installs of Whisper, WhisperLive, Kokoro, Embeddings, and Docling are stored inside these volumes. If you lose a volume, you lose its key. Connected clients will need to be updated with new keys.
 
 **Important (AnythingLLM):** The current admin password and its `JWT_SECRET` live in `anythingllm-data` (`server/.env`). The `.initial_admin_password` file is only the first-run password copy and may be stale if you changed the password in Settings. Backing up this volume preserves the current password. Restoring it on a different host re-uses the same password — no need to re-seed.
 
@@ -37,9 +37,14 @@ Before any maintenance, save your current API keys:
 
 ```bash
 echo "=== API Keys ===" > ai-stack-keys.txt
-echo "Ollama:  $(docker exec ollama ollama_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
-echo "LiteLLM: $(docker exec litellm litellm_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
-echo "MCP:     $(docker exec mcp mcp_manage --showkey 2>/dev/null | grep -v '^$')" >> ai-stack-keys.txt
+echo "Ollama:      $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "LiteLLM:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "MCP:         $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Whisper:     $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "WhisperLive: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Kokoro:      $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Embeddings:  $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "Docling:     $(docker exec docling docling_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo ""
 echo "Keys saved to ai-stack-keys.txt"
 cat ai-stack-keys.txt
@@ -244,7 +249,7 @@ docker compose up -d
 
 - **Model weights** (in `ollama-data`) can be large (several GB per model). Back up only if re-downloading is impractical (slow internet, custom fine-tuned models).
 - **Model caches** (`embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`) are downloaded automatically on first start. You can skip backing these up if bandwidth is not a concern — they will be re-downloaded.
-- **Critical volumes** that should always be backed up: `ollama-data` (if custom models), `litellm-data`, `litellm-db`, `mcp-data` (contain API keys and configuration), `anythingllm-data` (chat history and workspaces), and `caddy-data` (if using the HTTPS proxy overlay).
+- **Critical volumes** that should always be backed up: key/config volumes (`litellm-data`, `litellm-db`, `mcp-data`), service data volumes whose models or generated keys you need to preserve (`ollama-data`, `embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`), `anythingllm-data` (chat history and workspaces), and `caddy-data` (if using the HTTPS proxy overlay).
 - Backups are standard `.tar.gz` archives. You can inspect contents with: `tar tzf backups/ollama-data.tar.gz`
 
 ### Volumes by stack

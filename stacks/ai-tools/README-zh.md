@@ -185,7 +185,7 @@ API 密钥通过 Docker 共享卷在服务间自动共享：
 ```bash
 # 获取 API 密钥
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 
 # 在 AI 客户端中使用（例如 VS Code 中的 Cline）：
 # LLM 端点：http://localhost:4000（使用 LITELLM_KEY）

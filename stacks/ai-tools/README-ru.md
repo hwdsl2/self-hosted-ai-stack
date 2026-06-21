@@ -185,7 +185,7 @@ API-ключи автоматически передаются между сер
 ```bash
 # Получение API-ключей
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 
 # Используйте с AI-клиентом (например, Cline в VS Code):
 # LLM-эндпоинт: http://localhost:4000 (с LITELLM_KEY)

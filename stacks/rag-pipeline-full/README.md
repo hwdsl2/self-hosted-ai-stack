@@ -198,15 +198,19 @@ You can then create a table with a `vector` column (use the dimension of your em
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+DOCLING_KEY=$(docker exec docling docling_manage --getkey)
 
 # Step 1: Convert a PDF to Markdown using Docling
 curl -s -X POST http://localhost:5001/v1/convert/file \
+    -H "X-Api-Key: $DOCLING_KEY" \
     -F "file=@document.pdf" \
     | jq -r '.document.md_content' > extracted.md
 
 # Step 2: Embed the extracted text
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Store the vector in pgvector (included in the stack's Postgres), or another vector DB such as Qdrant or Chroma.

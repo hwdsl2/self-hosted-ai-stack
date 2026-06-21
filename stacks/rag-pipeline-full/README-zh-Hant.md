@@ -198,15 +198,19 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+DOCLING_KEY=$(docker exec docling docling_manage --getkey)
 
 # 第 1 步：使用 Docling 將 PDF 轉換為 Markdown
 curl -s -X POST http://localhost:5001/v1/convert/file \
+    -H "X-Api-Key: $DOCLING_KEY" \
     -F "file=@document.pdf" \
     | jq -r '.document.md_content' > extracted.md
 
 # 第 2 步：嵌入擷取的文字
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → 將向量與來源文字一起儲存到 pgvector（已包含在本棧的 Postgres 中），或 Qdrant、Chroma 等其他向量資料庫。

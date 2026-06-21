@@ -195,7 +195,8 @@ API-ключи автоматически передаются между сер
 ```bash
 # Получение API-ключей
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
+MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 
 # Используйте с AI-клиентом (например, Cline в VS Code):
 # LLM-эндпоинт: http://localhost:4000 (с LITELLM_KEY)
@@ -204,6 +205,7 @@ MCP_KEY=$(docker exec mcp mcp_manage --showkey | grep '^mcp-' | head -1)
 # Генерация эмбеддингов для семантического поиска по коду
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $EMBED_KEY" \
     -d '{"input": "function to handle authentication", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding[:5]'
 

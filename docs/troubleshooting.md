@@ -219,7 +219,7 @@ If Caddy cannot get a certificate, check:
 - No other service is using ports `80` or `443`.
 - The `DOMAIN` and `ACME_EMAIL` values are correct.
 
-When exposing optional services publicly, set API keys or proxy authentication for services that allow unauthenticated local use by default.
+When exposing optional services publicly, use the generated API keys where present. For existing no-key deployments, set API keys via the relevant env files or put the services behind proxy authentication before publishing them.
 
 ## Volumes, backups, and updates
 
@@ -229,7 +229,7 @@ See the full backup guide:
 
 - [Backup and Restore](backup-restore.md)
 
-Avoid deleting volumes while troubleshooting unless you have a current backup. Deleting volumes can remove API keys, model caches, AnythingLLM data, LiteLLM configuration, MCP Gateway settings, and Caddy certificates.
+Avoid deleting volumes while troubleshooting unless you have a current backup. Deleting volumes can remove API keys, model caches, AnythingLLM data, LiteLLM configuration, MCP Gateway settings, optional service keys, and Caddy certificates.
 
 After updating images, run:
 
