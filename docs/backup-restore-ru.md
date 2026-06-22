@@ -13,6 +13,7 @@
 | `ollama-data` | Ollama | Загруженные модели, API-ключ, конфигурация порта/сервера |
 | `litellm-data` | LiteLLM | API-ключ, конфигурация прокси |
 | `litellm-db` | LiteLLM | База данных PostgreSQL (данные использования, журналы) |
+| `ai-stack-shared` | Stack | Сгенерированный пароль PostgreSQL для новых установок Compose |
 | `embeddings-data` | Embeddings | Кэш модели эмбеддингов, сгенерированный API-ключ |
 | `whisper-data` | Whisper | Кэш модели Whisper, сгенерированный API-ключ |
 | `whisper-live-data` | WhisperLive | Кэш модели STT в реальном времени, сгенерированный API-ключ |
@@ -29,7 +30,7 @@
 
 **Важно (Caddy):** Если вы используете HTTPS proxy overlay, сделайте резервную копию `caddy-data`. Он содержит приватные ключи сертификатов и состояние ACME-аккаунта. Удаление этого тома заставит Caddy заново выпускать сертификаты и может привести к ограничениям центра сертификации.
 
-**Примечание:** Тома `ollama-shared`, `mcp-shared` и `litellm-shared` являются временными общими томами для автоматической передачи API-ключей между сервисами. Их не нужно резервировать — ключи уже хранятся в `ollama-data`, `mcp-data` и `litellm-data` соответственно и копируются заново при каждом запуске контейнера.
+**Примечание:** Резервируйте `ai-stack-shared` вместе с `litellm-db`; новые установки Compose хранят там сгенерированный пароль PostgreSQL. Тома `ollama-shared`, `mcp-shared` и `litellm-shared` являются временными общими томами для автоматической передачи API-ключей между сервисами. Их не нужно резервировать — ключи уже хранятся в `ollama-data`, `mcp-data` и `litellm-data` соответственно и копируются заново при каждом запуске контейнера.
 
 ## Экспорт API-ключей
 
@@ -64,7 +65,7 @@ docker compose down
 mkdir -p backups
 
 # Создать резервные копии всех томов
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   if docker volume inspect "$vol" >/dev/null 2>&1; then
     echo "Backing up $vol..."
     docker run --rm \
@@ -146,7 +147,7 @@ docker compose up -d
 docker compose down
 
 # Восстановить все тома из резервных копий
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   backup_file="backups/${vol}.tar.gz"
   if [ -f "$backup_file" ]; then
     echo "Restoring $vol..."
@@ -199,7 +200,7 @@ cd self-hosted-ai-stack
 cp -r /path/to/backups ./backups
 
 # Восстановить тома (создаются автоматически)
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   backup_file="backups/${vol}.tar.gz"
   if [ -f "$backup_file" ]; then
     echo "Restoring $vol..."
@@ -249,19 +250,19 @@ docker compose up -d
 
 - **Веса моделей** (в `ollama-data`) могут быть большими (несколько ГБ на модель). Создавайте резервную копию только если повторная загрузка затруднительна (медленный интернет, модели с пользовательской дообучкой).
 - **Кэш моделей** (`embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`) загружается автоматически при первом запуске. Если пропускная способность не является проблемой, резервное копирование можно пропустить — они будут загружены повторно.
-- **Критические тома**, которые всегда следует копировать: тома с ключами/конфигурацией (`litellm-data`, `litellm-db`, `mcp-data`), сервисные тома, где нужно сохранить модели или сгенерированные ключи (`ollama-data`, `embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`), `anythingllm-data` (история чатов и рабочие пространства), а также `caddy-data` (если используется HTTPS proxy overlay).
+- **Критические тома**, которые всегда следует копировать: тома с ключами/конфигурацией (`litellm-data`, `litellm-db`, `ai-stack-shared`, `mcp-data`), сервисные тома, где нужно сохранить модели или сгенерированные ключи (`ollama-data`, `embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`), `anythingllm-data` (история чатов и рабочие пространства), а также `caddy-data` (если используется HTTPS proxy overlay).
 - Резервные копии — это стандартные архивы `.tar.gz`. Просмотреть содержимое можно командой: `tar tzf backups/ollama-data.tar.gz`
 
 ### Тома по стекам
 
 | Стек | Используемые тома |
 |---|---|
-| chat-only | `ollama-data`, `litellm-data`, `litellm-db`, `ollama-shared` |
-| chat-ui | `ollama-data`, `litellm-data`, `litellm-db`, `anythingllm-data`, `ollama-shared`, `litellm-shared` |
-| voice-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `whisper-data`, `kokoro-data`, `ollama-shared` |
-| voice-chat | `ollama-data`, `litellm-data`, `litellm-db`, `anythingllm-data`, `whisper-data`, `kokoro-data`, `ollama-shared`, `litellm-shared` |
-| rag-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `embeddings-data`, `ollama-shared` |
-| rag-pipeline-full | `ollama-data`, `litellm-data`, `litellm-db`, `embeddings-data`, `docling-data`, `ollama-shared` |
-| code-assistant | `ollama-data`, `litellm-data`, `litellm-db`, `embeddings-data`, `mcp-data`, `ollama-shared`, `mcp-shared` |
-| ai-tools | `ollama-data`, `litellm-data`, `litellm-db`, `mcp-data`, `ollama-shared`, `mcp-shared` |
+| chat-only | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `ollama-shared` |
+| chat-ui | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `anythingllm-data`, `ollama-shared`, `litellm-shared` |
+| voice-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `whisper-data`, `kokoro-data`, `ollama-shared` |
+| voice-chat | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `anythingllm-data`, `whisper-data`, `kokoro-data`, `ollama-shared`, `litellm-shared` |
+| rag-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `ollama-shared` |
+| rag-pipeline-full | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `docling-data`, `ollama-shared` |
+| code-assistant | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `mcp-data`, `ollama-shared`, `mcp-shared` |
+| ai-tools | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `mcp-data`, `ollama-shared`, `mcp-shared` |
 | HTTPS proxy overlay | `caddy-data`, `caddy-config` |

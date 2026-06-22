@@ -2,6 +2,28 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-06-22
+
+### Added
+
+- Added generated PostgreSQL credentials for Docker Compose deployments.
+  Fresh installs store a random LiteLLM database password in
+  `ai-stack-shared`, while existing initialized database volumes continue
+  to use the legacy `litellm` password for compatibility. Users with
+  customized database passwords can set `LITELLM_POSTGRES_PASSWORD` in
+  their shell environment before the first updated `docker compose up -d`,
+  or keep an explicit `LITELLM_DATABASE_URL` override.
+
+### Changed
+
+- Updated backup and restore documentation to include `ai-stack-shared`
+  with `litellm-db`, since fresh installs store the generated PostgreSQL
+  password there.
+- Updated upgrade guidance in the main and lightweight stack READMEs to
+  run `docker compose pull` before recreating services and `stack-check.sh`
+  after restart, so upgraded deployments use images that support the new
+  password-file wiring.
+
 ## 2026-06-20
 
 ### Changed

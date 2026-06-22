@@ -73,14 +73,16 @@ docker network create ai-stack
 
 Затем запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). Для production-сред или общих Docker-сетей измените стандартный пароль PostgreSQL перед первым запуском и обновите все соответствующие строки подключения.
+> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и LiteLLM.
 
 ```bash
+LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
+
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
-    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_PASSWORD="$LITELLM_POSTGRES_PASSWORD" \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
@@ -112,7 +114,7 @@ docker run -d --name litellm --restart always \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
     -e LITELLM_MCP_URL=http://mcp:3000/mcp \
-    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
+    -e LITELLM_DATABASE_URL="postgresql://litellm:${LITELLM_POSTGRES_PASSWORD}@litellm-db:5432/litellm" \
     -v litellm-data:/etc/litellm \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     -v mcp-shared:/var/lib/mcp-shared:ro \
@@ -173,7 +175,10 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 git pull
 docker compose pull
 docker compose up -d
+../../stack-check.sh
 ```
+
+После перезапуска подстека выполните `../../stack-check.sh`, чтобы проверить сервисы и настройку сгенерированных учётных данных.
 
 `git pull` обновляет этот репозиторий, включая compose-файлы или вспомогательные скрипты, используемые этим подстеком; `docker compose pull` обновляет образы сервисов.
 

@@ -75,14 +75,16 @@ docker network create ai-stack
 
 然后在共享网络上启动各服务：
 
-> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 Ollama 或 MCP），再启动 LiteLLM；如果使用 AnythingLLM，请先等待 LiteLLM 就绪再启动它）。对于生产环境或共享 Docker 网络，请在首次启动前更改默认 PostgreSQL 密码，并同步更新所有相关连接字符串。
+> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 Ollama 或 MCP），再启动 LiteLLM；如果使用 AnythingLLM，请先等待 LiteLLM 就绪再启动它）。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 LiteLLM 中复用。
 
 ```bash
+LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
+
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
-    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_PASSWORD="$LITELLM_POSTGRES_PASSWORD" \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
@@ -99,7 +101,7 @@ docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
-    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
+    -e LITELLM_DATABASE_URL="postgresql://litellm:${LITELLM_POSTGRES_PASSWORD}@litellm-db:5432/litellm" \
     -v litellm-data:/etc/litellm \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     hwdsl2/litellm-server
@@ -181,7 +183,10 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 git pull
 docker compose pull
 docker compose up -d
+../../stack-check.sh
 ```
+
+子栈重启后，运行 `../../stack-check.sh` 确认服务和生成的凭据配置正常。
 
 `git pull` 用于更新此仓库，包括此子栈使用的所有 compose 文件或辅助脚本；`docker compose pull` 用于更新服务镜像。
 

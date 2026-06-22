@@ -13,6 +13,7 @@
 | `ollama-data` | Ollama | 已下载的模型、API 密钥、端口/服务器配置 |
 | `litellm-data` | LiteLLM | API 密钥、代理配置 |
 | `litellm-db` | LiteLLM | PostgreSQL 数据库（使用数据、日志） |
+| `ai-stack-shared` | Stack | 全新 Compose 安装生成的 PostgreSQL 密码 |
 | `embeddings-data` | Embeddings | 嵌入模型缓存、已生成的 API 密钥 |
 | `whisper-data` | Whisper | Whisper 模型缓存、已生成的 API 密钥 |
 | `whisper-live-data` | WhisperLive | 实时语音转文本模型缓存、已生成的 API 密钥 |
@@ -29,7 +30,7 @@
 
 **重要提示（Caddy）：** 如果使用 HTTPS 代理叠加文件，请备份 `caddy-data`。它包含证书私钥和 ACME 账户状态。删除该卷会强制重新签发证书，并可能触发证书颁发机构的速率限制。
 
-**注：** `ollama-shared`、`mcp-shared` 和 `litellm-shared` 卷是用于在服务之间自动传递 API 密钥的临时共享卷，无需备份——密钥已分别存储在 `ollama-data`、`mcp-data` 和 `litellm-data` 中，每次容器启动时会重新复制。
+**注：** 请将 `ai-stack-shared` 与 `litellm-db` 一起备份；全新的 Compose 安装会将生成的 PostgreSQL 密码存储在那里。`ollama-shared`、`mcp-shared` 和 `litellm-shared` 卷是用于在服务之间自动传递 API 密钥的临时共享卷，无需备份——密钥已分别存储在 `ollama-data`、`mcp-data` 和 `litellm-data` 中，每次容器启动时会重新复制。
 
 ## 导出 API 密钥
 
@@ -64,7 +65,7 @@ docker compose down
 mkdir -p backups
 
 # 备份所有卷
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   if docker volume inspect "$vol" >/dev/null 2>&1; then
     echo "Backing up $vol..."
     docker run --rm \
@@ -146,7 +147,7 @@ docker compose up -d
 docker compose down
 
 # 从备份恢复所有卷
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   backup_file="backups/${vol}.tar.gz"
   if [ -f "$backup_file" ]; then
     echo "Restoring $vol..."
@@ -199,7 +200,7 @@ cd self-hosted-ai-stack
 cp -r /path/to/backups ./backups
 
 # 恢复卷（自动创建）
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   backup_file="backups/${vol}.tar.gz"
   if [ -f "$backup_file" ]; then
     echo "Restoring $vol..."
@@ -249,19 +250,19 @@ docker compose up -d
 
 - **模型权重**（在 `ollama-data` 中）可能很大（每个模型数 GB）。仅在重新下载不便时才需备份（网速慢、自定义微调模型）。
 - **模型缓存**（`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`）在首次启动时自动下载。如果带宽不是问题，可以跳过备份 — 它们会被重新下载。
-- **关键卷**，应始终备份：密钥/配置卷（`litellm-data`、`litellm-db`、`mcp-data`），需要保留模型或已生成密钥的服务数据卷（`ollama-data`、`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`），`anythingllm-data`（聊天记录和工作区），以及 `caddy-data`（如果使用 HTTPS 代理叠加文件）。
+- **关键卷**，应始终备份：密钥/配置卷（`litellm-data`、`litellm-db`、`ai-stack-shared`、`mcp-data`），需要保留模型或已生成密钥的服务数据卷（`ollama-data`、`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`），`anythingllm-data`（聊天记录和工作区），以及 `caddy-data`（如果使用 HTTPS 代理叠加文件）。
 - 备份文件是标准的 `.tar.gz` 压缩包。可以使用以下命令查看内容：`tar tzf backups/ollama-data.tar.gz`
 
 ### 各堆栈使用的卷
 
 | 堆栈 | 使用的卷 |
 |---|---|
-| chat-only | `ollama-data`, `litellm-data`, `litellm-db`, `ollama-shared` |
-| chat-ui | `ollama-data`, `litellm-data`, `litellm-db`, `anythingllm-data`, `ollama-shared`, `litellm-shared` |
-| voice-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `whisper-data`, `kokoro-data`, `ollama-shared` |
-| voice-chat | `ollama-data`, `litellm-data`, `litellm-db`, `anythingllm-data`, `whisper-data`, `kokoro-data`, `ollama-shared`, `litellm-shared` |
-| rag-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `embeddings-data`, `ollama-shared` |
-| rag-pipeline-full | `ollama-data`, `litellm-data`, `litellm-db`, `embeddings-data`, `docling-data`, `ollama-shared` |
-| code-assistant | `ollama-data`, `litellm-data`, `litellm-db`, `embeddings-data`, `mcp-data`, `ollama-shared`, `mcp-shared` |
-| ai-tools | `ollama-data`, `litellm-data`, `litellm-db`, `mcp-data`, `ollama-shared`, `mcp-shared` |
+| chat-only | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `ollama-shared` |
+| chat-ui | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `anythingllm-data`, `ollama-shared`, `litellm-shared` |
+| voice-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `whisper-data`, `kokoro-data`, `ollama-shared` |
+| voice-chat | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `anythingllm-data`, `whisper-data`, `kokoro-data`, `ollama-shared`, `litellm-shared` |
+| rag-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `ollama-shared` |
+| rag-pipeline-full | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `docling-data`, `ollama-shared` |
+| code-assistant | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `mcp-data`, `ollama-shared`, `mcp-shared` |
+| ai-tools | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `mcp-data`, `ollama-shared`, `mcp-shared` |
 | HTTPS 代理叠加文件 | `caddy-data`, `caddy-config` |

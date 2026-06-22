@@ -13,7 +13,7 @@
 Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling, and Kokoro — fully configured and ready to run with Docker Compose.
 
 - Zero-config: all services auto-configure on first start
-- Secure by default: AnythingLLM password protection is enabled, and bundled API services auto-generate keys when persistent storage is used
+- Secure by default: AnythingLLM password protection is enabled, and bundled API services auto-generate keys
 - HTTPS-ready: optional Caddy overlay provides automatic TLS and binds direct HTTP ports to localhost
 - Private: runs locally by default with optional external provider support via LiteLLM
 - Flexible: customize models, ports, providers, and API keys with simple env files
@@ -61,6 +61,8 @@ docker compose up -d
 ```
 
 > **Existing installs:** If you cloned this project before it was renamed from `docker-ai-stack`, your existing checkout and deployment continue to work. GitHub redirects the old repository URL, and you do not need to rename your local directory, containers, volumes, or networks.
+
+> **PostgreSQL credentials:** Fresh installs generate PostgreSQL credentials automatically; see [PostgreSQL credentials](#postgresql-credentials) for upgrade and custom-password notes.
 
 **Pull a model** (required before making LLM requests):
 
@@ -207,16 +209,18 @@ If you prefer using `docker run` commands directly, first create a shared networ
 docker network create ai-stack
 ```
 
-Then start each service on the shared network:
+Then generate a PostgreSQL password and start each service on the shared network:
 
-> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as Ollama or MCP, before LiteLLM; if using AnythingLLM, wait for LiteLLM before starting it). For production or shared Docker networks, change the default PostgreSQL password before first start and update every matching connection string.
+> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as Ollama or MCP, before LiteLLM; if using AnythingLLM, wait for LiteLLM before starting it). The examples below generate one PostgreSQL password variable and reuse it for Postgres and LiteLLM.
 
 ```bash
+LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
+
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
-    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_PASSWORD="$LITELLM_POSTGRES_PASSWORD" \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
@@ -241,7 +245,7 @@ docker run -d --name litellm --restart always \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
     -e LITELLM_MCP_URL=http://mcp:3000/mcp \
-    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
+    -e LITELLM_DATABASE_URL="postgresql://litellm:${LITELLM_POSTGRES_PASSWORD}@litellm-db:5432/litellm" \
     -v litellm-data:/etc/litellm \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     -v mcp-shared:/var/lib/mcp-shared:ro \
@@ -512,7 +516,7 @@ Each service can be configured with an optional env file. Copy the example env f
 
 AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
 
-**Use the stack's Embeddings service (optional).** By default AnythingLLM embeds documents in-process with its bundled MiniLM model and stores the vectors in its own LanceDB. To use the stack's [Embeddings](https://github.com/hwdsl2/docker-embeddings) service (BAAI/bge-small-en-v1.5) and/or the stack's pgvector-enabled Postgres instead, edit the `anythingllm` service in `docker-compose.yml`: comment out `EMBEDDING_ENGINE=native` and uncomment the opt-in block beneath it. Also uncomment the `depends_on` note so the embeddings/db services start first. The opt-in block points at `http://embeddings:8000/v1` and `postgresql://litellm:litellm@db:5432/litellm`; AnythingLLM auto-creates the `vector` extension and `anythingllm_vectors` table on first use. ⚠️ Switching the embedder or vector store on an existing deployment makes previously embedded documents incompatible — re-embed your workspaces after the change.
+**Use the stack's Embeddings service (optional).** By default AnythingLLM embeds documents in-process with its bundled MiniLM model and stores the vectors in its own LanceDB. To use the stack's [Embeddings](https://github.com/hwdsl2/docker-embeddings) service (BAAI/bge-small-en-v1.5) and/or the stack's pgvector-enabled Postgres instead, edit the `anythingllm` service in `docker-compose.yml`: comment out `EMBEDDING_ENGINE=native` and uncomment the opt-in block beneath it. Also uncomment the `depends_on` note so the embeddings/db services start first. When `VECTOR_DB=pgvector` is enabled and no `PGVECTOR_CONNECTION_STRING` is set, AnythingLLM uses the generated Postgres password from `ai-stack-shared` automatically. AnythingLLM auto-creates the `vector` extension and `anythingllm_vectors` table on first use. ⚠️ Switching the embedder or vector store on an existing deployment makes previously embedded documents incompatible — re-embed your workspaces after the change.
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
@@ -579,16 +583,22 @@ docker exec docling docling_manage --getkey 2>/dev/null || true
 # Stop and remove all containers (data is preserved in Docker volumes)
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
 done
 ```
 
-**Note:** The `ollama-shared`, `mcp-shared`, and `litellm-shared` volumes are ephemeral key-sharing volumes and do not need to be backed up.
+**Note:** Back up `ai-stack-shared` with `litellm-db`; fresh installs store the generated PostgreSQL password there. The `ollama-shared`, `mcp-shared`, and `litellm-shared` volumes are ephemeral key-sharing volumes and do not need to be backed up.
 
 For restore instructions, server migration, and the full pre-upgrade checklist, see the [Backup and Restore](docs/backup-restore.md) guide.
+
+## PostgreSQL credentials
+
+Fresh Docker Compose installs generate a random PostgreSQL password automatically and store it in the `ai-stack-shared` volume. Existing default installs continue to use the legacy `litellm` database password for compatibility.
+
+If you previously customized the database password, set `LITELLM_POSTGRES_PASSWORD` in your shell environment to that current password before running `docker compose up -d`, or keep an explicit `LITELLM_DATABASE_URL` override in `litellm.env`.
 
 ## Update images
 
@@ -600,6 +610,8 @@ docker compose pull
 docker compose up -d
 ./stack-check.sh
 ```
+
+After the stack restarts, run `./stack-check.sh` to confirm the services and generated credential wiring are healthy.
 
 `git pull` updates all project files (including any changes to compose files); `docker compose pull` updates the service images. If you've customized `docker-compose.yml`, `git pull` will merge changes automatically, or prompt you to resolve conflicts on the same lines.
 

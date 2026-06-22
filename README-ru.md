@@ -13,7 +13,7 @@
 Включает Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling и Kokoro — полностью сконфигурирован и готов к запуску с Docker Compose.
 
 - Без настройки: все сервисы автоматически конфигурируются при первом запуске
-- Безопасность по умолчанию: защита AnythingLLM паролем включена, а встроенные API-сервисы автоматически генерируют ключи при использовании постоянного хранилища
+- Безопасность по умолчанию: защита AnythingLLM паролем включена, а встроенные API-сервисы автоматически генерируют ключи
 - Готовность к HTTPS: опциональный Caddy overlay предоставляет автоматический TLS и привязывает прямые HTTP-порты к localhost
 - Приватность: по умолчанию работает локально с опциональной поддержкой внешних провайдеров через LiteLLM
 - Гибкость: модели, порты, провайдеры и API-ключи настраиваются через простые env-файлы
@@ -61,6 +61,8 @@ docker compose up -d
 ```
 
 > **Существующие установки:** Если вы клонировали проект до переименования из `docker-ai-stack`, существующий checkout и развёртывание продолжают работать. GitHub перенаправляет старый URL репозитория, и вам не нужно переименовывать локальный каталог, контейнеры, тома или сети.
+
+> **Учётные данные PostgreSQL:** Новые установки автоматически генерируют учётные данные PostgreSQL; см. [Учётные данные PostgreSQL](#учётные-данные-postgresql) для примечаний об обновлении и собственных паролях.
 
 **Загрузка модели** (обязательно перед отправкой LLM-запросов):
 
@@ -207,16 +209,18 @@ graph LR
 docker network create ai-stack
 ```
 
-Затем запустите каждый сервис в общей сети:
+Затем сгенерируйте пароль PostgreSQL и запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). Для production-сред или общих Docker-сетей измените стандартный пароль PostgreSQL перед первым запуском и обновите все соответствующие строки подключения.
+> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и LiteLLM.
 
 ```bash
+LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
+
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
-    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_PASSWORD="$LITELLM_POSTGRES_PASSWORD" \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
@@ -241,7 +245,7 @@ docker run -d --name litellm --restart always \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
     -e LITELLM_MCP_URL=http://mcp:3000/mcp \
-    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
+    -e LITELLM_DATABASE_URL="postgresql://litellm:${LITELLM_POSTGRES_PASSWORD}@litellm-db:5432/litellm" \
     -v litellm-data:/etc/litellm \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     -v mcp-shared:/var/lib/mcp-shared:ro \
@@ -512,7 +516,7 @@ curl -s http://localhost:3000/mcp \
 
 AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
 
-**Использование сервиса Embeddings из стека (опционально).** По умолчанию AnythingLLM выполняет эмбеддинги внутри своего процесса с помощью встроенной модели MiniLM и сохраняет векторы в собственной LanceDB. Чтобы вместо этого использовать сервис [Embeddings](https://github.com/hwdsl2/docker-embeddings) из стека (BAAI/bge-small-en-v1.5) и/или Postgres с включённым pgvector, отредактируйте сервис `anythingllm` в `docker-compose.yml`: закомментируйте `EMBEDDING_ENGINE=native` и раскомментируйте опциональный блок под ним. Также раскомментируйте примечание `depends_on`, чтобы сервисы embeddings/db запускались первыми. Опциональный блок указывает на `http://embeddings:8000/v1` и `postgresql://litellm:litellm@db:5432/litellm`; AnythingLLM автоматически создаёт расширение `vector` и таблицу `anythingllm_vectors` при первом использовании. ⚠️ Переключение движка эмбеддингов или векторного хранилища на существующем развёртывании делает ранее проиндексированные документы несовместимыми — повторно проиндексируйте свои рабочие пространства после смены.
+**Использование сервиса Embeddings из стека (опционально).** По умолчанию AnythingLLM выполняет эмбеддинги внутри своего процесса с помощью встроенной модели MiniLM и сохраняет векторы в собственной LanceDB. Чтобы вместо этого использовать сервис [Embeddings](https://github.com/hwdsl2/docker-embeddings) из стека (BAAI/bge-small-en-v1.5) и/или Postgres с включённым pgvector, отредактируйте сервис `anythingllm` в `docker-compose.yml`: закомментируйте `EMBEDDING_ENGINE=native` и раскомментируйте опциональный блок под ним. Также раскомментируйте примечание `depends_on`, чтобы сервисы embeddings/db запускались первыми. Когда включён `VECTOR_DB=pgvector` и `PGVECTOR_CONNECTION_STRING` не задан, AnythingLLM автоматически использует сгенерированный пароль Postgres из `ai-stack-shared`. AnythingLLM автоматически создаёт расширение `vector` и таблицу `anythingllm_vectors` при первом использовании. ⚠️ Переключение движка эмбеддингов или векторного хранилища на существующем развёртывании делает ранее проиндексированные документы несовместимыми — повторно проиндексируйте свои рабочие пространства после смены.
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 
@@ -579,16 +583,22 @@ docker exec docling docling_manage --getkey 2>/dev/null || true
 # Остановка и удаление всех контейнеров (данные сохраняются в Docker-томах)
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
 done
 ```
 
-**Примечание:** Тома `ollama-shared`, `mcp-shared` и `litellm-shared` являются временными томами для передачи ключей и не требуют резервного копирования.
+**Примечание:** Резервируйте `ai-stack-shared` вместе с `litellm-db`; новые установки хранят там сгенерированный пароль PostgreSQL. Тома `ollama-shared`, `mcp-shared` и `litellm-shared` являются временными томами для передачи ключей и не требуют резервного копирования.
 
 Инструкции по восстановлению, миграции на новый сервер и полный контрольный список перед обновлением см. в руководстве [Резервное копирование и восстановление](docs/backup-restore-ru.md).
+
+## Учётные данные PostgreSQL
+
+Новые установки Docker Compose автоматически генерируют случайный пароль PostgreSQL и сохраняют его в томе `ai-stack-shared`. Существующие установки с паролем по умолчанию продолжают использовать старый пароль базы данных `litellm` для совместимости.
+
+Если вы ранее настроили собственный пароль базы данных, задайте `LITELLM_POSTGRES_PASSWORD` в окружении shell с текущим паролем перед запуском `docker compose up -d` или сохраните явное переопределение `LITELLM_DATABASE_URL` в `litellm.env`.
 
 ## Обновление образов
 
@@ -600,6 +610,8 @@ docker compose pull
 docker compose up -d
 ./stack-check.sh
 ```
+
+После перезапуска стека выполните `./stack-check.sh`, чтобы проверить сервисы и настройку сгенерированных учётных данных.
 
 `git pull` обновляет все файлы проекта (включая изменения compose-файлов); `docker compose pull` обновляет образы сервисов. Если вы изменяли `docker-compose.yml`, `git pull` объединит изменения автоматически или попросит разрешить конфликт, если изменены одни и те же строки.
 

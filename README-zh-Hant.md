@@ -13,7 +13,7 @@
 包含 Ollama、LiteLLM、AnythingLLM、Whisper、MCP Gateway、Embeddings、Docling 和 Kokoro — 使用 Docker Compose 完整配置，開箱即用。
 
 - 零配置：所有服務在首次啟動時自動配置
-- 預設安全：AnythingLLM 預設啟用密碼保護，內建 API 服務會在使用持久化儲存時自動產生 API 金鑰
+- 預設安全：AnythingLLM 預設啟用密碼保護，內建 API 服務會自動產生 API 金鑰
 - HTTPS 就緒：可選 Caddy 疊加檔案提供自動 TLS，並將直接 HTTP 連接埠繫結到 localhost
 - 隱私：預設在本機執行，可透過 LiteLLM 選擇性接入外部提供商
 - 彈性配置：可透過簡單的 env 檔案自訂模型、連接埠、提供商和 API 金鑰
@@ -61,6 +61,8 @@ docker compose up -d
 ```
 
 > **現有安裝：** 如果您在本專案從 `docker-ai-stack` 更名前已經複製，現有檢出和部署會繼續運作。GitHub 會重新導向舊儲存庫 URL，您無需重新命名本機目錄、容器、磁碟區或網路。
+
+> **PostgreSQL 憑證：** 全新安裝會自動產生 PostgreSQL 憑證；有關升級和自訂密碼說明，請參閱 [PostgreSQL 憑證](#postgresql-憑證)。
 
 **拉取模型**（發出 LLM 請求前必須執行）：
 
@@ -207,16 +209,18 @@ graph LR
 docker network create ai-stack
 ```
 
-然後在共享網路上啟動各服務：
+然後產生 PostgreSQL 密碼，並在共享網路上啟動各服務：
 
-> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 Ollama 或 MCP），再啟動 LiteLLM；如果使用 AnythingLLM，請先等待 LiteLLM 就緒再啟動它）。對於生產環境或共享 Docker 網路，請在首次啟動前變更預設 PostgreSQL 密碼，並同步更新所有相關連接字串。
+> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 Ollama 或 MCP），再啟動 LiteLLM；如果使用 AnythingLLM，請先等待 LiteLLM 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 LiteLLM 中重複使用。
 
 ```bash
+LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
+
 # PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
-    -e POSTGRES_PASSWORD=litellm \
+    -e POSTGRES_PASSWORD="$LITELLM_POSTGRES_PASSWORD" \
     -e POSTGRES_DB=litellm \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
@@ -241,7 +245,7 @@ docker run -d --name litellm --restart always \
     -p 4000:4000 \
     -e LITELLM_OLLAMA_BASE_URL=http://ollama:11434 \
     -e LITELLM_MCP_URL=http://mcp:3000/mcp \
-    -e LITELLM_DATABASE_URL=postgresql://litellm:litellm@litellm-db:5432/litellm \
+    -e LITELLM_DATABASE_URL="postgresql://litellm:${LITELLM_POSTGRES_PASSWORD}@litellm-db:5432/litellm" \
     -v litellm-data:/etc/litellm \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     -v mcp-shared:/var/lib/mcp-shared:ro \
@@ -512,7 +516,7 @@ curl -s http://localhost:3000/mcp \
 
 AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您可以在 **Settings** 中變更 LLM 供應商、模型、嵌入引擎和其他設定。詳情請參閱 [AnythingLLM 文件](https://docs.useanything.com/)。
 
-**使用本技術堆疊的 Embeddings 服務（選用）。** 預設情況下，AnythingLLM 使用其內建的 MiniLM 模型進行行程內嵌入，並將向量儲存在自帶的 LanceDB 中。若要改用本技術堆疊的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服務（BAAI/bge-small-en-v1.5）和/或本技術堆疊啟用了 pgvector 的 Postgres，請編輯 `docker-compose.yml` 中的 `anythingllm` 服務：註解掉 `EMBEDDING_ENGINE=native` 並取消註解下方的選用啟用程式碼區塊。同時取消註解 `depends_on` 備註，以便 embeddings/db 服務先啟動。該啟用區塊指向 `http://embeddings:8000/v1` 和 `postgresql://litellm:litellm@db:5432/litellm`；AnythingLLM 首次使用時會自動建立 `vector` 擴充功能和 `anythingllm_vectors` 資料表。⚠️ 在現有部署上切換嵌入引擎或向量儲存會使先前嵌入的文件不相容 — 切換後請重新嵌入您的工作區。
+**使用本技術堆疊的 Embeddings 服務（選用）。** 預設情況下，AnythingLLM 使用其內建的 MiniLM 模型進行行程內嵌入，並將向量儲存在自帶的 LanceDB 中。若要改用本技術堆疊的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服務（BAAI/bge-small-en-v1.5）和/或本技術堆疊啟用了 pgvector 的 Postgres，請編輯 `docker-compose.yml` 中的 `anythingllm` 服務：註解掉 `EMBEDDING_ENGINE=native` 並取消註解下方的選用啟用程式碼區塊。同時取消註解 `depends_on` 備註，以便 embeddings/db 服務先啟動。啟用 `VECTOR_DB=pgvector` 且未設定 `PGVECTOR_CONNECTION_STRING` 時，AnythingLLM 會自動使用 `ai-stack-shared` 中產生的 Postgres 密碼。AnythingLLM 首次使用時會自動建立 `vector` 擴充功能和 `anythingllm_vectors` 資料表。⚠️ 在現有部署上切換嵌入引擎或向量儲存會使先前嵌入的文件不相容 — 切換後請重新嵌入您的工作區。
 
 有關詳細設定選項、API 參考和模型管理，請參閱各服務儲存庫的文件。
 
@@ -579,16 +583,22 @@ docker exec docling docling_manage --getkey 2>/dev/null || true
 # 停止並移除所有容器（資料保留在 Docker 卷中）
 docker compose down
 mkdir -p backups
-for vol in ollama-data litellm-data litellm-db embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
+for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data whisper-data whisper-live-data kokoro-data mcp-data docling-data anythingllm-data caddy-data caddy-config; do
   docker volume inspect "$vol" >/dev/null 2>&1 && \
     docker run --rm -v "${vol}:/source:ro" -v "$(pwd)/backups:/backup" \
       alpine tar czf "/backup/${vol}.tar.gz" -C /source .
 done
 ```
 
-**注：** `ollama-shared`、`mcp-shared` 和 `litellm-shared` 磁碟區是臨時金鑰共享卷，無需備份。
+**注：** 請將 `ai-stack-shared` 與 `litellm-db` 一起備份；全新安裝會將產生的 PostgreSQL 密碼儲存在那裡。`ollama-shared`、`mcp-shared` 和 `litellm-shared` 磁碟區是臨時金鑰共享卷，無需備份。
 
 有關還原說明、伺服器遷移和完整的升級前檢查清單，請參閱[備份與還原](docs/backup-restore-zh-Hant.md)指南。
+
+## PostgreSQL 憑證
+
+全新的 Docker Compose 安裝會自動產生隨機 PostgreSQL 密碼，並將其儲存在 `ai-stack-shared` 磁碟區中。現有預設安裝會繼續使用舊的 `litellm` 資料庫密碼以保持相容。
+
+如果您先前自訂過資料庫密碼，請在執行 `docker compose up -d` 前在 shell 環境中將 `LITELLM_POSTGRES_PASSWORD` 設為目前密碼，或在 `litellm.env` 中保留明確的 `LITELLM_DATABASE_URL` 覆蓋。
 
 ## 更新映像檔
 
@@ -600,6 +610,8 @@ docker compose pull
 docker compose up -d
 ./stack-check.sh
 ```
+
+技術堆疊重新啟動後，執行 `./stack-check.sh` 確認服務和產生的憑證設定正常。
 
 `git pull` 用於更新所有專案檔案（包括 compose 檔案的變更）；`docker compose pull` 用於更新服務映像檔。如果您自訂過 `docker-compose.yml`，`git pull` 將自動合併變更，或在同一行存在衝突時提示您解決衝突。
 
