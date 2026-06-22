@@ -101,8 +101,9 @@ find_service() {
 # Check if a URL responds with HTTP 2xx within timeout
 http_ok() {
   local url="$1"
+  shift
   local code
-  code=$(curl -sf -o /dev/null -w '%{http_code}' --max-time 10 "$url" 2>/dev/null) || true
+  code=$(curl -sf -o /dev/null -w '%{http_code}' --max-time 10 "$@" "$url" 2>/dev/null) || true
   [[ "$code" =~ ^2 ]]
 }
 
@@ -113,6 +114,14 @@ http_post_ok() {
   local code
   code=$(curl -sf -o /dev/null -w '%{http_code}' --max-time 15 -X POST "$@" "$url" 2>/dev/null) || true
   [[ "$code" =~ ^2 ]]
+}
+
+service_key() {
+  local container="$1"
+  local manage_cmd="$2"
+  local key
+  key=$("$ENGINE" exec "$container" "$manage_cmd" --getkey 2>/dev/null | tr -d '\r\n') || key=""
+  printf '%s' "$key"
 }
 
 echo ""
@@ -244,9 +253,18 @@ if [ -n "$EMBEDDINGS" ]; then
 
   pass "Container running"
 
+  EMBED_KEY=$(service_key "$EMBEDDINGS" embed_manage)
+  EMBED_CURL_ARGS=(-H "Content-Type: application/json")
+  if [ -n "$EMBED_KEY" ]; then
+    pass "API key generated"
+    EMBED_CURL_ARGS+=(-H "Authorization: Bearer $EMBED_KEY")
+  else
+    warn "API key not configured (existing no-auth install or explicit disable)"
+  fi
+
   # Test embeddings endpoint
   if http_post_ok "http://localhost:8000/v1/embeddings" \
-    -H "Content-Type: application/json" \
+    "${EMBED_CURL_ARGS[@]}" \
     -d '{"input":"test","model":"text-embedding-ada-002"}'; then
     pass "Embedding endpoint responds"
   else
@@ -265,11 +283,26 @@ if [ -n "$WHISPER" ]; then
 
   pass "Container running"
 
+  WHISPER_KEY=$(service_key "$WHISPER" whisper_manage)
+  WHISPER_CURL_ARGS=()
+  if [ -n "$WHISPER_KEY" ]; then
+    pass "API key generated"
+    WHISPER_CURL_ARGS=(-H "Authorization: Bearer $WHISPER_KEY")
+  else
+    warn "API key not configured (existing no-auth install or explicit disable)"
+  fi
+
   # Check if the transcription endpoint is reachable (GET or OPTIONS)
   if http_ok "http://localhost:9000/health" || http_ok "http://localhost:9000/"; then
     pass "Service responds"
   else
     warn "Could not verify health endpoint (service may still work)"
+  fi
+
+  if http_ok "http://localhost:9000/v1/models" "${WHISPER_CURL_ARGS[@]}"; then
+    pass "Models endpoint responds"
+  else
+    fail "Models endpoint not responding at http://localhost:9000/v1/models"
   fi
 else
   info "Whisper STT — not running (skipped)"
@@ -284,9 +317,18 @@ if [ -n "$KOKORO" ]; then
 
   pass "Container running"
 
+  KOKORO_KEY=$(service_key "$KOKORO" kokoro_manage)
+  KOKORO_CURL_ARGS=(-H "Content-Type: application/json")
+  if [ -n "$KOKORO_KEY" ]; then
+    pass "API key generated"
+    KOKORO_CURL_ARGS+=(-H "Authorization: Bearer $KOKORO_KEY")
+  else
+    warn "API key not configured (existing no-auth install or explicit disable)"
+  fi
+
   # Test TTS endpoint with a minimal request
   if http_post_ok "http://localhost:8880/v1/audio/speech" \
-    -H "Content-Type: application/json" \
+    "${KOKORO_CURL_ARGS[@]}" \
     -d '{"model":"tts-1","input":"ok","voice":"af_heart"}'; then
     pass "TTS endpoint responds"
   else
@@ -338,8 +380,17 @@ if [ -n "$WHISPERLIVE" ]; then
 
   pass "Container running"
 
+  WHISPERLIVE_KEY=$(service_key "$WHISPERLIVE" whisper_live_manage)
+  WHISPERLIVE_CURL_ARGS=()
+  if [ -n "$WHISPERLIVE_KEY" ]; then
+    pass "API key generated"
+    WHISPERLIVE_CURL_ARGS=(-H "Authorization: Bearer $WHISPERLIVE_KEY")
+  else
+    warn "API key not configured (existing no-auth install or explicit disable)"
+  fi
+
   # Check REST API docs endpoint (indicates server is ready)
-  if http_ok "http://localhost:8001/docs"; then
+  if http_ok "http://localhost:8001/docs" "${WHISPERLIVE_CURL_ARGS[@]}"; then
     pass "REST API endpoint responds"
   else
     warn "Could not verify REST API endpoint (service may still be loading)"
@@ -357,6 +408,13 @@ if [ -n "$DOCLING" ]; then
   info "Docling ($DOCLING)"
 
   pass "Container running"
+
+  DOCLING_KEY=$(service_key "$DOCLING" docling_manage)
+  if [ -n "$DOCLING_KEY" ]; then
+    pass "API key generated"
+  else
+    warn "API key not configured (existing no-auth install or explicit disable)"
+  fi
 
   # Check health endpoint
   if http_ok "http://localhost:5001/health"; then
