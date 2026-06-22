@@ -19,6 +19,10 @@ All notable changes to self-hosted-ai-stack are documented here.
 - Updated backup and restore documentation to include `ai-stack-shared`
   with `litellm-db`, since fresh installs store the generated PostgreSQL
   password there.
+- Updated `stack-check.sh` to use generated API keys when checking Whisper,
+  WhisperLive, Kokoro, and Embeddings, and to verify Docling key retrieval
+  while still allowing existing no-key service volumes to be checked for
+  compatibility.
 - Updated upgrade guidance in the main and lightweight stack READMEs to
   run `docker compose pull` before recreating services and `stack-check.sh`
   after restart, so upgraded deployments use images that support the new
