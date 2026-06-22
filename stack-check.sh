@@ -164,6 +164,21 @@ if [ -n "$DB" ]; then
   else
     fail "Database is not ready for user litellm"
   fi
+
+  if "$ENGINE" exec "$DB" test -r /var/lib/ai-stack-shared/litellm_postgres_password 2>/dev/null; then
+    DB_PASS=$("$ENGINE" exec "$DB" sh -c 'cat /var/lib/ai-stack-shared/litellm_postgres_password 2>/dev/null' | tr -d '\r\n') || DB_PASS=""
+    if [ -n "$DB_PASS" ]; then
+      if [ "$DB_PASS" = "litellm" ]; then
+        warn "Database uses legacy compatibility password"
+      else
+        pass "Database password secret present"
+      fi
+    else
+      fail "Database password secret is empty"
+    fi
+  else
+    warn "Database password secret not mounted (older stack or custom database configuration)"
+  fi
 else
   info "PostgreSQL — not running (skipped)"
 fi
@@ -190,6 +205,12 @@ if [ -n "$LITELLM" ]; then
     pass "API key generated"
   else
     warn "API key file not found"
+  fi
+
+  if "$ENGINE" exec "$LITELLM" test -f /etc/litellm/.db_configured 2>/dev/null; then
+    pass "Database integration configured"
+  else
+    warn "Database integration marker not found — run 'docker compose pull litellm && docker compose up -d litellm' if you recently updated the stack"
   fi
 
   # If Ollama is running and has models, test a routing check

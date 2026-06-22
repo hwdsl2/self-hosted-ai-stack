@@ -21,16 +21,32 @@ services:
               count: 1
               capabilities: [gpu]
 
+  ai-stack-init:
+    image: alpine:3.24
+    container_name: ai-stack-init
+    restart: "no"
+    environment:
+      - LITELLM_POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-}
+    volumes:
+      - litellm-db:/var/lib/postgresql:ro
+      - ai-stack-shared:/var/lib/ai-stack-shared
+      - ../../scripts/ai-stack-init.sh:/usr/local/bin/ai-stack-init.sh:ro
+    entrypoint: ["/bin/sh", "/usr/local/bin/ai-stack-init.sh"]
+
   db:
     image: pgvector/pgvector:pg18-trixie
     container_name: litellm-db
     restart: always
     environment:
       POSTGRES_USER: litellm
-      POSTGRES_PASSWORD: litellm
+      POSTGRES_PASSWORD_FILE: /var/lib/ai-stack-shared/litellm_postgres_password
       POSTGRES_DB: litellm
     volumes:
       - litellm-db:/var/lib/postgresql
+      - ai-stack-shared:/var/lib/ai-stack-shared:ro
+    depends_on:
+      ai-stack-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U litellm"]
       interval: 15s
@@ -46,9 +62,10 @@ services:
     environment:
       - LITELLM_OLLAMA_BASE_URL=http://ollama:11434
       - LITELLM_MCP_URL=http://mcp:3000/mcp
-      - LITELLM_DATABASE_URL=postgresql://litellm:litellm@db:5432/litellm
+      - LITELLM_POSTGRES_PASSWORD_FILE=/var/lib/ai-stack-shared/litellm_postgres_password
     volumes:
       - litellm-data:/etc/litellm
+      - ai-stack-shared:/var/lib/ai-stack-shared:ro
       - ollama-shared:/var/lib/ollama-shared:ro
       - mcp-shared:/var/lib/mcp-shared:ro
       # - ./litellm.env:/litellm.env:ro  # optional: custom config
@@ -106,5 +123,7 @@ volumes:
     name: mcp-shared
   embeddings-data:
     name: embeddings-data
+  ai-stack-shared:
+    name: ai-stack-shared
   litellm-db:
     name: litellm-db

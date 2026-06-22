@@ -14,7 +14,7 @@
 # Read LiteLLM API key from shared volume (wait for it to be available)
 if [ -d /var/lib/litellm-shared ]; then
   echo "Waiting for LiteLLM API key..."
-  for i in $(seq 1 300); do
+  for _ in $(seq 1 300); do
     if [ -r /var/lib/litellm-shared/.api_key ]; then
       KEY=$(cat /var/lib/litellm-shared/.api_key)
       case "$KEY" in
@@ -100,10 +100,15 @@ generate_jwt_secret() {
   return 1
 }
 
+urlencode_component() {
+  node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$1"
+}
+
 # Persist server/.env across container recreation via anythingllm-data volume
 STORAGE_DIR=/app/server/storage
 PERSISTENT_ENV="$STORAGE_DIR/.env"
 LIVE_ENV=/app/server/.env
+POSTGRES_PASSWORD_FILE=${POSTGRES_PASSWORD_FILE:-/var/lib/ai-stack-shared/litellm_postgres_password}
 
 mkdir -p "$STORAGE_DIR" 2>/dev/null || true
 if [ ! -f "$PERSISTENT_ENV" ]; then
@@ -152,6 +157,23 @@ EOF
   fi
 fi
 ln -sf "$PERSISTENT_ENV" "$LIVE_ENV"
+
+if [ "$VECTOR_DB" = "pgvector" ] && [ -z "$PGVECTOR_CONNECTION_STRING" ] \
+  && ! grep -Eq '^[[:space:]]*PGVECTOR_CONNECTION_STRING=' "$PERSISTENT_ENV" 2>/dev/null; then
+  if [ -r "$POSTGRES_PASSWORD_FILE" ]; then
+    POSTGRES_PASS=$(cat "$POSTGRES_PASSWORD_FILE")
+    POSTGRES_PASS=$(printf '%s' "$POSTGRES_PASS" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    if [ -n "$POSTGRES_PASS" ]; then
+      ENCODED_POSTGRES_PASS=$(urlencode_component "$POSTGRES_PASS")
+      export PGVECTOR_CONNECTION_STRING="postgresql://litellm:${ENCODED_POSTGRES_PASS}@db:5432/litellm"
+      echo "Configured AnythingLLM pgvector connection from shared stack secret."
+    else
+      echo "Warning: Postgres password file is empty; pgvector connection string was not configured."
+    fi
+  else
+    echo "Warning: Postgres password file not readable; pgvector connection string was not configured."
+  fi
+fi
 
 # Start AnythingLLM using the original entrypoint
 exec /usr/local/bin/docker-entrypoint.sh
