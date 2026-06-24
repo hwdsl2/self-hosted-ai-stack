@@ -132,13 +132,14 @@ docker run -d --name anythingllm --restart always \
     -e GENERIC_OPEN_AI_BASE_PATH=http://litellm:4000/v1 \
     -e GENERIC_OPEN_AI_MODEL_PREF=ollama/llama3.2:3b \
     -e GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=131072 \
+    -e ANYTHINGLLM_DEFAULT_CHAT_MODE=chat \
     -e EMBEDDING_ENGINE=native \
     -e DISABLE_TELEMETRY=true \
     -v anythingllm-data:/app/server/storage \
     -v litellm-shared:/var/lib/litellm-shared:ro \
     -v "$(pwd)/chat-ui-bootstrap.sh:/usr/local/bin/chat-ui-bootstrap.sh:ro" \
     --entrypoint /bin/bash \
-    mintplexlabs/anythingllm:1.13 \
+    mintplexlabs/anythingllm:1.14.1 \
     /usr/local/bin/chat-ui-bootstrap.sh
 ```
 

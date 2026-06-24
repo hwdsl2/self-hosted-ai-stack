@@ -2,6 +2,17 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-06-24
+
+### Changed
+
+- Updated AnythingLLM from `1.13` to `1.14.1` in the root, `chat-ui`, and
+  `voice-chat` stacks. The chat UI bootstrap now defaults AnythingLLM
+  workspaces to chat mode, migrates existing automatic-mode workspaces to
+  chat mode when possible, and prefers LiteLLM's `ollama-chat/llama3.2:3b`
+  alias when available while preserving custom model settings and falling
+  back to `ollama/llama3.2:3b` for older LiteLLM images.
+
 ## 2026-06-22
 
 ### Added
