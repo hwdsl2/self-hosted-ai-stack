@@ -11,6 +11,219 @@
 # This work is licensed under the MIT License
 # See: https://opensource.org/licenses/MIT
 
+DEFAULT_OLLAMA_MODEL="ollama/llama3.2:3b"
+PREFERRED_OLLAMA_CHAT_MODEL="ollama-chat/llama3.2:3b"
+LITELLM_MODEL_API_WAIT_SECONDS=120
+LITELLM_ALIAS_GRACE_SECONDS=15
+LITELLM_MODEL_API_RETRY_SECONDS=3
+
+litellm_model_status() {
+  MODEL_TO_FIND="$1" node <<'NODE'
+const http = require("http");
+const https = require("https");
+
+const model = process.env.MODEL_TO_FIND;
+const base = (process.env.GENERIC_OPEN_AI_BASE_PATH || "http://litellm:4000/v1").replace(/\/+$/, "");
+const apiKey = process.env.GENERIC_OPEN_AI_API_KEY || "";
+let url;
+
+try {
+  url = new URL(`${base}/models`);
+} catch {
+  process.exit(2);
+}
+
+const client = url.protocol === "https:" ? https : http;
+const headers = {};
+if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+
+const req = client.get(url, { headers, timeout: 5000 }, (res) => {
+  let body = "";
+  res.setEncoding("utf8");
+  res.on("data", (chunk) => (body += chunk));
+  res.on("end", () => {
+    if (res.statusCode < 200 || res.statusCode >= 300) process.exit(2);
+    try {
+      const parsed = JSON.parse(body);
+      const models = Array.isArray(parsed?.data) ? parsed.data : [];
+      const found = models.some((entry) => entry?.id === model || entry?.model_name === model);
+      process.exit(found ? 0 : 1);
+    } catch {
+      process.exit(2);
+    }
+  });
+});
+
+req.on("timeout", () => req.destroy(new Error("timeout")));
+req.on("error", () => process.exit(2));
+NODE
+}
+
+wait_for_litellm_model() {
+  local model="$1" start_time="$SECONDS" reachable_time="" status waiting_logged=0
+
+  while true; do
+    litellm_model_status "$model"
+    status=$?
+
+    case "$status" in
+      0)
+        return 0
+        ;;
+      1)
+        [ -n "$reachable_time" ] || reachable_time="$SECONDS"
+        if [ $((SECONDS - reachable_time)) -ge "$LITELLM_ALIAS_GRACE_SECONDS" ]; then
+          return 1
+        fi
+        ;;
+      *)
+        if [ -n "$reachable_time" ]; then
+          if [ $((SECONDS - reachable_time)) -ge "$LITELLM_ALIAS_GRACE_SECONDS" ]; then
+            return 1
+          fi
+        elif [ $((SECONDS - start_time)) -ge "$LITELLM_MODEL_API_WAIT_SECONDS" ]; then
+          return 2
+        elif [ "$waiting_logged" = 0 ]; then
+          echo "Waiting for LiteLLM model API..."
+          waiting_logged=1
+        fi
+        ;;
+    esac
+
+    sleep "$LITELLM_MODEL_API_RETRY_SECONDS"
+  done
+}
+
+configure_model_pref() {
+  local current_model_pref="${GENERIC_OPEN_AI_MODEL_PREF:-}" model_status
+
+  if [ -z "$current_model_pref" ] || [ "$current_model_pref" = "$DEFAULT_OLLAMA_MODEL" ]; then
+    wait_for_litellm_model "$PREFERRED_OLLAMA_CHAT_MODEL"
+    model_status=$?
+
+    if [ "$model_status" = 0 ]; then
+      export GENERIC_OPEN_AI_MODEL_PREF="$PREFERRED_OLLAMA_CHAT_MODEL"
+      echo "Using LiteLLM Ollama chat model alias: $GENERIC_OPEN_AI_MODEL_PREF"
+    elif [ -z "$current_model_pref" ]; then
+      export GENERIC_OPEN_AI_MODEL_PREF="$DEFAULT_OLLAMA_MODEL"
+      echo "Using default LiteLLM Ollama model alias: $GENERIC_OPEN_AI_MODEL_PREF"
+    elif [ "$model_status" = 2 ]; then
+      echo "LiteLLM model API not available; keeping $GENERIC_OPEN_AI_MODEL_PREF"
+    else
+      echo "LiteLLM Ollama chat model alias not found; keeping $GENERIC_OPEN_AI_MODEL_PREF"
+    fi
+  else
+    echo "Preserving custom AnythingLLM model preference: $GENERIC_OPEN_AI_MODEL_PREF"
+  fi
+}
+
+update_anythingllm_default_chat_mode() {
+  [ "${ANYTHINGLLM_DEFAULT_CHAT_MODE:-}" = "chat" ] || return 0
+
+  node <<'NODE'
+const fs = require("fs");
+
+const file = "/app/server/models/workspace.js";
+if (!fs.existsSync(file)) {
+  console.warn("Warning: AnythingLLM workspace model source not found; chat mode update skipped.");
+  process.exit(0);
+}
+
+let src = fs.readFileSync(file, "utf8");
+let changed = false;
+
+const validationAutomatic = 'if (!value || !Workspace.VALID_CHAT_MODES.includes(value))\n        return "automatic";';
+const validationChat = 'if (!value || !Workspace.VALID_CHAT_MODES.includes(value))\n        return "chat";';
+if (src.includes(validationAutomatic)) {
+  src = src.replace(validationAutomatic, validationChat);
+  changed = true;
+} else if (!src.includes(validationChat)) {
+  console.warn("Warning: AnythingLLM chatMode validation fallback update pattern not found; source may have changed.");
+}
+
+if (src.includes('chatMode: "automatic",')) {
+  src = src.replace('chatMode: "automatic",', 'chatMode: "chat",');
+  changed = true;
+} else if (!src.includes('chatMode: "chat",')) {
+  console.warn("Warning: AnythingLLM new workspace chatMode update pattern not found; source may have changed.");
+}
+
+if (changed) {
+  fs.writeFileSync(file, src);
+  console.log("Updated AnythingLLM default workspace chat mode to chat.");
+} else {
+  console.log("AnythingLLM default workspace chat mode is already set to chat.");
+}
+NODE
+}
+
+migrate_existing_workspaces_chat_mode() {
+  [ "${ANYTHINGLLM_DEFAULT_CHAT_MODE:-}" = "chat" ] || return 0
+  local migration_marker="$STORAGE_DIR/.chat_mode_default_migration_done"
+
+  [ ! -f "$migration_marker" ] || return 0
+
+  if [ ! -f "$STORAGE_DIR/anythingllm.db" ]; then
+    : > "$migration_marker"
+    chmod 600 "$migration_marker" 2>/dev/null || true
+    return 0
+  fi
+
+  (
+    cd /app/server || exit 1
+    node <<'NODE'
+const fs = require("fs");
+const storageDir = (process.env.STORAGE_DIR || "/app/server/storage").replace(/\/+$/, "");
+const db = `${storageDir}/anythingllm.db`;
+
+if (!fs.existsSync(db)) process.exit(1);
+
+(async () => {
+  let PrismaClient;
+  try {
+    ({ PrismaClient } = require("@prisma/client"));
+  } catch {
+    console.log("Existing workspace chatMode migration skipped because Prisma client is not available.");
+    process.exitCode = 1;
+    return;
+  }
+
+  const prisma = new PrismaClient();
+  try {
+    const tables = await prisma.$queryRawUnsafe(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'workspaces'"
+    );
+    if (!Array.isArray(tables) || tables.length === 0) {
+      process.exitCode = 1;
+      return;
+    }
+
+    const columns = await prisma.$queryRawUnsafe("PRAGMA table_info(workspaces)");
+    if (!Array.isArray(columns) || !columns.some((column) => column.name === "chatMode")) {
+      process.exitCode = 1;
+      return;
+    }
+
+    const updated = await prisma.$executeRawUnsafe(
+      "UPDATE workspaces SET chatMode = 'chat' WHERE chatMode = 'automatic'"
+    );
+    if (updated > 0) {
+      console.log(`Updated ${updated} existing AnythingLLM workspace(s) from automatic to chat mode.`);
+    }
+  } catch (error) {
+    console.warn(`Warning: Existing workspace chatMode migration skipped: ${error.message}`);
+    process.exitCode = 1;
+  } finally {
+    await prisma.$disconnect().catch(() => {});
+  }
+})();
+NODE
+  ) || return 0
+
+  : > "$migration_marker"
+  chmod 600 "$migration_marker" 2>/dev/null || true
+}
+
 # Read LiteLLM API key from shared volume (wait for it to be available)
 if [ -d /var/lib/litellm-shared ]; then
   echo "Waiting for LiteLLM API key..."
@@ -31,6 +244,8 @@ if [ -d /var/lib/litellm-shared ]; then
     echo "Warning: LiteLLM API key not found or invalid after waiting. Proceeding without it."
   fi
 fi
+
+configure_model_pref
 
 valid_admin_pass() {
   printf '%s' "$1" | grep -Eq '^[A-HJ-NPR-Za-km-z2-9]{20}$'
@@ -174,6 +389,9 @@ if [ "$VECTOR_DB" = "pgvector" ] && [ -z "$PGVECTOR_CONNECTION_STRING" ] \
     echo "Warning: Postgres password file not readable; pgvector connection string was not configured."
   fi
 fi
+
+update_anythingllm_default_chat_mode
+migrate_existing_workspaces_chat_mode
 
 # Start AnythingLLM using the original entrypoint
 exec /usr/local/bin/docker-entrypoint.sh

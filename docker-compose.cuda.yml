@@ -131,7 +131,7 @@ services:
       retries: 3
 
   anythingllm:
-    image: mintplexlabs/anythingllm:1.13
+    image: mintplexlabs/anythingllm:1.14.1
     container_name: anythingllm
     restart: always
     ports:
@@ -142,6 +142,7 @@ services:
       - GENERIC_OPEN_AI_BASE_PATH=http://litellm:4000/v1
       - GENERIC_OPEN_AI_MODEL_PREF=ollama/llama3.2:3b
       - GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=131072
+      - ANYTHINGLLM_DEFAULT_CHAT_MODE=chat
       - EMBEDDING_ENGINE=native
       # To embed with the stack's Embeddings service instead of the in-process
       # model, comment out the line above and uncomment the block below.
