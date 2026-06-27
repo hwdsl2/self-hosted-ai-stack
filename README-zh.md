@@ -62,7 +62,7 @@ docker compose up -d
 
 > **现有安装：** 如果您在本项目从 `docker-ai-stack` 更名前已经克隆，现有检出和部署会继续工作。GitHub 会重定向旧仓库 URL，您无需重命名本地目录、容器、卷或网络。
 
-> **PostgreSQL 凭据：** 全新安装会自动生成 PostgreSQL 凭据；有关升级和自定义密码说明，请参阅 [PostgreSQL 凭据](#postgresql-凭据)。
+> **PostgreSQL 凭据：** 全新安装和现有默认安装会自动处理。如果您之前设置过自定义数据库密码，请在启动前参阅 [PostgreSQL 凭据](#postgresql-凭据)。
 
 **拉取模型**（发出 LLM 请求前必须执行）：
 
@@ -498,6 +498,16 @@ curl -s http://localhost:3000/mcp \
     -H "Content-Type: application/json" \
     -H "Accept: application/json, text/event-stream" \
     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+```
+
+## 使用计数
+
+Self-Hosted AI Stack 使用匿名、聚合的 GitHub release 资源下载次数来了解使用情况并确定后续改进的优先级。它不会发送 telemetry 负载，也不会使用私有收集器。
+
+如需在启动技术栈时禁用使用计数：
+
+```bash
+AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 ```
 
 ## 自定义配置

@@ -137,6 +137,10 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的一種快速方式。
 
+## 使用計數
+
+此技術堆疊參與專案的匿名、聚合的 GitHub release 資源下載計數。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 啟動可停用；詳情見[使用計數](../../README-zh-Hant.md#使用計數)。
+
 ## 自訂設定
 
 每個服務可以透過可選的 env 檔案進行設定。從相應儲存庫複製範例 env 檔案，編輯後取消 `docker-compose.yml` 中的磁碟區掛載註解：

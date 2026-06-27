@@ -62,7 +62,7 @@ docker compose up -d
 
 > **Existing installs:** If you cloned this project before it was renamed from `docker-ai-stack`, your existing checkout and deployment continue to work. GitHub redirects the old repository URL, and you do not need to rename your local directory, containers, volumes, or networks.
 
-> **PostgreSQL credentials:** Fresh installs generate PostgreSQL credentials automatically; see [PostgreSQL credentials](#postgresql-credentials) for upgrade and custom-password notes.
+> **PostgreSQL credentials:** Fresh installs and existing default installs are handled automatically. If you previously set a custom database password, see [PostgreSQL credentials](#postgresql-credentials) before starting.
 
 **Pull a model** (required before making LLM requests):
 
@@ -498,6 +498,16 @@ curl -s http://localhost:3000/mcp \
     -H "Content-Type: application/json" \
     -H "Accept: application/json, text/event-stream" \
     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+```
+
+## Usage counts
+
+Self-Hosted AI Stack uses anonymous, aggregate GitHub release asset download counts to help understand usage and prioritize future improvements. It does not send a telemetry payload or use a private collector.
+
+To disable usage counts when starting the stack:
+
+```bash
+AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 ```
 
 ## Customization

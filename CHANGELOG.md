@@ -2,6 +2,16 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-06-26
+
+### Added
+
+- Added anonymous aggregate usage counts based on public GitHub release asset
+  download counts to help prioritize future improvements. Usage counts can
+  be disabled with `AI_STACK_DISABLE_USAGE_COUNTS`; see "Usage counts" in
+  the README for details.
+- Added a root `VERSION` file for stack version detection.
+
 ## 2026-06-24
 
 ### Changed

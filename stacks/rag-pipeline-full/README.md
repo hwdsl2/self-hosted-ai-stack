@@ -143,6 +143,10 @@ Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` 
 
 > **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
 
+## Usage counts
+
+This stack participates in the project's anonymous aggregate GitHub release asset download counts. Start with `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` to disable them; see [Usage counts](../../README.md#usage-counts).
+
 ## Customization
 
 Each service can be configured with an optional env file. Copy the example env file from the respective repository, edit it, and uncomment the volume mount in `docker-compose.yml`:
