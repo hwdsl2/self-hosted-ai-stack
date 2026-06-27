@@ -90,7 +90,7 @@ fetch_usage_asset() {
   asset=$1
   command -v wget >/dev/null 2>&1 || return 0
   base_url=${USAGE_BASE_URL%/}
-  wget -q -T 10 -O /dev/null "$base_url/$asset" >/dev/null 2>&1 || true
+  wget -q -T 5 -O /dev/null "$base_url/$asset" >/dev/null 2>&1 || true
 }
 
 report_usage_counts() {
