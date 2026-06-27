@@ -1,4 +1,8 @@
 services:
+  ai-stack-init:
+    environment:
+      AI_STACK_PROXY: caddy
+
   caddy:
     image: caddy:2
     container_name: ai-stack-caddy

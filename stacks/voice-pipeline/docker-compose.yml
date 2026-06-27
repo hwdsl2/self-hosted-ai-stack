@@ -19,10 +19,14 @@ services:
     container_name: ai-stack-init
     restart: "no"
     environment:
-      - LITELLM_POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-}
+      LITELLM_POSTGRES_PASSWORD: ${LITELLM_POSTGRES_PASSWORD:-}
+      AI_STACK_VARIANT: voice-pipeline
+      AI_STACK_ACCEL: cpu
+      AI_STACK_DISABLE_USAGE_COUNTS: "${AI_STACK_DISABLE_USAGE_COUNTS:-}"
     volumes:
       - litellm-db:/var/lib/postgresql:ro
       - ai-stack-shared:/var/lib/ai-stack-shared
+      - ../../VERSION:/etc/ai-stack/VERSION:ro
       - ../../scripts/ai-stack-init.sh:/usr/local/bin/ai-stack-init.sh:ro
     entrypoint: ["/bin/sh", "/usr/local/bin/ai-stack-init.sh"]
 
