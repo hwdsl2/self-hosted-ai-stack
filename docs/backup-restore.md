@@ -226,7 +226,7 @@ Your API keys, models, and configuration will be preserved. Clients can connect 
 Before running `docker compose pull && docker compose up -d`:
 
 1. **Export API keys** — save them to a file (see above)
-2. **Back up volumes** — at minimum, back up `ollama-data`, `litellm-data`, and `mcp-data`
+2. **Back up volumes** — run the backup loop above, or include all critical volumes listed below, including `litellm-db`, `ai-stack-shared`, `anythingllm-data`, and `caddy-data` if using the HTTPS proxy overlay
 3. **Pull new images** — `docker compose pull`
 4. **Start updated stack** — `docker compose up -d`
 5. **Run health check** — `./stack-check.sh`
@@ -257,6 +257,7 @@ docker compose up -d
 
 | Stack | Volumes used |
 |---|---|
+| full stack | Core: `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `whisper-data`, `mcp-data`, `anythingllm-data`, `ollama-shared`, `mcp-shared`, `litellm-shared`; optional when enabled: `docling-data`, `kokoro-data`, `whisper-live-data` |
 | chat-only | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `ollama-shared` |
 | chat-ui | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `anythingllm-data`, `ollama-shared`, `litellm-shared` |
 | voice-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `whisper-data`, `kokoro-data`, `ollama-shared` |

@@ -201,6 +201,8 @@ API 密钥通过 Docker 共享卷在服务间自动共享：
 
 ## 使用方法
 
+LiteLLM 可在 Docker 内部自动连接 MCP Gateway。如需让主机上的 AI 客户端直接使用 `http://localhost:3000/mcp`，请先在 `docker-compose.yml` 的 `mcp` 服务中取消注释 `3000:3000/tcp` 端口映射并重启服务。
+
 ```bash
 # 获取 API 密钥
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)

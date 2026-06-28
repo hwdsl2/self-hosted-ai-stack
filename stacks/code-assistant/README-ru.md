@@ -201,6 +201,8 @@ API-ключи автоматически передаются между сер
 
 ## Использование
 
+LiteLLM автоматически подключается к MCP Gateway внутри Docker. Чтобы AI-клиент на хосте напрямую использовал `http://localhost:3000/mcp`, раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
+
 ```bash
 # Получение API-ключей
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)

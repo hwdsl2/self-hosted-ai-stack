@@ -226,7 +226,7 @@ docker compose up -d
 在執行 `docker compose pull && docker compose up -d` 之前：
 
 1. **匯出 API 金鑰** — 儲存到檔案（參見上文）
-2. **備份磁碟區** — 至少備份 `ollama-data`、`litellm-data` 和 `mcp-data`
+2. **備份磁碟區** — 執行上方備份循環，或至少包含下方列出的所有關鍵磁碟區，包括 `litellm-db`、`ai-stack-shared`、`anythingllm-data`，以及使用 HTTPS 代理疊加檔案時的 `caddy-data`
 3. **拉取新映像檔** — `docker compose pull`
 4. **啟動更新後的技術堆疊** — `docker compose up -d`
 5. **執行健康檢查** — `./stack-check.sh`
@@ -257,6 +257,7 @@ docker compose up -d
 
 | 堆疊 | 使用的卷 |
 |---|---|
+| 完整技術堆疊 | 核心：`ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `whisper-data`, `mcp-data`, `anythingllm-data`, `ollama-shared`, `mcp-shared`, `litellm-shared`；啟用可選服務時：`docling-data`, `kokoro-data`, `whisper-live-data` |
 | chat-only | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `ollama-shared` |
 | chat-ui | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `anythingllm-data`, `ollama-shared`, `litellm-shared` |
 | voice-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `whisper-data`, `kokoro-data`, `ollama-shared` |

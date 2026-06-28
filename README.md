@@ -484,6 +484,8 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 Use MCP Gateway to give your AI assistant access to files, web, and GitHub:
 
+MCP Gateway is internal to the Docker network by default. Before using `http://localhost:3000/mcp` from a host-side AI client or host-side `curl`, uncomment the `3000:3000/tcp` port mapping for the `mcp` service in `docker-compose.yml` and restart it.
+
 ```bash
 MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 
@@ -570,7 +572,7 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 If Caddy reports an unknown `request_body` directive, pull the current `caddy:2` image and restart the overlay.
 
-For older Docker Compose versions or Podman, use a host-based reverse proxy instead: bind direct HTTP ports to localhost in the compose file (for example, `"127.0.0.1:3001:3001/tcp"` and `"127.0.0.1:4000:4000/tcp"`) and proxy to those localhost ports. Each service repository includes a detailed [reverse proxy guide](https://github.com/hwdsl2/docker-whisper#using-a-reverse-proxy) with Caddy and nginx examples.
+For older Docker Compose versions or Podman, use a host-based reverse proxy instead: bind direct HTTP ports to localhost in the compose file (for example, `"127.0.0.1:3001:3001/tcp"` and `"127.0.0.1:4000:4000/tcp"`) and proxy to those localhost ports. For stack-specific Caddy and nginx examples, see the [Chat UI manual reverse proxy section](stacks/chat-ui/#manual-reverse-proxy).
 
 When exposing services to the internet, use the generated API keys where present. For existing no-key deployments, set API keys via the relevant env files before publishing those services.
 

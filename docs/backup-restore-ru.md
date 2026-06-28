@@ -226,7 +226,7 @@ docker compose up -d
 Перед выполнением `docker compose pull && docker compose up -d`:
 
 1. **Экспортируйте API-ключи** — сохраните в файл (см. выше)
-2. **Создайте резервные копии томов** — как минимум `ollama-data`, `litellm-data` и `mcp-data`
+2. **Создайте резервные копии томов** — запустите цикл резервного копирования выше или включите все критические тома, перечисленные ниже, включая `litellm-db`, `ai-stack-shared`, `anythingllm-data` и `caddy-data`, если используется HTTPS proxy overlay
 3. **Загрузите новые образы** — `docker compose pull`
 4. **Запустите обновлённый стек** — `docker compose up -d`
 5. **Выполните проверку работоспособности** — `./stack-check.sh`
@@ -257,6 +257,7 @@ docker compose up -d
 
 | Стек | Используемые тома |
 |---|---|
+| полный стек | Основные: `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `embeddings-data`, `whisper-data`, `mcp-data`, `anythingllm-data`, `ollama-shared`, `mcp-shared`, `litellm-shared`; при включении опциональных сервисов: `docling-data`, `kokoro-data`, `whisper-live-data` |
 | chat-only | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `ollama-shared` |
 | chat-ui | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `anythingllm-data`, `ollama-shared`, `litellm-shared` |
 | voice-pipeline | `ollama-data`, `litellm-data`, `litellm-db`, `ai-stack-shared`, `whisper-data`, `kokoro-data`, `ollama-shared` |

@@ -201,6 +201,8 @@ The `LITELLM_MCP_URL=http://mcp:3000/mcp` environment variable is pre-configured
 
 ## Usage
 
+LiteLLM can reach MCP Gateway inside Docker automatically. For a host-side AI client to use `http://localhost:3000/mcp` directly, uncomment the `3000:3000/tcp` port mapping for the `mcp` service in `docker-compose.yml` and restart it.
+
 ```bash
 # Get API keys
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)

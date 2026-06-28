@@ -484,6 +484,8 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 使用 MCP Gateway 為您的 AI 助手提供檔案、網路和 GitHub 存取：
 
+預設情況下，MCP Gateway 僅在 Docker 網路內部可用。從主機上的 AI 用戶端或主機上的 `curl` 使用 `http://localhost:3000/mcp` 之前，請先在 `docker-compose.yml` 的 `mcp` 服務中取消註解 `3000:3000/tcp` 連接埠對應並重新啟動服務。
+
 ```bash
 MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 
@@ -570,7 +572,7 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 如果 Caddy 回報未知的 `request_body` 指令，請拉取目前的 `caddy:2` 映像檔並重新啟動疊加檔案部署。
 
-舊版 Docker Compose 或 Podman 使用者仍可使用主機上的反向代理：將直接 HTTP 連接埠繫結到 localhost（例如 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`），再反向代理到這些 localhost 連接埠。每個服務儲存庫都包含詳細的[反向代理指南](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh-Hant.md#使用反向代理)，含 Caddy 和 nginx 範例。
+舊版 Docker Compose 或 Podman 使用者仍可使用主機上的反向代理：將直接 HTTP 連接埠繫結到 localhost（例如 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`），再反向代理到這些 localhost 連接埠。有關本技術堆疊的 Caddy 和 nginx 範例，請參閱 [Chat UI 手動反向代理](stacks/chat-ui/README-zh-Hant.md#手動反向代理)章節。
 
 將服務暴露到網際網路時，請優先使用已產生的 API 金鑰。對於已有且未設定金鑰的部署，請先透過相應的 env 檔案設定 API 金鑰，再對外發布這些服務。
 
