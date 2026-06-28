@@ -4,6 +4,8 @@
 
 This guide covers how to back up and restore your Self-Hosted AI Stack data, including API keys, model weights, and service configurations. **Always back up before upgrading images.**
 
+Run `docker compose` commands from the directory where you started the stack. For sub-stacks, this is usually `stacks/<name>/`; for the full stack, this is the repository root.
+
 ## What's stored in volumes
 
 Each service stores its data in a named Docker volume:

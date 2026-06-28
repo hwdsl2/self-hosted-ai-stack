@@ -8,12 +8,18 @@
 
 先從以下檢查開始：
 
+請從啟動該技術堆疊的目錄執行 `docker compose` 指令。從子堆疊目錄執行健康檢查時使用 `../../stack-check.sh`；從儲存庫根目錄執行時使用 `./stack-check.sh`。
+
 ```bash
 # 顯示容器狀態和已發布連接埠
 docker compose ps
 
 # 執行技術堆疊健康檢查
-./stack-check.sh
+# 從子堆疊目錄執行：
+../../stack-check.sh
+
+# 或從儲存庫根目錄執行：
+# ./stack-check.sh
 
 # 查看某個服務的最近日誌
 docker compose logs --tail=100 <service>

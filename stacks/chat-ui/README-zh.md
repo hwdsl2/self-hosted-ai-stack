@@ -27,7 +27,21 @@ graph LR
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 Ollama 及 100+ 供应商 | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于 Web 的聊天界面，支持工作区、RAG 和智能体 | `3001` |
 
+> **注意：** 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
+
+默认访问方式：
+
+- LiteLLM 发布在宿主机端口 `4000`。
+- AnythingLLM 发布在宿主机端口 `3001`。
+- Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
+
 ## 快速开始
+
+**要求：**
+
+- 已安装 Docker 的 Linux 服务器（本地或云端）
+- 足够运行此子栈和所选模型的内存（见上方内存估算）
+- 对于较大的 LLM 模型（8B+），建议 16 GB 或更多内存
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -40,6 +54,30 @@ docker compose up -d
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
+
+运行健康检查以验证服务是否正常工作：
+
+```bash
+# 从此子栈目录运行：
+../../stack-check.sh
+
+# 或从仓库根目录运行：
+# ./stack-check.sh
+```
+
+> **提示：** 首次启动时，服务可能需要几分钟完成初始化。如有检查失败，请稍等后再次运行 `../../stack-check.sh`。使用 `docker compose logs` 查看进度。
+
+**获取 LiteLLM master key**（用于登录管理界面以及直接发起 LLM API 请求）：
+
+```bash
+docker exec litellm litellm_manage --showkey
+```
+
+**访问 LiteLLM 管理界面：**
+
+在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
+
+> **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama-chat/llama3.2:3b`）并开始对话，这是验证本地 LLM 端到端正常工作的一种快速方式。
 
 **打开聊天界面：**
 
@@ -62,6 +100,13 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 在浏览器中打开 `http://<服务器IP>:3001`，并使用上面的密码登录。
 
 > **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [使用反向代理](#使用反向代理)。
+
+**停止子栈：**
+
+```bash
+# 停止并移除容器（数据会保留在 Docker 卷中）
+docker compose down
+```
 
 ## GPU 加速 (NVIDIA CUDA)
 
@@ -151,21 +196,6 @@ docker run -d --name anythingllm --restart always \
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
-## 验证部署
-
-启动后，可以验证所有服务是否正常运行：
-
-```bash
-# 在 self-hosted-ai-stack 根目录中运行
-../../stack-check.sh
-```
-
-**访问 LiteLLM 管理界面：**
-
-在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM 主密钥作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
-
-> **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama/llama3.2:3b`）并开始对话 — 这是验证本地大语言模型端到端正常工作的一种快速方式。
-
 ## 使用计数
 
 此技术栈参与项目的匿名、聚合的 GitHub release 资源下载计数。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 启动可禁用；详情见[使用计数](../../README-zh.md#使用计数)。
@@ -181,7 +211,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 AnythingLLM 通过其 Web 界面 `http://<服务器IP>:3001` 进行配置。您可以在 **Settings** 中更改 LLM 供应商、模型、嵌入引擎和其他设置。详情请参阅 [AnythingLLM 文档](https://docs.useanything.com/)。
 
-**提示：** 如果您同时运行其他子栈（例如 [voice-pipeline](../voice-pipeline/README-zh.md)、[rag-pipeline](../rag-pipeline/README-zh.md)），可以通过 AnythingLLM 的设置页面将其指向这些服务 — 例如使用 `docker-whisper` 进行语音转文字，或使用 `docker-embeddings` 进行向量嵌入。
+**提示：** 预构建子栈默认共用容器名称、端口和 Docker 卷。如果您想让一个聊天界面同时使用语音、RAG 或工具服务，请使用完整技术栈，或先自定义 Compose 项目名、容器名、端口和卷，再并行运行多个变体。
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 
@@ -292,6 +322,8 @@ AnythingLLM 固定为稳定发布标签，而不是 `latest`，因为上游 `lat
 您的数据保存在 Docker 卷中。 **升级前务必先[备份](../../docs/backup-restore-zh.md)。**
 
 ## 示例
+
+> **注意：** 下面的示例使用 `jq` 格式化 JSON 响应。如尚未安装，请先安装。
 
 ```bash
 # 在浏览器中打开聊天界面

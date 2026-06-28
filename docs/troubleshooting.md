@@ -8,12 +8,18 @@ This guide helps diagnose Self-Hosted AI Stack issues before changing configurat
 
 Start with these checks:
 
+Run `docker compose` commands from the directory where you started the stack. From a stack directory, run the health check as `../../stack-check.sh`; from the repository root, run `./stack-check.sh`.
+
 ```bash
 # Show container state and published ports
 docker compose ps
 
 # Run the stack health check
-./stack-check.sh
+# From a stack directory:
+../../stack-check.sh
+
+# Or from the repository root:
+# ./stack-check.sh
 
 # Check recent logs for one service
 docker compose logs --tail=100 <service>

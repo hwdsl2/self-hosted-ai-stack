@@ -33,7 +33,22 @@ graph LR
 
 **注：** WhisperLive（实时 STT）在 `docker-compose.yml` 中默认被注释掉。取消注释即可启用通过 WebSocket 的实时转录。
 
+> **注意：** 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
+
+默认访问方式：
+
+- LiteLLM 发布在宿主机端口 `4000`。
+- Whisper 默认绑定到 `127.0.0.1:9000`。
+- Kokoro 默认绑定到 `127.0.0.1:8880`。
+- Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
+
 ## 快速开始
+
+**要求：**
+
+- 已安装 Docker 的 Linux 服务器（本地或云端）
+- 足够运行此子栈和所选模型的内存（见上方内存估算）
+- 对于较大的 LLM 模型（8B+），建议 16 GB 或更多内存
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -45,6 +60,37 @@ docker compose up -d
 
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
+```
+
+运行健康检查以验证服务是否正常工作：
+
+```bash
+# 从此子栈目录运行：
+../../stack-check.sh
+
+# 或从仓库根目录运行：
+# ./stack-check.sh
+```
+
+> **提示：** 首次启动时，服务可能需要几分钟完成初始化。如有检查失败，请稍等后再次运行 `../../stack-check.sh`。使用 `docker compose logs` 查看进度。
+
+**获取 LiteLLM master key**（用于登录管理界面以及直接发起 LLM API 请求）：
+
+```bash
+docker exec litellm litellm_manage --showkey
+```
+
+**访问 LiteLLM 管理界面：**
+
+在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
+
+> **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama-chat/llama3.2:3b`）并开始对话，这是验证本地 LLM 端到端正常工作的一种快速方式。
+
+**停止子栈：**
+
+```bash
+# 停止并移除容器（数据会保留在 Docker 卷中）
+docker compose down
 ```
 
 ## GPU 加速 (NVIDIA CUDA)
@@ -120,10 +166,11 @@ docker run -d --name kokoro --restart always \
     -v kokoro-data:/var/lib/kokoro \
     hwdsl2/kokoro-server
 
-# WhisperLive (real-time STT)
+# 可选：WhisperLive（实时语音转文本）
 docker run -d --name whisper-live --restart always \
     --network ai-stack \
     -p 127.0.0.1:9090:9090 \
+    -p 127.0.0.1:8001:8000 \
     -v whisper-live-data:/var/lib/whisper-live \
     hwdsl2/whisper-live-server
 ```
@@ -135,23 +182,6 @@ docker run -d --name whisper-live --restart always \
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
-
-## 验证部署
-
-启动后，可以验证所有服务是否正常运行：
-
-```bash
-# 在 self-hosted-ai-stack 根目录中运行
-../../stack-check.sh
-```
-
-**访问 LiteLLM 管理界面：**
-
-在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM 主密钥作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
-
-> **注：** 对于面向互联网的部署，强烈建议使用[反向代理](#面向互联网的部署)添加 HTTPS。在这种情况下，还需将 `docker-compose.yml` 中的 `"4000:4000/tcp"` 改为 `"127.0.0.1:4000:4000/tcp"`，以防止直接访问未加密端口。
-
-> **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama/llama3.2:3b`）并开始对话 — 这是验证本地大语言模型端到端正常工作的一种快速方式。
 
 ## 使用计数
 
@@ -173,7 +203,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## 面向互联网的部署
 
-默认情况下，所有服务通过纯 HTTP 监听。对于面向互联网的部署，请在技术栈前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS。每个服务仓库都包含详细的[反向代理指南](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md#使用反向代理)，含 Caddy 和 nginx 示例。
+默认情况下，LiteLLM 会发布在宿主机端口 `4000`；各子栈的辅助 API 默认为仅 localhost 访问或仅内部访问，除非您修改其端口映射。对于面向互联网的部署，请在技术栈前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理这些端口时，请将 `4000` 等直接 HTTP 端口绑定到 `127.0.0.1`。每个服务仓库都包含详细的[反向代理指南](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md#使用反向代理)，含 Caddy 和 nginx 示例。
 
 ## 备份和恢复
 
@@ -197,6 +227,8 @@ docker compose up -d
 您的数据保存在 Docker 卷中。 **升级前务必先[备份](../../docs/backup-restore-zh.md)。**
 
 ## 示例
+
+> **注意：** 下面的示例使用 `jq` 格式化 JSON 响应。如尚未安装，请先安装。
 
 **提示：** 需要示例音频文件？可以从 [Azure Samples](https://github.com/Azure-Samples/cognitive-services-speech-sdk) 仓库下载这个英语语音示例（WAV 格式，MIT 许可证）：
 

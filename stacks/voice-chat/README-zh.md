@@ -33,7 +33,23 @@ graph LR
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md)** | 将语音音频转录为文字 | `9000` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md)** | 将文字转换为自然语音 | `8880` |
 
+> **注意：** 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
+
+默认访问方式：
+
+- LiteLLM 发布在宿主机端口 `4000`。
+- AnythingLLM 发布在宿主机端口 `3001`。
+- Whisper 默认绑定到 `127.0.0.1:9000`。
+- Kokoro 默认绑定到 `127.0.0.1:8880`。
+- Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
+
 ## 快速开始
+
+**要求：**
+
+- 已安装 Docker 的 Linux 服务器（本地或云端）
+- 足够运行此子栈和所选模型的内存（见上方内存估算）
+- 对于较大的 LLM 模型（8B+），建议 16 GB 或更多内存
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -46,6 +62,30 @@ docker compose up -d
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
+
+运行健康检查以验证服务是否正常工作：
+
+```bash
+# 从此子栈目录运行：
+../../stack-check.sh
+
+# 或从仓库根目录运行：
+# ./stack-check.sh
+```
+
+> **提示：** 首次启动时，服务可能需要几分钟完成初始化。如有检查失败，请稍等后再次运行 `../../stack-check.sh`。使用 `docker compose logs` 查看进度。
+
+**获取 LiteLLM master key**（用于登录管理界面以及直接发起 LLM API 请求）：
+
+```bash
+docker exec litellm litellm_manage --showkey
+```
+
+**访问 LiteLLM 管理界面：**
+
+在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
+
+> **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama-chat/llama3.2:3b`）并开始对话，这是验证本地 LLM 端到端正常工作的一种快速方式。
 
 **打开聊天界面：**
 
@@ -68,6 +108,13 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 在浏览器中打开 `http://<server-ip>:3001`，并使用上面的密码登录。
 
 > **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [使用反向代理](#使用反向代理)。
+
+**停止子栈：**
+
+```bash
+# 停止并移除容器（数据会保留在 Docker 卷中）
+docker compose down
+```
 
 ## GPU 加速 (NVIDIA CUDA)
 
@@ -170,21 +217,6 @@ docker run -d --name kokoro --restart always \
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
-
-## 验证部署
-
-启动后，可以验证所有服务是否正常运行：
-
-```bash
-# 在 self-hosted-ai-stack 根目录中运行
-../../stack-check.sh
-```
-
-**访问 LiteLLM 管理界面：**
-
-在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM 主密钥作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
-
-> **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama/llama3.2:3b`）并开始对话 — 这是验证本地大语言模型端到端正常工作的一种快速方式。
 
 ## 使用计数
 
@@ -312,6 +344,8 @@ AnythingLLM 固定为稳定发布标签，而不是 `latest`，因为上游 `lat
 您的数据保存在 Docker 卷中。 **升级前务必先[备份](../../docs/backup-restore-zh.md)。**
 
 ## 语音管道示例
+
+> **注意：** 下面的示例使用 `jq` 格式化 JSON 响应。如尚未安装，请先安装。
 
 转录语音问题，获取本地 LLM 响应，并转换为语音：
 

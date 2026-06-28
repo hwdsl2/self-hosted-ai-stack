@@ -30,7 +30,22 @@ graph LR
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | Converts text to vectors for semantic search and RAG | `8000` |
 | **[Docling](https://github.com/hwdsl2/docker-docling)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
 
+> **Note:** The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
+
+Default access:
+
+- LiteLLM is published on host port `4000`.
+- Embeddings is bound to `127.0.0.1:8000` by default.
+- Docling is bound to `127.0.0.1:5001` by default.
+- Ollama is internal to the Docker network; use LiteLLM for host or browser access.
+
 ## Quick start
+
+**Requirements:**
+
+- A Linux server (local or cloud) with Docker installed
+- Enough RAM for this stack and your selected model (see the memory estimate above)
+- For larger LLM models (8B+), 16 GB or more is recommended
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -42,6 +57,37 @@ docker compose up -d
 
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
+```
+
+Run the health check to verify the services are working:
+
+```bash
+# From this stack directory:
+../../stack-check.sh
+
+# Or from the repository root:
+# ./stack-check.sh
+```
+
+> **Tip:** On first start, services may take a few minutes to initialize. If any checks fail, wait and run `../../stack-check.sh` again. Use `docker compose logs` to check progress.
+
+**Get the LiteLLM master key** (used to log into the Admin UI and for direct LLM API requests):
+
+```bash
+docker exec litellm litellm_manage --showkey
+```
+
+**Access the LiteLLM Admin UI:**
+
+Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
+
+> **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
+
+**Stop the stack:**
+
+```bash
+# Stop and remove containers (data is preserved in Docker volumes)
+docker compose down
 ```
 
 ## GPU acceleration (NVIDIA CUDA)
@@ -126,23 +172,6 @@ docker run -d --name docling --restart always \
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
-## Verify deployment
-
-After starting the stack, you can verify that all services are running correctly:
-
-```bash
-# Run from the self-hosted-ai-stack root directory
-../../stack-check.sh
-```
-
-**Access the LiteLLM Admin UI:**
-
-Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
-
-> **Note:** For internet-facing deployments, using a [reverse proxy](#internet-facing-deployments) to add HTTPS is **strongly recommended**. In that case, also change `"4000:4000/tcp"` to `"127.0.0.1:4000:4000/tcp"` in `docker-compose.yml`, to prevent direct access to the unencrypted port.
-
-> **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
-
 ## Usage counts
 
 This stack participates in the project's anonymous aggregate GitHub release asset download counts. Start with `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` to disable them; see [Usage counts](../../README.md#usage-counts).
@@ -162,7 +191,7 @@ For detailed configuration options, API reference, and model management, see the
 
 ## Internet-facing deployments
 
-By default, all services listen over plain HTTP. For internet-facing deployments, place a reverse proxy (e.g., [Caddy](https://caddyserver.com/), Nginx, or Traefik) in front of the stack to provide HTTPS. Each service repository includes a detailed [reverse proxy guide](https://github.com/hwdsl2/docker-litellm#using-a-reverse-proxy) with Caddy and nginx examples.
+By default, LiteLLM is published on host port `4000`; stack-specific helper APIs are localhost-only or internal unless you change their port mappings. For internet-facing deployments, place a reverse proxy (e.g., [Caddy](https://caddyserver.com/), Nginx, or Traefik) in front of the stack to provide HTTPS, and bind direct HTTP ports such as `4000` to `127.0.0.1` when proxying them. Each service repository includes a detailed [reverse proxy guide](https://github.com/hwdsl2/docker-litellm#using-a-reverse-proxy) with Caddy and nginx examples.
 
 ## Backup and restore
 
@@ -204,6 +233,8 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 You can then create a table with a `vector` column (use the dimension of your embedding model — e.g. `384` for the default `BAAI/bge-small-en-v1.5`) and run similarity search with the `<=>` operator. For larger-scale or hybrid search, you can run a dedicated vector database such as Qdrant or Chroma instead.
 
 ## Example
+
+> **Note:** The examples below use `jq` to format JSON responses. Install it first if it is not already available.
 
 ```bash
 LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)

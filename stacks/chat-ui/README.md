@@ -27,7 +27,21 @@ graph LR
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Web-based chat UI with workspaces, RAG, and agent support | `3001` |
 
+> **Note:** The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
+
+Default access:
+
+- LiteLLM is published on host port `4000`.
+- AnythingLLM is published on host port `3001`.
+- Ollama is internal to the Docker network; use LiteLLM for host or browser access.
+
 ## Quick start
+
+**Requirements:**
+
+- A Linux server (local or cloud) with Docker installed
+- Enough RAM for this stack and your selected model (see the memory estimate above)
+- For larger LLM models (8B+), 16 GB or more is recommended
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -40,6 +54,30 @@ docker compose up -d
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
+
+Run the health check to verify the services are working:
+
+```bash
+# From this stack directory:
+../../stack-check.sh
+
+# Or from the repository root:
+# ./stack-check.sh
+```
+
+> **Tip:** On first start, services may take a few minutes to initialize. If any checks fail, wait and run `../../stack-check.sh` again. Use `docker compose logs` to check progress.
+
+**Get the LiteLLM master key** (used to log into the Admin UI and for direct LLM API requests):
+
+```bash
+docker exec litellm litellm_manage --showkey
+```
+
+**Access the LiteLLM Admin UI:**
+
+Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
+
+> **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
 
 **Open the chat UI:**
 
@@ -62,6 +100,13 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 Open `http://<server-ip>:3001` in your browser and log in with the password above.
 
 > **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Using a reverse proxy](#using-a-reverse-proxy) below.
+
+**Stop the stack:**
+
+```bash
+# Stop and remove containers (data is preserved in Docker volumes)
+docker compose down
+```
 
 ## GPU acceleration (NVIDIA CUDA)
 
@@ -151,21 +196,6 @@ docker run -d --name anythingllm --restart always \
 docker exec ollama ollama_manage --pull llama3.2:3b
 ```
 
-## Verify deployment
-
-After starting the stack, you can verify that all services are running correctly:
-
-```bash
-# Run from the self-hosted-ai-stack root directory
-../../stack-check.sh
-```
-
-**Access the LiteLLM Admin UI:**
-
-Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
-
-> **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
-
 ## Usage counts
 
 This stack participates in the project's anonymous aggregate GitHub release asset download counts. Start with `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` to disable them; see [Usage counts](../../README.md#usage-counts).
@@ -181,7 +211,7 @@ Each service can be configured with an optional env file. Copy the example env f
 
 AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
 
-**Tip:** If you also run other sub-stacks (e.g., [voice-pipeline](../voice-pipeline/), [rag-pipeline](../rag-pipeline/)), you can point AnythingLLM at those services via its Settings page — for example, using `docker-whisper` for speech-to-text or `docker-embeddings` for vector embeddings.
+**Tip:** The pre-built stacks share default container names, ports, and Docker volumes. If you want one chat UI with voice, RAG, or tool services, use the full stack or customize Compose project names, container names, ports, and volumes before running multiple variants side by side.
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
@@ -292,6 +322,8 @@ AnythingLLM is pinned to a stable release tag instead of `latest` because the up
 Your data is preserved in the Docker volumes. **Always [back up](../../docs/backup-restore.md) before upgrading.**
 
 ## Example
+
+> **Note:** The examples below use `jq` to format JSON responses. Install it first if it is not already available.
 
 ```bash
 # Open the chat UI in your browser

@@ -8,12 +8,18 @@
 
 先从以下检查开始：
 
+请从启动该技术栈的目录运行 `docker compose` 命令。从子栈目录运行健康检查时使用 `../../stack-check.sh`；从仓库根目录运行时使用 `./stack-check.sh`。
+
 ```bash
 # 显示容器状态和已发布端口
 docker compose ps
 
 # 运行技术栈健康检查
-./stack-check.sh
+# 从子栈目录运行：
+../../stack-check.sh
+
+# 或从仓库根目录运行：
+# ./stack-check.sh
 
 # 查看某个服务的最近日志
 docker compose logs --tail=100 <service>

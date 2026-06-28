@@ -121,7 +121,7 @@ Open `http://<server-ip>:3001` in your browser and log in with the password abov
 
 Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
 
-> **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
+> **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
 
 **Stop the stack:**
 
@@ -153,6 +153,8 @@ docker compose -f docker-compose.cuda.yml up -d
 ## Lightweight stacks
 
 Don't need the full stack? Use a pre-configured subset from the `stacks/` folder:
+
+> **Note:** The lightweight stacks share default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another. To combine capabilities, use the full stack or customize Compose project names, container names, ports, and volumes.
 
 | Stack | Services | Memory | Use case |
 |---|---|---|---|
