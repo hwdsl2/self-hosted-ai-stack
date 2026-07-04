@@ -160,6 +160,12 @@ services:
       - litellm-shared:/var/lib/litellm-shared:ro
       - ./chat-ui-bootstrap.sh:/usr/local/bin/chat-ui-bootstrap.sh:ro
     entrypoint: ["/bin/bash", "/usr/local/bin/chat-ui-bootstrap.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "/bin/bash /usr/local/bin/docker-healthcheck.sh || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 360s
+      retries: 6
     # cap_add:
     #   - SYS_ADMIN  # Uncomment if you need AnythingLLM's built-in web scraping (uses Chromium)
     depends_on:
