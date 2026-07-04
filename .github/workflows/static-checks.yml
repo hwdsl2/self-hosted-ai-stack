@@ -1,0 +1,45 @@
+name: static checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.sh'
+      - '**/*.sh'
+      - '**/docker-compose*.yml'
+      - '.github/workflows/static-checks.yml'
+      - 'VERSION'
+      - 'caddy/**'
+      - 'stacks/*/caddy/**'
+  pull_request:
+    paths:
+      - '*.sh'
+      - '**/*.sh'
+      - '**/docker-compose*.yml'
+      - '.github/workflows/static-checks.yml'
+      - 'VERSION'
+      - 'caddy/**'
+      - 'stacks/*/caddy/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-24.04
+    if: github.repository_owner == 'hwdsl2'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install static-check tools
+        run: |
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get -yqq update
+          sudo apt-get -yqq install jq shellcheck
+
+      - name: Run static checks
+        run: bash scripts/ci-static-checks.sh
