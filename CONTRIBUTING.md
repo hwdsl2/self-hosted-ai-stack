@@ -20,6 +20,7 @@ Thanks for helping improve Self-Hosted AI Stack. This repository maintains the m
 
 Test the smallest relevant stack path before opening a PR, for example:
 
+- Run `bash scripts/ci-static-checks.sh` for the static CI checks.
 - Run `docker compose config` when editing compose files.
 - Run `./stack-check.sh` when changing service wiring or health checks.
 - Test the affected stack preset when changing a lightweight stack.

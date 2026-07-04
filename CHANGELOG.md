@@ -2,6 +2,14 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-07-04
+
+### Added
+
+- Added Docker healthcheck for AnythingLLM across the root, `chat-ui`, and
+  `voice-chat` stacks, overriding the image's short default `start_period`
+  to accommodate the chat UI bootstrap's LiteLLM key handoff on cold boot.
+
 ## 2026-06-26
 
 ### Added
