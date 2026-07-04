@@ -93,10 +93,15 @@ fetch_usage_asset() {
   wget -q -T 5 -O /dev/null "$base_url/$asset" >/dev/null 2>&1 || true
 }
 
+read_state_value() {
+  [ -r "$1" ] || return 0
+  tr -d '[:space:]' < "$1"
+}
+
 report_usage_counts() {
   [ "${AI_STACK_DISABLE_USAGE_COUNTS:-0}" != "1" ] || return 0
 
-  current_version=$(cat "$VERSION_FILE" 2>/dev/null | tr -d '[:space:]' || true)
+  current_version=$(read_state_value "$VERSION_FILE")
   [ -n "$current_version" ] || return 0
 
   variant=${AI_STACK_VARIANT:-}
@@ -108,7 +113,7 @@ report_usage_counts() {
   valid_arch "$arch" || return 0
 
   state_file="$USAGE_STATE_DIR/main-$variant-$accel-$arch.version"
-  last_version=$(cat "$state_file" 2>/dev/null | tr -d '[:space:]' || true)
+  last_version=$(read_state_value "$state_file")
   action=
 
   if [ -z "$last_version" ]; then
@@ -128,7 +133,7 @@ report_usage_counts() {
 
   if [ "${AI_STACK_PROXY:-}" = "caddy" ] && proxy_supported_variant "$variant"; then
     proxy_state_file="$USAGE_STATE_DIR/proxy-caddy-$variant-$accel-$arch.version"
-    proxy_last_version=$(cat "$proxy_state_file" 2>/dev/null | tr -d '[:space:]' || true)
+    proxy_last_version=$(read_state_value "$proxy_state_file")
     if [ "$proxy_last_version" != "$current_version" ]; then
       write_usage_state "$proxy_state_file" "$current_version"
       fetch_usage_asset "usage-v1-feature-proxy-caddy-$variant-$accel-$arch"
