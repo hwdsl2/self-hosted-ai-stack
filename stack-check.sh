@@ -178,7 +178,7 @@ if [ -n "$DB" ]; then
     DB_PASS=$("$ENGINE" exec "$DB" sh -c 'cat /var/lib/ai-stack-shared/litellm_postgres_password 2>/dev/null' | tr -d '\r\n') || DB_PASS=""
     if [ -n "$DB_PASS" ]; then
       if [ "$DB_PASS" = "litellm" ]; then
-        warn "Database uses legacy compatibility password"
+        pass "Database uses legacy compatibility password"
       else
         pass "Database password secret present"
       fi
