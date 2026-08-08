@@ -21,6 +21,10 @@
 - GPU-ускорение через NVIDIA CUDA
 - Мультиархитектурность: `linux/amd64`, `linux/arm64`
 
+**Также доступно:**
+
+- Книга: [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) — практическое руководство по этому стеку
+
 ## Сообщество
 
 - 📬 [Подписаться на обновления проектов](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai-ru) (1–2 письма в месяц) — получить бесплатные руководства по развёртыванию AI и VPN (PDF, на английском)

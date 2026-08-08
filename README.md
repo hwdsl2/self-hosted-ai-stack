@@ -21,6 +21,10 @@ Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling
 - GPU acceleration via NVIDIA CUDA
 - Multi-arch: `linux/amd64`, `linux/arm64`
 
+**Also available:**
+
+- Book: [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) — a practical companion to this stack
+
 ## Community
 
 - 📬 [Subscribe for project updates](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai) (1–2 emails/month) — get free AI and VPN deployment guides (PDF)
