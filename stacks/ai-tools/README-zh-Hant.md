@@ -10,6 +10,8 @@
 
 **平台：** `linux/amd64`、`linux/arm64`
 
+> 📘 **新書：**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)——部署、保護和維運完整私有 AI 技術棧的實用指南。
+
 ## 架構
 
 ```mermaid

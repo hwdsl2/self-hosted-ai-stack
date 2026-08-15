@@ -21,9 +21,7 @@
 - 支持 NVIDIA CUDA GPU 加速
 - 多架构：`linux/amd64`、`linux/arm64`
 
-**另提供：**
-
-- 图书：[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)——本技术栈的实用配套指南
+> 📘 **新书：**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)——一本关于部署、保护和运维此私有 AI 技术栈的实用配套指南。
 
 ## 社区
 
