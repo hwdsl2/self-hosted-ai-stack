@@ -12,6 +12,10 @@
 
 包含 Ollama、LiteLLM、AnythingLLM、Whisper、MCP Gateway、Embeddings、Docling 和 Kokoro — 使用 Docker Compose 完整配置，開箱即用。
 
+> 📘 **新書：**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)——一本關於部署、保護和維運此私有 AI 技術棧的實用配套指南。
+
+**功能特性：**
+
 - 零配置：所有服務在首次啟動時自動配置
 - 預設安全：AnythingLLM 預設啟用密碼保護，內建 API 服務會自動產生 API 金鑰
 - HTTPS 就緒：可選 Caddy 疊加檔案提供自動 TLS，並將直接 HTTP 連接埠繫結到 localhost
@@ -20,8 +24,6 @@
 - 提供[輕量級技術堆疊](#輕量級技術堆疊)，降低記憶體需求（最低約 4.5 GB）
 - 支援 NVIDIA CUDA GPU 加速
 - 多架構：`linux/amd64`、`linux/arm64`
-
-> 📘 **新書：**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon)——一本關於部署、保護和維運此私有 AI 技術棧的實用配套指南。
 
 ## 社群
 

@@ -12,6 +12,10 @@
 
 Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling, and Kokoro — fully configured and ready to run with Docker Compose.
 
+> 📘 **New book:** [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) — a hands-on companion for deploying, securing, and operating this private AI stack.
+
+**Features:**
+
 - Zero-config: all services auto-configure on first start
 - Secure by default: AnythingLLM password protection is enabled, and bundled API services auto-generate keys
 - HTTPS-ready: optional Caddy overlay provides automatic TLS and binds direct HTTP ports to localhost
@@ -20,8 +24,6 @@ Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling
 - [Lightweight stacks](#lightweight-stacks) for lower memory requirements (as low as ~4.5 GB)
 - GPU acceleration via NVIDIA CUDA
 - Multi-arch: `linux/amd64`, `linux/arm64`
-
-> 📘 **New book:** [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) — a hands-on companion for deploying, securing, and operating this private AI stack.
 
 ## Community
 
