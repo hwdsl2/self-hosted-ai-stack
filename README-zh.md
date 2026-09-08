@@ -25,14 +25,6 @@
 - 支持 NVIDIA CUDA GPU 加速
 - 多架构：`linux/amd64`、`linux/arm64`
 
-## 社区
-
-- 📬 [订阅项目更新](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai-zh)（每月 1–2 封邮件）——获取免费的 AI 和 VPN 部署指南（PDF，英文）
-- 💬 加入 [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) 社区，参与讨论和项目展示
-- ⭐ 如果你觉得本项目有用，请为仓库加星——这有助于让更多人发现它。
-
-Self-Hosted AI Stack 由 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md)（28k+ 星标）的作者维护。
-
 ## 包含的服务
 
 | 服务 | 用途 | 默认端口 |
@@ -133,6 +125,14 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 # 停止并移除所有容器（数据保留在 Docker 卷中）
 docker compose down
 ```
+
+## 社区
+
+- 📬 [获取项目更新和免费部署指南](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai-zh)（每月 1–2 封邮件；指南为英文 PDF）
+- 💬 加入 [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) 社区，参与讨论和项目展示
+- ⭐ 如果你觉得本项目有用，请为仓库加星——这有助于让更多人发现它。
+
+Self-Hosted AI Stack 由 [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh.md)（28k+ 星标）的作者维护。
 
 ## GPU 加速 (NVIDIA CUDA)
 

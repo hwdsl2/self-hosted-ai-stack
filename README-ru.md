@@ -25,14 +25,6 @@
 - GPU-ускорение через NVIDIA CUDA
 - Мультиархитектурность: `linux/amd64`, `linux/arm64`
 
-## Сообщество
-
-- 📬 [Подписаться на обновления проектов](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai-ru) (1–2 письма в месяц) — получить бесплатные руководства по развёртыванию AI и VPN (PDF, на английском)
-- 💬 Присоединяйтесь к сообществу [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) для обсуждений и демонстрации проектов
-- ⭐ Поставьте звезду репозиторию, если он оказался вам полезен — это поможет другим пользователям его найти.
-
-Self-Hosted AI Stack поддерживается автором [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md) (28k+ звёзд).
-
 ## Включённые сервисы
 
 | Сервис | Назначение | Порт по умолчанию |
@@ -133,6 +125,14 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 # Остановка и удаление всех контейнеров (данные сохраняются в Docker-томах)
 docker compose down
 ```
+
+## Сообщество
+
+- 📬 [Получайте новости проектов и бесплатные руководства по развёртыванию](https://selfhostedstack.beehiiv.com/subscribe?utm_campaign=ai-ru) (1–2 письма в месяц; руководства в формате PDF на английском языке)
+- 💬 Присоединяйтесь к сообществу [r/selfhostedstack](https://www.reddit.com/r/selfhostedstack/) для обсуждений и демонстрации проектов
+- ⭐ Поставьте звезду репозиторию, если он оказался вам полезен — это поможет другим пользователям его найти.
+
+Self-Hosted AI Stack поддерживается автором [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-ru.md) (28k+ звёзд).
 
 ## GPU-ускорение (NVIDIA CUDA)
 
