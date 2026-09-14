@@ -10,7 +10,7 @@ Speech-to-text → LLM → text-to-speech. Transcribe audio, get an AI response,
 
 **Platforms:** `linux/amd64`, `linux/arm64`
 
-> 📘 **New book:** [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) — deploy, secure, and operate a complete private AI stack.
+> 📘 **Kindle Countdown Deal: $0.99/£0.99 (US & UK).** [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) explains how to deploy, secure, and operate a complete private AI stack.
 
 ## Architecture
 
