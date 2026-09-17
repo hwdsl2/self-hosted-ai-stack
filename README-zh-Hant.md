@@ -12,7 +12,7 @@
 
 包含 Ollama、LiteLLM、AnythingLLM、Whisper、MCP Gateway、Embeddings、Docling 和 Kokoro — 使用 Docker Compose 完整配置，開箱即用。
 
-> 📘 **Kindle 限時優惠：$0.99/£0.99（僅限美國和英國）。**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是一本關於部署、保護和維運此私有 AI 技術棧的實用配套指南。
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技術堆疊的實用配套指南，涵蓋部署、安全、備份與升級。**電子書：$0.99/£0.99，優惠至 9 月 20 日止**（僅限美國/英國）。
 
 **功能特性：**
 

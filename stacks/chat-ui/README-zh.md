@@ -10,7 +10,7 @@
 
 **平台：** `linux/amd64`、`linux/arm64`
 
-> 📘 **Kindle 限时优惠：$0.99/£0.99（仅限美国和英国）。**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是一本关于部署、保护和运维完整私有 AI 技术栈的实用指南。
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技术栈的实用配套指南，涵盖部署、安全、备份和升级。**电子书：$0.99/£0.99，优惠截至 9 月 20 日**（仅限美国/英国）。
 
 ## 架构
 

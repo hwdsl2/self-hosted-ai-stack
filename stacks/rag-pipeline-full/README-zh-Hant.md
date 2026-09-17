@@ -10,7 +10,7 @@
 
 **平台：** `linux/amd64`、`linux/arm64`
 
-> 📘 **Kindle 限時優惠：$0.99/£0.99（僅限美國和英國）。**[The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是一本關於部署、保護和維運完整私有 AI 技術棧的實用指南。
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技術堆疊的實用配套指南，涵蓋部署、安全、備份與升級。**電子書：$0.99/£0.99，優惠至 9 月 20 日止**（僅限美國/英國）。
 
 ## 架構
 
