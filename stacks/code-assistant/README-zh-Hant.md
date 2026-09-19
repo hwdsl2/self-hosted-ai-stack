@@ -33,7 +33,8 @@ graph LR
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、fetch、GitHub、搜尋、資料庫） | `3000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh-Hant.md)** | 將文字轉換為向量，用於語意搜尋和 RAG | `8000` |
 
-> **注意：** 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。
+> [!IMPORTANT]
+> 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。
 
 預設存取方式：
 

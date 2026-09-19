@@ -27,7 +27,8 @@ graph LR
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 
-> **Note:** The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
+> [!IMPORTANT]
+> The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
 
 Default access:
 

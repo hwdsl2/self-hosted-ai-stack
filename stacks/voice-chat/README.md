@@ -35,7 +35,8 @@ graph LR
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Transcribes spoken audio to text | `9000` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Converts text to natural-sounding speech | `8880` |
 
-> **Note:** The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
+> [!IMPORTANT]
+> The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
 
 Default access:
 
@@ -109,7 +110,8 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 Open `http://<server-ip>:3001` in your browser and log in with the password above.
 
-> **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Using a reverse proxy](#using-a-reverse-proxy) below.
+> [!NOTE]
+> When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Using a reverse proxy](#using-a-reverse-proxy) below.
 
 **Stop the stack:**
 
@@ -318,7 +320,8 @@ server {
 }
 ```
 
-**Important:** AnythingLLM includes its own user authentication system — set a strong password on first setup when exposing the service to the internet.
+> [!IMPORTANT]
+> AnythingLLM includes its own user authentication system — set a strong password on first setup when exposing the service to the internet.
 
 ## Backup and restore
 
@@ -338,8 +341,6 @@ docker compose up -d
 After the sub-stack restarts, run `../../stack-check.sh` to confirm the services and generated credential wiring are healthy.
 
 `git pull` updates this repository, including any compose files or helper scripts used by this sub-stack; `docker compose pull` updates the service images.
-
-**One-time note for older installs:** If you set an AnythingLLM password before the `.env` persistence fix, the first container recreation after upgrading may clear that password and leave AnythingLLM unprotected. After updating, open AnythingLLM immediately and confirm password protection is still enabled. If it is not, set a new password in **Settings → Security**. Future container recreations will preserve it.
 
 AnythingLLM is pinned to a stable release tag instead of `latest` because the upstream `latest` image tracks the master branch. When a newer AnythingLLM release is available, back up first, update the tag in the compose files, then run the commands above.
 

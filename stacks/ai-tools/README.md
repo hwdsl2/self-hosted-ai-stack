@@ -31,7 +31,8 @@ graph LR
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
 
-> **Note:** The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
+> [!IMPORTANT]
+> The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
 
 Default access:
 

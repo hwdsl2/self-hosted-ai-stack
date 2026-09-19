@@ -111,7 +111,8 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 在浏览器中打开 `http://<server-ip>:3001`，并使用上面的密码登录。
 
-> **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [面向互联网的部署](#面向互联网的部署)。
+> [!NOTE]
+> 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [面向互联网的部署](#面向互联网的部署)。
 
 **访问 LiteLLM 管理界面：**
 
@@ -152,13 +153,15 @@ docker compose -f docker-compose.cuda.yml up -d
 
 **要求：** NVIDIA GPU、[NVIDIA 驱动](https://www.nvidia.com/en-us/drivers/) 575.57.08+（Linux）或 576.57+（Windows），以及在宿主机上安装 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 镜像仅支持 `linux/amd64`。
 
-> **Podman 用户：** Podman 会忽略 Compose 的 `deploy:` GPU 配置块。请改用 CDI — 参见[使用 Podman](#使用-podman)。
+> [!IMPORTANT]
+> Podman 会忽略 Compose 的 `deploy:` GPU 配置块。请改用 CDI — 参见[使用 Podman](#使用-podman)。
 
 ## 轻量级技术栈
 
 不需要完整技术栈？使用 `stacks/` 文件夹中的预配置子集：
 
-> **注意：** 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。如需组合功能，请使用完整技术栈，或自定义 Compose 项目名称、容器名称、端口和卷。
+> [!IMPORTANT]
+> 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。如需组合功能，请使用完整技术栈，或自定义 Compose 项目名称、容器名称、端口和卷。
 
 | 技术栈 | 服务 | 内存 | 使用场景 |
 |---|---|---|---|
@@ -335,7 +338,8 @@ sudo dnf install -y podman-docker
 sudo apt-get install -y podman-docker
 ```
 
-> **注：** shell 别名 `alias docker=podman` **不**足够 — 脚本（如 `stack-check.sh`）无法识别别名。请改用 `podman-docker` 软件包（或在 `PATH` 中创建 `docker` → `podman` 符号链接）。此外，`stack-check.sh` 会自动检测 Podman；您也可以通过 `CONTAINER_ENGINE=podman ./stack-check.sh` 强制指定。
+> [!NOTE]
+> shell 别名 `alias docker=podman` **不**足够 — 脚本（如 `stack-check.sh`）无法识别别名。请改用 `podman-docker` 软件包（或在 `PATH` 中创建 `docker` → `podman` 符号链接）。此外，`stack-check.sh` 会自动检测 Podman；您也可以通过 `CONTAINER_ENGINE=podman ./stack-check.sh` 强制指定。
 
 **2. 安装 Compose 提供程序。** `podman compose` 会委托给外部提供程序。请安装 `podman-compose` 或 `docker-compose` 之一：
 
@@ -535,7 +539,12 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 
 AnythingLLM 通过其 Web 界面 `http://<服务器IP>:3001` 进行配置。您可以在 **Settings** 中更改 LLM 供应商、模型、嵌入引擎和其他设置。详情请参阅 [AnythingLLM 文档](https://docs.useanything.com/)。
 
-**使用本技术栈的 Embeddings 服务（可选）。** 默认情况下，AnythingLLM 使用其内置的 MiniLM 模型进行进程内嵌入，并将向量存储在自带的 LanceDB 中。若要改用本技术栈的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服务（BAAI/bge-small-en-v1.5）和/或本技术栈启用了 pgvector 的 Postgres，请编辑 `docker-compose.yml` 中的 `anythingllm` 服务：注释掉 `EMBEDDING_ENGINE=native` 并取消注释下方的可选启用代码块。同时取消注释 `depends_on` 备注，以便 embeddings/db 服务先启动。启用 `VECTOR_DB=pgvector` 且未设置 `PGVECTOR_CONNECTION_STRING` 时，AnythingLLM 会自动使用 `ai-stack-shared` 中生成的 Postgres 密码。AnythingLLM 首次使用时会自动创建 `vector` 扩展和 `anythingllm_vectors` 表。⚠️ 在现有部署上切换嵌入引擎或向量存储会使之前嵌入的文档不兼容 — 切换后请重新嵌入您的工作区。
+**使用本技术栈的 Embeddings 服务（可选）。** 默认情况下，AnythingLLM 使用其内置的 MiniLM 模型进行进程内嵌入，并将向量存储在自带的 LanceDB 中。若要改用本技术栈的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服务（BAAI/bge-small-en-v1.5）和/或本技术栈启用了 pgvector 的 Postgres，请编辑 `docker-compose.yml` 中的 `anythingllm` 服务：注释掉 `EMBEDDING_ENGINE=native` 并取消注释下方的可选启用代码块。同时取消注释 `depends_on` 备注，以便 embeddings/db 服务先启动。
+
+启用 `VECTOR_DB=pgvector` 且未设置 `PGVECTOR_CONNECTION_STRING` 时，AnythingLLM 会自动使用 `ai-stack-shared` 中生成的 Postgres 密码。AnythingLLM 首次使用时会自动创建 `vector` 扩展和 `anythingllm_vectors` 表。
+
+> [!CAUTION]
+> 在现有部署上切换嵌入引擎或向量存储会使之前嵌入的文档不兼容 — 切换后请重新嵌入您的工作区。
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 
@@ -609,7 +618,8 @@ for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data w
 done
 ```
 
-**注：** 请将 `ai-stack-shared` 与 `litellm-db` 一起备份；全新安装会将生成的 PostgreSQL 密码存储在那里。`ollama-shared`、`mcp-shared` 和 `litellm-shared` 卷是临时密钥共享卷，无需备份。
+> [!IMPORTANT]
+> 请将 `ai-stack-shared` 与 `litellm-db` 一起备份；全新安装会将生成的 PostgreSQL 密码存储在那里。`ollama-shared`、`mcp-shared` 和 `litellm-shared` 卷是临时密钥共享卷，无需备份。
 
 有关恢复说明、服务器迁移和完整的升级前检查清单，请参阅[备份与恢复](docs/backup-restore-zh.md)指南。
 
@@ -633,8 +643,6 @@ docker compose up -d
 技术栈重启后，运行 `./stack-check.sh` 确认服务和生成的凭据配置正常。
 
 `git pull` 用于更新所有项目文件（包括 compose 文件的更改）；`docker compose pull` 用于更新服务镜像。如果您自定义过 `docker-compose.yml`，`git pull` 将自动合并更改，或在同一行存在冲突时提示您解决冲突。
-
-**旧安装的一次性提示：** 如果您在 `.env` 持久化修复之前设置过 AnythingLLM 密码，升级后的第一次容器重建可能会清除该密码，使 AnythingLLM 处于未受保护状态。更新后，请立即打开 AnythingLLM 并确认密码保护仍然启用。如果没有，请在 **Settings → Security** 中设置新密码。之后的容器重建会保留该密码。
 
 AnythingLLM 固定为稳定发布标签，而不是 `latest`，因为上游 `latest` 镜像跟踪 master 分支。有新的 AnythingLLM 发布版本时，请先备份，更新 compose 文件中的标签，然后运行上述命令。
 

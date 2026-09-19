@@ -35,7 +35,8 @@ graph LR
 | **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md)** | 将语音音频转录为文字 | `9000` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md)** | 将文字转换为自然语音 | `8880` |
 
-> **注意：** 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
+> [!IMPORTANT]
+> 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
 
 默认访问方式：
 
@@ -109,7 +110,8 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 在浏览器中打开 `http://<server-ip>:3001`，并使用上面的密码登录。
 
-> **提示：** 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [使用反向代理](#使用反向代理)。
+> [!NOTE]
+> 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [使用反向代理](#使用反向代理)。
 
 **停止子栈：**
 
@@ -318,7 +320,8 @@ server {
 }
 ```
 
-**重要：** AnythingLLM 包含自己的用户认证系统 — 在将服务暴露到互联网时请在首次设置时设定强密码。
+> [!IMPORTANT]
+> AnythingLLM 包含自己的用户认证系统 — 在将服务暴露到互联网时请在首次设置时设定强密码。
 
 ## 备份和恢复
 
@@ -338,8 +341,6 @@ docker compose up -d
 子栈重启后，运行 `../../stack-check.sh` 确认服务和生成的凭据配置正常。
 
 `git pull` 用于更新此仓库，包括此子栈使用的所有 compose 文件或辅助脚本；`docker compose pull` 用于更新服务镜像。
-
-**旧安装的一次性提示：** 如果您在 `.env` 持久化修复之前设置过 AnythingLLM 密码，升级后的第一次容器重建可能会清除该密码，使 AnythingLLM 处于未受保护状态。更新后，请立即打开 AnythingLLM 并确认密码保护仍然启用。如果没有，请在 **Settings → Security** 中设置新密码。之后的容器重建会保留该密码。
 
 AnythingLLM 固定为稳定发布标签，而不是 `latest`，因为上游 `latest` 镜像跟踪 master 分支。有新的 AnythingLLM 发布版本时，请先备份，更新 compose 文件中的标签，然后运行上述命令。
 

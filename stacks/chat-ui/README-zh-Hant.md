@@ -29,7 +29,8 @@ graph LR
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 Ollama 及 100+ 供應商 | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基於 Web 的聊天介面，支援工作區、RAG 和智慧代理 | `3001` |
 
-> **注意：** 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。
+> [!IMPORTANT]
+> 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。
 
 預設存取方式：
 
@@ -101,7 +102,8 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 在瀏覽器中開啟 `http://<伺服器IP>:3001`，並使用上面的密碼登入。
 
-> **提示：** 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請使用內建的 Caddy HTTPS 疊加檔案，以加密傳輸中的密碼並將直接 HTTP 連接埠繫結到 localhost。請參閱下方 [使用反向代理](#使用反向代理)。
+> [!NOTE]
+> 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請使用內建的 Caddy HTTPS 疊加檔案，以加密傳輸中的密碼並將直接 HTTP 連接埠繫結到 localhost。請參閱下方 [使用反向代理](#使用反向代理)。
 
 **停止子堆疊：**
 
@@ -296,7 +298,8 @@ server {
 }
 ```
 
-**重要提示：** AnythingLLM 包含內建的使用者驗證系統——將服務暴露到網際網路時，請在首次設定時設定強密碼。
+> [!IMPORTANT]
+> AnythingLLM 包含內建的使用者驗證系統——將服務暴露到網際網路時，請在首次設定時設定強密碼。
 
 ## 備份和恢復
 
@@ -316,8 +319,6 @@ docker compose up -d
 子堆疊重新啟動後，執行 `../../stack-check.sh` 確認服務和產生的憑證設定正常。
 
 `git pull` 用於更新此儲存庫，包括此子堆疊使用的所有 compose 檔案或輔助腳本；`docker compose pull` 用於更新服務映像檔。
-
-**舊安裝的一次性提示：** 如果您在 `.env` 持久化修復之前設定過 AnythingLLM 密碼，升級後第一次重建容器可能會清除該密碼，讓 AnythingLLM 處於未受保護狀態。更新後，請立即開啟 AnythingLLM 並確認密碼保護仍然啟用。如果沒有，請在 **Settings → Security** 中設定新密碼。之後重建容器會保留該密碼。
 
 AnythingLLM 固定為穩定發布標籤，而不是 `latest`，因為上游 `latest` 映像會追蹤 master 分支。有新的 AnythingLLM 發布版本時，請先備份，更新 compose 檔案中的標籤，然後執行上述命令。
 

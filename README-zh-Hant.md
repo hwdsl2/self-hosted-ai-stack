@@ -111,7 +111,8 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 在瀏覽器中開啟 `http://<server-ip>:3001`，並使用上面的密碼登入。
 
-> **提示：** 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請使用內建的 Caddy HTTPS 疊加檔案，以加密傳輸中的密碼並將直接 HTTP 連接埠繫結到 localhost。請參閱下方 [面向網際網路的部署](#面向網際網路的部署)。
+> [!NOTE]
+> 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請使用內建的 Caddy HTTPS 疊加檔案，以加密傳輸中的密碼並將直接 HTTP 連接埠繫結到 localhost。請參閱下方 [面向網際網路的部署](#面向網際網路的部署)。
 
 **存取 LiteLLM 管理介面：**
 
@@ -152,13 +153,15 @@ docker compose -f docker-compose.cuda.yml up -d
 
 **需求：** NVIDIA GPU、[NVIDIA 驅動程式](https://www.nvidia.com/en-us/drivers/) 575.57.08+（Linux）或 576.57+（Windows），以及在主機上安裝 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。CUDA 映像檔僅支援 `linux/amd64`。
 
-> **Podman 使用者：** Podman 會忽略 Compose 的 `deploy:` GPU 設定區塊。請改用 CDI — 參見[使用 Podman](#使用-podman)。
+> [!IMPORTANT]
+> Podman 會忽略 Compose 的 `deploy:` GPU 設定區塊。請改用 CDI — 參見[使用 Podman](#使用-podman)。
 
 ## 輕量級技術堆疊
 
 不需要完整技術堆疊？使用 `stacks/` 資料夾中的預配置子集：
 
-> **注意：** 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。如需組合功能，請使用完整技術堆疊，或自訂 Compose 專案名稱、容器名稱、連接埠和卷。
+> [!IMPORTANT]
+> 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。如需組合功能，請使用完整技術堆疊，或自訂 Compose 專案名稱、容器名稱、連接埠和卷。
 
 | 技術堆疊 | 服務 | 記憶體 | 使用場景 |
 |---|---|---|---|
@@ -335,7 +338,8 @@ sudo dnf install -y podman-docker
 sudo apt-get install -y podman-docker
 ```
 
-> **注：** shell 別名 `alias docker=podman` **不**足夠 — 指令碼（如 `stack-check.sh`）無法辨識別名。請改用 `podman-docker` 套件（或在 `PATH` 中建立 `docker` → `podman` 符號連結）。此外，`stack-check.sh` 會自動偵測 Podman；您也可以透過 `CONTAINER_ENGINE=podman ./stack-check.sh` 強制指定。
+> [!NOTE]
+> shell 別名 `alias docker=podman` **不**足夠 — 指令碼（如 `stack-check.sh`）無法辨識別名。請改用 `podman-docker` 套件（或在 `PATH` 中建立 `docker` → `podman` 符號連結）。此外，`stack-check.sh` 會自動偵測 Podman；您也可以透過 `CONTAINER_ENGINE=podman ./stack-check.sh` 強制指定。
 
 **2. 安裝 Compose 提供程式。** `podman compose` 會委派給外部提供程式。請安裝 `podman-compose` 或 `docker-compose` 其中之一：
 
@@ -535,7 +539,12 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 
 AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您可以在 **Settings** 中變更 LLM 供應商、模型、嵌入引擎和其他設定。詳情請參閱 [AnythingLLM 文件](https://docs.useanything.com/)。
 
-**使用本技術堆疊的 Embeddings 服務（選用）。** 預設情況下，AnythingLLM 使用其內建的 MiniLM 模型進行行程內嵌入，並將向量儲存在自帶的 LanceDB 中。若要改用本技術堆疊的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服務（BAAI/bge-small-en-v1.5）和/或本技術堆疊啟用了 pgvector 的 Postgres，請編輯 `docker-compose.yml` 中的 `anythingllm` 服務：註解掉 `EMBEDDING_ENGINE=native` 並取消註解下方的選用啟用程式碼區塊。同時取消註解 `depends_on` 備註，以便 embeddings/db 服務先啟動。啟用 `VECTOR_DB=pgvector` 且未設定 `PGVECTOR_CONNECTION_STRING` 時，AnythingLLM 會自動使用 `ai-stack-shared` 中產生的 Postgres 密碼。AnythingLLM 首次使用時會自動建立 `vector` 擴充功能和 `anythingllm_vectors` 資料表。⚠️ 在現有部署上切換嵌入引擎或向量儲存會使先前嵌入的文件不相容 — 切換後請重新嵌入您的工作區。
+**使用本技術堆疊的 Embeddings 服務（選用）。** 預設情況下，AnythingLLM 使用其內建的 MiniLM 模型進行行程內嵌入，並將向量儲存在自帶的 LanceDB 中。若要改用本技術堆疊的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服務（BAAI/bge-small-en-v1.5）和/或本技術堆疊啟用了 pgvector 的 Postgres，請編輯 `docker-compose.yml` 中的 `anythingllm` 服務：註解掉 `EMBEDDING_ENGINE=native` 並取消註解下方的選用啟用程式碼區塊。同時取消註解 `depends_on` 備註，以便 embeddings/db 服務先啟動。
+
+啟用 `VECTOR_DB=pgvector` 且未設定 `PGVECTOR_CONNECTION_STRING` 時，AnythingLLM 會自動使用 `ai-stack-shared` 中產生的 Postgres 密碼。AnythingLLM 首次使用時會自動建立 `vector` 擴充功能和 `anythingllm_vectors` 資料表。
+
+> [!CAUTION]
+> 在現有部署上切換嵌入引擎或向量儲存會使先前嵌入的文件不相容 — 切換後請重新嵌入您的工作區。
 
 有關詳細設定選項、API 參考和模型管理，請參閱各服務儲存庫的文件。
 
@@ -609,7 +618,8 @@ for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data w
 done
 ```
 
-**注：** 請將 `ai-stack-shared` 與 `litellm-db` 一起備份；全新安裝會將產生的 PostgreSQL 密碼儲存在那裡。`ollama-shared`、`mcp-shared` 和 `litellm-shared` 磁碟區是臨時金鑰共享卷，無需備份。
+> [!IMPORTANT]
+> 請將 `ai-stack-shared` 與 `litellm-db` 一起備份；全新安裝會將產生的 PostgreSQL 密碼儲存在那裡。`ollama-shared`、`mcp-shared` 和 `litellm-shared` 磁碟區是臨時金鑰共享卷，無需備份。
 
 有關還原說明、伺服器遷移和完整的升級前檢查清單，請參閱[備份與還原](docs/backup-restore-zh-Hant.md)指南。
 
@@ -633,8 +643,6 @@ docker compose up -d
 技術堆疊重新啟動後，執行 `./stack-check.sh` 確認服務和產生的憑證設定正常。
 
 `git pull` 用於更新所有專案檔案（包括 compose 檔案的變更）；`docker compose pull` 用於更新服務映像檔。如果您自訂過 `docker-compose.yml`，`git pull` 將自動合併變更，或在同一行存在衝突時提示您解決衝突。
-
-**舊安裝的一次性提示：** 如果您在 `.env` 持久化修復之前設定過 AnythingLLM 密碼，升級後第一次重建容器可能會清除該密碼，讓 AnythingLLM 處於未受保護狀態。更新後，請立即開啟 AnythingLLM 並確認密碼保護仍然啟用。如果沒有，請在 **Settings → Security** 中設定新密碼。之後重建容器會保留該密碼。
 
 AnythingLLM 固定為穩定發布標籤，而不是 `latest`，因為上游 `latest` 映像檔會追蹤 master 分支。有新的 AnythingLLM 發布版本時，請先備份，更新 compose 檔案中的標籤，然後執行上述命令。
 

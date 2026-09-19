@@ -30,7 +30,8 @@ graph LR
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 Ollama 及 100+ 供应商 | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
 
-> **注意：** 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
+> [!IMPORTANT]
+> 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
 
 默认访问方式：
 

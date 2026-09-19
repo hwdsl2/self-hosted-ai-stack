@@ -111,7 +111,8 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 Open `http://<server-ip>:3001` in your browser and log in with the password above.
 
-> **Tip:** When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Internet-facing deployments](#internet-facing-deployments) below.
+> [!NOTE]
+> When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Internet-facing deployments](#internet-facing-deployments) below.
 
 **Access the LiteLLM Admin UI:**
 
@@ -152,13 +153,15 @@ docker compose -f docker-compose.cuda.yml up -d
 
 **Requirements:** NVIDIA GPU, [NVIDIA driver](https://www.nvidia.com/en-us/drivers/) 575.57.08+ (Linux) or 576.57+ (Windows), and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed on the host. CUDA images are `linux/amd64` only.
 
-> **Podman users:** The Compose `deploy:` GPU block is ignored by Podman. Use CDI instead — see [Using Podman](#using-podman).
+> [!IMPORTANT]
+> The Compose `deploy:` GPU block is ignored by Podman. Use CDI instead — see [Using Podman](#using-podman).
 
 ## Lightweight stacks
 
 Don't need the full stack? Use a pre-configured subset from the `stacks/` folder:
 
-> **Note:** The lightweight stacks share default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another. To combine capabilities, use the full stack or customize Compose project names, container names, ports, and volumes.
+> [!IMPORTANT]
+> The lightweight stacks share default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another. To combine capabilities, use the full stack or customize Compose project names, container names, ports, and volumes.
 
 | Stack | Services | Memory | Use case |
 |---|---|---|---|
@@ -335,7 +338,8 @@ sudo dnf install -y podman-docker
 sudo apt-get install -y podman-docker
 ```
 
-> **Note:** A shell `alias docker=podman` is **not** sufficient — aliases are not seen by scripts such as `stack-check.sh`. Use the `podman-docker` package (or a `docker` → `podman` symlink in your `PATH`) instead. Alternatively, `stack-check.sh` auto-detects Podman; you can also force it with `CONTAINER_ENGINE=podman ./stack-check.sh`.
+> [!NOTE]
+> A shell `alias docker=podman` is **not** sufficient — aliases are not seen by scripts such as `stack-check.sh`. Use the `podman-docker` package (or a `docker` → `podman` symlink in your `PATH`) instead. Alternatively, `stack-check.sh` auto-detects Podman; you can also force it with `CONTAINER_ENGINE=podman ./stack-check.sh`.
 
 **2. Install a Compose provider.** `podman compose` delegates to an external provider. Install either `podman-compose` or `docker-compose`:
 
@@ -535,7 +539,12 @@ Each service can be configured with an optional env file. Copy the example env f
 
 AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
 
-**Use the stack's Embeddings service (optional).** By default AnythingLLM embeds documents in-process with its bundled MiniLM model and stores the vectors in its own LanceDB. To use the stack's [Embeddings](https://github.com/hwdsl2/docker-embeddings) service (BAAI/bge-small-en-v1.5) and/or the stack's pgvector-enabled Postgres instead, edit the `anythingllm` service in `docker-compose.yml`: comment out `EMBEDDING_ENGINE=native` and uncomment the opt-in block beneath it. Also uncomment the `depends_on` note so the embeddings/db services start first. When `VECTOR_DB=pgvector` is enabled and no `PGVECTOR_CONNECTION_STRING` is set, AnythingLLM uses the generated Postgres password from `ai-stack-shared` automatically. AnythingLLM auto-creates the `vector` extension and `anythingllm_vectors` table on first use. ⚠️ Switching the embedder or vector store on an existing deployment makes previously embedded documents incompatible — re-embed your workspaces after the change.
+**Use the stack's Embeddings service (optional).** By default AnythingLLM embeds documents in-process with its bundled MiniLM model and stores the vectors in its own LanceDB. To use the stack's [Embeddings](https://github.com/hwdsl2/docker-embeddings) service (BAAI/bge-small-en-v1.5) and/or the stack's pgvector-enabled Postgres instead, edit the `anythingllm` service in `docker-compose.yml`: comment out `EMBEDDING_ENGINE=native` and uncomment the opt-in block beneath it. Also uncomment the `depends_on` note so the embeddings/db services start first.
+
+When `VECTOR_DB=pgvector` is enabled and no `PGVECTOR_CONNECTION_STRING` is set, AnythingLLM uses the generated Postgres password from `ai-stack-shared` automatically. AnythingLLM auto-creates the `vector` extension and `anythingllm_vectors` table on first use.
+
+> [!CAUTION]
+> Switching the embedder or vector store on an existing deployment makes previously embedded documents incompatible — re-embed your workspaces after the change.
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
@@ -609,7 +618,8 @@ for vol in ollama-data litellm-data litellm-db ai-stack-shared embeddings-data w
 done
 ```
 
-**Note:** Back up `ai-stack-shared` with `litellm-db`; fresh installs store the generated PostgreSQL password there. The `ollama-shared`, `mcp-shared`, and `litellm-shared` volumes are ephemeral key-sharing volumes and do not need to be backed up.
+> [!IMPORTANT]
+> Back up `ai-stack-shared` with `litellm-db`; fresh installs store the generated PostgreSQL password there. The `ollama-shared`, `mcp-shared`, and `litellm-shared` volumes are ephemeral key-sharing volumes and do not need to be backed up.
 
 For restore instructions, server migration, and the full pre-upgrade checklist, see the [Backup and Restore](docs/backup-restore.md) guide.
 
@@ -633,8 +643,6 @@ docker compose up -d
 After the stack restarts, run `./stack-check.sh` to confirm the services and generated credential wiring are healthy.
 
 `git pull` updates all project files (including any changes to compose files); `docker compose pull` updates the service images. If you've customized `docker-compose.yml`, `git pull` will merge changes automatically, or prompt you to resolve conflicts on the same lines.
-
-**One-time note for older installs:** If you set an AnythingLLM password before the `.env` persistence fix, the first container recreation after upgrading may clear that password and leave AnythingLLM unprotected. After updating, open AnythingLLM immediately and confirm password protection is still enabled. If it is not, set a new password in **Settings → Security**. Future container recreations will preserve it.
 
 AnythingLLM is pinned to a stable release tag instead of `latest` because the upstream `latest` image tracks the master branch. When a newer AnythingLLM release is available, back up first, update the tag in the compose files, then run the commands above.
 

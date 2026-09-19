@@ -35,7 +35,8 @@ graph LR
 
 **Note:** WhisperLive (real-time STT) is commented out by default in `docker-compose.yml`. Uncomment it to enable real-time transcription over WebSocket.
 
-> **Note:** The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
+> [!IMPORTANT]
+> The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
 
 Default access:
 
