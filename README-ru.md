@@ -12,7 +12,7 @@
 
 Включает Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling и Kokoro — полностью сконфигурирован и готов к запуску с Docker Compose.
 
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon): **Электронная книга за $0.99/£0.99 до 20 сентября включительно** (США/Великобритания). Практическое руководство по этому стеку, охватывающее развёртывание, безопасность, резервное копирование и обновления.
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon): практическое руководство по этому стеку, охватывающее развёртывание, безопасность, резервное копирование и обновления.
 
 **Возможности:**
 

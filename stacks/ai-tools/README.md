@@ -10,7 +10,7 @@ Local LLM with MCP tool access for AI coding assistants (Cline, Claude, Cursor, 
 
 **Platforms:** `linux/amd64`, `linux/arm64`
 
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon): **$0.99/£0.99 ebook through Sept. 20** (US/UK). The hands-on companion to this stack, covering deployment, security, backups, and upgrades.
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
 ## Architecture
 
