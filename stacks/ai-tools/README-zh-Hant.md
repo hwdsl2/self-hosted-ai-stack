@@ -2,7 +2,7 @@
 
 # AI 工具
 
-本機 LLM 搭配 MCP 工具存取，適用於 AI 程式設計助手（Cline、Claude、Cursor 等）。
+本機 LLM 搭配 MCP 工具存取，適用於 AI 代理和程式設計助手（goose、Cline、Claude、Cursor 等）。
 
 **服務：** Ollama (LLM) + LiteLLM (閘道) + MCP Gateway
 
@@ -16,7 +16,7 @@
 
 ```mermaid
 graph LR
-    U["👤 使用者"] -->|使用| C["🤖 AI 用戶端<br/>(Cline, Claude 等)"]
+    U["👤 使用者"] -->|使用| C["🤖 AI 用戶端<br/>(goose、Cline、Claude 等)"]
     C -->|MCP 工具| M["MCP Gateway<br/>(MCP 端點)"]
     C -->|聊天| L["LiteLLM<br/>(AI 閘道)"]
     L -->|路由至| O["Ollama<br/>(本機 LLM)"]
@@ -83,6 +83,8 @@ docker exec litellm litellm_manage --showkey
 在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 LiteLLM master key 作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama-chat/llama3.2:3b`）並開始對話，這是驗證本機 LLM 端到端正常運作的一種快速方式。
+
+**連接 goose：** 在工作站上安裝 goose，並依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)建立受限 LiteLLM 金鑰、設定 LiteLLM 端點和模型、測試本機模型行為，以及選擇性連接 MCP Gateway。
 
 **停止子堆疊：**
 

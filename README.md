@@ -20,6 +20,7 @@ Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling
 - Secure by default: AnythingLLM password protection is enabled, and bundled API services auto-generate keys
 - HTTPS-ready: optional Caddy overlay provides automatic TLS and binds direct HTTP ports to localhost
 - Private: runs locally by default with optional external provider support via LiteLLM
+- AI agent ready: connect [goose](https://github.com/aaif-goose/goose) on your workstation to LiteLLM with the [setup guide](https://selfhostedaistack.com/goose)
 - Flexible: customize models, ports, providers, and API keys with simple env files
 - [Lightweight stacks](#lightweight-stacks) for lower memory requirements (as low as ~4.5 GB)
 - GPU acceleration via NVIDIA CUDA
@@ -120,6 +121,10 @@ Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` 
 
 > **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
 
+**Use the stack with goose:**
+
+Install goose on your workstation and connect it to the stack's LiteLLM endpoint for supervised agent and coding tasks. The [goose setup guide](https://selfhostedaistack.com/goose) covers native installation, a restricted LiteLLM key, local-model expectations, permissions, testing, and optional MCP Gateway access.
+
 **Stop the stack:**
 
 ```bash
@@ -194,7 +199,7 @@ graph LR
     L -->|routes to| O["Ollama<br/>(local LLM)"]
     L -->|response| T["Kokoro TTS<br/>(text-to-speech)"]
     T --> B["🔊 Audio output"]
-    C["🤖 AI client<br/>(Cline, Claude, etc.)"] -->|MCP tools| M["MCP Gateway<br/>(MCP endpoint)"]
+    C["🤖 AI client<br/>(goose, Cline, Claude, etc.)"] -->|MCP tools| M["MCP Gateway<br/>(MCP endpoint)"]
     C -->|chat| L
     L -->|MCP protocol| M
     U["👤 User"] -->|chat| AN["AnythingLLM<br/>(chat UI)"]

@@ -2,7 +2,7 @@
 
 # Code Assistant
 
-Local LLM with MCP tool access and semantic code search for AI coding assistants (Cline, Claude, Cursor, etc.).
+Local LLM with MCP tool access and semantic code search for AI agents and coding assistants (goose, Cline, Claude, Cursor, etc.).
 
 **Services:** Ollama (LLM) + LiteLLM (gateway) + MCP Gateway + Embeddings
 
@@ -16,7 +16,7 @@ Local LLM with MCP tool access and semantic code search for AI coding assistants
 
 ```mermaid
 graph LR
-    U["👤 User"] -->|use| C["🤖 AI client<br/>(Cline, Claude, etc.)"]
+    U["👤 User"] -->|use| C["🤖 AI client<br/>(goose, Cline, Claude, etc.)"]
     C -->|MCP tools| M["MCP Gateway<br/>(MCP endpoint)"]
     C -->|chat| L["LiteLLM<br/>(AI gateway)"]
     L -->|routes to| O["Ollama<br/>(local LLM)"]
@@ -86,6 +86,8 @@ docker exec litellm litellm_manage --showkey
 Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
 
 > **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
+
+**Connect goose:** Install goose on your workstation and follow the [goose setup guide](https://selfhostedaistack.com/goose) to create a restricted LiteLLM key, configure the LiteLLM endpoint and model, test local-model behavior, and optionally connect MCP Gateway.
 
 **Stop the stack:**
 

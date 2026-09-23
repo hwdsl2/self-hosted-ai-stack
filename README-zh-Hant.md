@@ -20,6 +20,7 @@
 - 預設安全：AnythingLLM 預設啟用密碼保護，內建 API 服務會自動產生 API 金鑰
 - HTTPS 就緒：可選 Caddy 疊加檔案提供自動 TLS，並將直接 HTTP 連接埠繫結到 localhost
 - 隱私：預設在本機執行，可透過 LiteLLM 選擇性接入外部提供商
+- AI 代理就緒：依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)，將本機安裝的 [goose](https://github.com/aaif-goose/goose) 連接到 LiteLLM
 - 彈性配置：可透過簡單的 env 檔案自訂模型、連接埠、提供商和 API 金鑰
 - 提供[輕量級技術堆疊](#輕量級技術堆疊)，降低記憶體需求（最低約 4.5 GB）
 - 支援 NVIDIA CUDA GPU 加速
@@ -120,6 +121,10 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama-chat/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的一種快速方式。
 
+**將 goose 與此技術堆疊搭配使用：**
+
+在工作站上安裝 goose，並將其連接到此技術堆疊的 LiteLLM 端點，以執行受監督的代理和程式設計任務。[goose 設定指南（英文）](https://selfhostedaistack.com/goose)涵蓋本機安裝、受限 LiteLLM 金鑰、本機模型預期、權限、測試以及可選的 MCP Gateway 存取。
+
 **停止技術堆疊：**
 
 ```bash
@@ -194,7 +199,7 @@ graph LR
     L -->|路由至| O["Ollama<br/>(本機 LLM)"]
     L -->|回應| T["Kokoro TTS<br/>(文字轉語音)"]
     T --> B["🔊 音訊輸出"]
-    C["🤖 AI 用戶端<br/>(Cline, Claude 等)"] -->|MCP 工具| M["MCP Gateway<br/>(MCP 端點)"]
+    C["🤖 AI 用戶端<br/>(goose、Cline、Claude 等)"] -->|MCP 工具| M["MCP Gateway<br/>(MCP 端點)"]
     C -->|對話| L
     L -->|MCP 協定| M
     U["👤 使用者"] -->|對話| AN["AnythingLLM<br/>(聊天介面)"]
