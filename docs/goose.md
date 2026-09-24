@@ -21,7 +21,7 @@ The model connection works with the full stack and every lightweight stack
 that includes LiteLLM. The optional MCP section requires a deployment that also
 includes MCP Gateway, such as the full stack, `ai-tools`, or `code-assistant`.
 
-This guide reflects Self-Hosted AI Stack version `2026.08.2` and goose 1.51.0.
+This guide reflects Self-Hosted AI Stack version `2026.08.2` and goose 1.52.0.
 goose changes frequently, so compare prompts and menu names with the
 [current installation](https://goose-docs.ai/docs/getting-started/installation/)
 and [provider](https://goose-docs.ai/docs/getting-started/providers/)
@@ -385,7 +385,7 @@ After sending a request, inspect the allocated context and processor placement:
 docker exec ollama ollama ps
 ```
 
-goose 1.51 obtains advertised model context metadata from LiteLLM's
+goose 1.52 obtains advertised model context metadata from LiteLLM's
 `/model/info` endpoint. Ollama controls the context allocated to the running
 model. Verify the runtime value instead of assuming those two values are
 identical.
@@ -529,7 +529,7 @@ sensitive data.
 - [Stack Caddy configuration](../caddy/Caddyfile)
 - [docker-litellm management commands](https://github.com/hwdsl2/docker-litellm/blob/main/manage.sh)
 - [docker-mcp-gateway management commands](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/manage.sh)
-- [goose 1.51.0 LiteLLM provider implementation](https://github.com/aaif-goose/goose/blob/v1.51.0/crates/goose/src/providers/litellm.rs)
+- [goose 1.52.0 LiteLLM provider implementation](https://github.com/aaif-goose/goose/blob/v1.52.0/crates/goose/src/providers/litellm.rs)
 - [goose installation](https://goose-docs.ai/docs/getting-started/installation/)
 - [goose provider configuration](https://goose-docs.ai/docs/getting-started/providers/)
 - [goose tool permissions](https://goose-docs.ai/docs/guides/managing-tools/tool-permissions/)
