@@ -1,8 +1,8 @@
 # Use goose with Self-Hosted AI Stack
 
-[goose](https://github.com/aaif-goose/goose) is a native AI agent for desktop
-and terminal workflows. This guide connects goose on your workstation to the
-authenticated LiteLLM endpoint provided by Self-Hosted AI Stack.
+[goose](https://github.com/aaif-goose/goose) is an AI agent for desktop and
+terminal workflows. This guide connects it to Self-Hosted AI Stack's
+authenticated LiteLLM endpoint and, when needed, MCP Gateway.
 
 goose is not bundled with the stack. The recommended arrangement keeps your
 workspace and approval interface on your workstation while the stack provides
@@ -26,6 +26,18 @@ goose changes frequently, so compare prompts and menu names with the
 [current installation](https://goose-docs.ai/docs/getting-started/installation/)
 and [provider](https://goose-docs.ai/docs/getting-started/providers/)
 documentation if your version differs.
+
+## Choose a path
+
+- **Workstation goose:** Follow the numbered sections below for ordinary
+  interactive work with local project files. The stack may run on another
+  machine.
+- **[Temporary container on AI Tools](#optional-run-goose-in-a-temporary-container):**
+  Use the optional procedure near the end when you need separate agent state
+  on the stack server. It begins without host-file access; later tasks can use
+  explicit mounts. It has its own setup, test, troubleshooting, and removal
+  steps. Do not combine its internal Docker addresses with the workstation URLs
+  below.
 
 ## Before you begin
 
@@ -458,7 +470,7 @@ require credentials, filesystem mounts, or access to external services. Enable
 them individually and retest permissions after each change. Do not expose the
 MCP port directly to the internet.
 
-## Troubleshooting
+## Workstation troubleshooting
 
 ### Connection refused or timeout
 
@@ -507,7 +519,7 @@ MCP port directly to the internet.
 - Confirm the custom header is `Authorization` with value
   `Bearer <actual-key>`.
 
-## Rotate or remove access
+## Rotate or remove workstation access
 
 When the workstation should no longer use the stack:
 
@@ -522,14 +534,552 @@ Deleting a client credential does not remove Ollama models, LiteLLM state, or
 goose's local session history. Review each store separately when removing
 sensitive data.
 
+## Optional: run goose in a temporary container
+
+This path adds goose to the **AI Tools** Compose project only when you launch
+its `agent` profile. It is a server-side example with separate state and no
+initial host-file mount. Follow the [workstation path](#before-you-begin) for
+ordinary project work or when you are keeping a different stack variant. The
+commands below are a source-reviewed example, not a claim that an end-to-end
+container run has been performed for your image. Check the reported goose
+version and CLI before following version-sensitive steps.
+
+goose provides the agent loop while LiteLLM remains the model endpoint and MCP
+Gateway remains the authenticated tool boundary. Its official image runs as a
+non-root user and supports persistent configuration through a mounted volume.
+Approval modes, per-tool permissions, and session limits help bound the first
+task. The image digest identifies the exact build you inspected. goose is one
+possible runtime, not an endorsement or the only compatible choice. The
+[project](https://github.com/aaif-goose/goose) is licensed under Apache License
+2.0 and maintained by the Agentic AI Foundation. Its Desktop, CLI, and API
+interfaces, dedicated LiteLLM provider, and remote Streamable HTTP MCP
+extensions make it a practical fit for this stack. The
+[official container image](https://github.com/aaif-goose/goose/pkgs/container/goose)
+and [Docker guide](https://github.com/aaif-goose/goose/blob/main/BUILDING_DOCKER.md)
+are useful references when the image or CLI changes.
+
+### Container architecture
+
+The existing platform supplies model and controlled-tool interfaces. The goose
+container adds the planning loop, session state, and approval experience.
+
+```text
+User -> temporary goose container -> LiteLLM -> Ollama or hosted model
+                    |
+                    +-> MCP Gateway -> enabled MCP servers
+                    |
+                    +-> goose home volume
+```
+
+goose, LiteLLM, and MCP Gateway share the Compose network. goose reaches
+LiteLLM at `http://litellm:4000` and MCP Gateway at `http://mcp:3000/mcp`.
+MCP Gateway can remain internal, and no goose port is published.
+
+A prompt can still cross external boundaries. If LiteLLM routes to Ollama, the
+model request remains on infrastructure you operate. If the selected alias
+routes to a hosted provider, that provider receives the prompt and supplied
+context. An MCP server can also contact an external service. Containerization
+isolates files and processes, but it does not make outbound traffic local.
+
+### Prepare the AI tools stack
+
+This source-reviewed procedure uses the
+[AI Tools variant](../stacks/ai-tools/README.md). The Code Assistant variant
+has the same model and tool gateways and adds the embeddings service. If the
+complete platform or another lightweight variant is already running, do not
+start AI Tools beside it with the default names and
+volumes. Back up and stop the current project before switching to this exact
+container walkthrough. If you are keeping the current stack, use the
+workstation path above instead; this guide does not verify a container overlay
+for every variant. The commands below assume AI Tools is the selected variant.
+
+If you have not cloned the repository, start in the directory where you keep
+project checkouts:
+
+```sh
+git clone https://github.com/hwdsl2/self-hosted-ai-stack
+```
+
+From the directory containing the checkout, enter AI Tools. If your shell is
+already there, stay in that directory. Run all remaining commands in this
+container walkthrough from `stacks/ai-tools` unless a step says otherwise:
+
+```sh
+cd self-hosted-ai-stack/stacks/ai-tools
+```
+
+If AI Tools is not already running, start it and pull a model:
+
+```sh
+docker compose up -d
+docker exec ollama ollama_manage --pull llama3.2:3b
+```
+
+Whether you started AI Tools now or are reusing it, verify its services:
+
+```sh
+../../stack-check.sh
+```
+
+List the LiteLLM aliases and enabled MCP servers:
+
+```sh
+docker exec litellm litellm_manage --listmodels
+docker exec mcp mcp_manage --list
+```
+
+Choose a model alias that supports function calling. Small local models are
+useful for confirming connectivity, but their tool selection can be less
+reliable than that of larger models. Treat model quality and integration
+correctness as separate questions during troubleshooting.
+
+### Draft the optional goose service
+
+Select an image reference from the official goose container package. For an
+initial compatibility inspection, the upstream Docker guide currently uses the
+mutable `latest` tag:
+
+```sh
+export GOOSE_IMAGE=ghcr.io/aaif-goose/goose:latest
+```
+
+Do not treat `latest` as a reproducible release identifier. The inspection
+steps below retrieve its immutable repository digest. Use that digest for the
+configuration and bounded task, and retain it with the
+verification notes for your deployment.
+
+Create `docker-compose.goose.yml` in
+`self-hosted-ai-stack/stacks/ai-tools` with this content:
+
+```yaml
+services:
+  goose:
+    image: ${GOOSE_IMAGE:?Set GOOSE_IMAGE in the shell}
+    profiles: ["agent"]
+    restart: "no"
+    init: true
+    stdin_open: true
+    tty: true
+    environment:
+      GOOSE_PROVIDER: litellm
+      GOOSE_MODEL: ${GOOSE_MODEL:?Set GOOSE_MODEL in the shell}
+      LITELLM_HOST: http://litellm:4000
+      LITELLM_API_KEY: ${GOOSE_LITELLM_API_KEY:?Set GOOSE_LITELLM_API_KEY in the shell}
+      GOOSE_MODE: approve
+      GOOSE_DISABLE_KEYRING: "1"
+    volumes:
+      - goose-home:/home/goose
+    depends_on:
+      litellm:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  goose-home:
+    name: ai-tools-goose-home
+```
+
+The `agent` profile prevents the service from joining ordinary startup. The
+configuration also drops Linux capabilities, prevents privilege escalation,
+publishes no port, and mounts only agent-owned named volumes. It does not mount
+a project directory, home directory, container socket, or credential directory.
+
+`goose-home` contains settings, extension credentials, sessions, and logs. The
+official image creates `/home/goose` for its non-root user, and an initially
+empty named volume receives that directory's ownership and contents. Treat the
+volume as sensitive persistent state and include or exclude it from backups
+deliberately.
+
+### Create a restricted model credential
+
+Do not give goose LiteLLM's administrative master key for routine work. Create
+a virtual key restricted to the selected model alias. Replace
+`your-model-alias` with an alias from `--listmodels` before running this
+command:
+
+```sh
+docker exec litellm litellm_manage --createkey \
+  --alias goose \
+  --models your-model-alias \
+  --expires 30d
+```
+
+Save the returned virtual key in your password manager. Then set the model
+alias and enter the key without echoing it to the terminal:
+
+```bash
+export GOOSE_MODEL=your-model-alias
+read -r -s -p "LiteLLM virtual key: " GOOSE_LITELLM_API_KEY
+printf '\n'
+export GOOSE_LITELLM_API_KEY
+```
+
+Replace `your-model-alias` with the same alias used to create the key. These
+variables apply only to the current shell and are not written to the Compose
+file. Docker can still expose a running container's environment to users with
+Docker administration access, so the virtual key should remain narrow and
+short-lived.
+
+MCP Gateway uses a separate generated key. Display its connection details only
+in a private terminal and avoid recording the output in screenshots or logs:
+
+```sh
+docker exec mcp mcp_manage --showkey
+```
+
+Do not store either credential in a tracked environment file.
+
+### Check the current goose image and CLI
+
+Pull the selected image and ask it to report its version:
+
+```sh
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent pull goose
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent run --rm goose --version
+```
+
+The goose 1.52.0 source snapshot reviewed for this guide defines `configure`,
+`info`, and `session`, with `--max-turns` and `--max-tool-repetitions` on
+interactive sessions. Confirm that the image exposes the same interfaces before
+relying on the remaining commands:
+
+```sh
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent run --rm goose session --help
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent run --rm goose info --help
+```
+
+If either command or either session-limit flag is absent, stop here and adapt
+the procedure from the documentation that matches the reported version. Do not
+substitute a similar-looking flag without confirming its semantics.
+
+Retrieve and record the image's immutable repository digest:
+
+```sh
+docker image inspect "$GOOSE_IMAGE" \
+  --format '{{index .RepoDigests 0}}'
+```
+
+Before continuing, copy the complete value returned by that command and use it
+as `GOOSE_IMAGE` in the current shell. It has the form shown below, but the
+digest placeholder must be replaced with the exact value you retrieved:
+
+```sh
+export GOOSE_IMAGE='ghcr.io/aaif-goose/goose@sha256:replace-with-retrieved-digest'
+```
+
+Render the merged configuration with the digest-pinned reference:
+
+```sh
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent config --quiet
+```
+
+If these checks succeed, the temporary containers should have exited and the
+named home volume should remain available for later configuration and sessions.
+These checks confirm CLI and Compose compatibility for the selected image.
+
+### Try configuring one authenticated MCP extension
+
+The menu labels below reflect the goose 1.52.0 source snapshot reviewed for
+this guide. If the pulled version presents different choices, use its official
+extension documentation to locate the equivalent settings. Run the
+configuration utility inside a temporary container:
+
+```sh
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent run --rm goose configure
+```
+
+Do not assume that a desktop keyring is available inside the container. The
+Compose service sets `GOOSE_DISABLE_KEYRING=1`, which makes goose use file-based
+secret storage. Durable settings, the custom authorization header, sessions,
+and logs therefore remain within the agent's named home volume. Treat that
+volume as credential-bearing data.
+
+Confirm that the effective provider is LiteLLM and that the model is the exact
+alias selected from `--listmodels`. Then select **Toggle Extensions** and
+disable the Developer extension. The reviewed source and documentation also
+show several platform extensions enabled by default. Review the complete
+enabled list and disable analysis, application, extension-management, skills,
+task, delegation, scheduling, or other capabilities that the exercise does not
+require. The goal is for the configured fetch extension to be the only tool
+source available to this session. If the current build does not let you reach
+that state, do not continue with the example.
+
+Use **Add Extension** to create one remote Streamable HTTP extension:
+
+| Setting | Value |
+|---|---|
+| Name | `self-hosted-fetch` |
+| Endpoint | `http://mcp:3000/mcp` |
+| Description | `Authenticated web retrieval through MCP Gateway` |
+| Custom header name | `Authorization` |
+| Custom header value | `Bearer <MCP Gateway key>` |
+
+The angle-bracketed value is a placeholder. Enter the actual key after the word
+`Bearer`, without angle brackets. The extension configuration persists in the
+named volume after the temporary container exits. The current CLI collects a
+custom header as ordinary terminal input and persists it with the extension
+configuration, so perform this step in a private terminal and do not capture
+the screen or terminal transcript while entering the credential.
+
+Do not run `goose info -v` or print the configuration after storing credentials
+or custom headers. Verbose configuration output can contain sensitive values.
+
+The default MCP Gateway configuration enables the fetch server. Verify that
+assumption against the deployed gateway:
+
+```sh
+docker exec mcp mcp_manage --list
+docker exec mcp mcp_manage --test fetch
+```
+
+If you customized the gateway, ensure only the servers required for this
+exercise are enabled. Fetch does not directly modify its target, but
+unrestricted URL retrieval can still reach internal web services or disclose
+their responses. Apply outbound destination controls when the environment
+requires them.
+
+### Try a bounded read-only task
+
+If the version, help, Compose, provider, and extension checks above all match,
+try a temporary interactive agent with a small turn limit and a
+repeated-tool-call limit:
+
+```sh
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent run --rm goose session \
+  --max-turns 8 \
+  --max-tool-repetitions 2
+```
+
+Use a narrow prompt:
+
+> Use only the self-hosted-fetch extension. Retrieve https://example.com,
+> report the page title, and summarize the page's purpose in two sentences. Do
+> not use shell or file tools.
+
+The prompt describes intent, but it is not the security boundary. The absent
+host mounts, disabled broad extensions, limited MCP server set, separate
+credentials, approval mode, dropped capabilities, and command-line limits
+provide the meaningful controls.
+
+Check the attempted result at each boundary rather than assuming success:
+
+1. Confirm that goose reports the configured LiteLLM alias rather than a silent
+   fallback.
+2. Before approving a tool call, confirm that it identifies the expected fetch
+   extension and URL.
+3. Confirm that no shell, host-file, delegation, scheduling,
+   extension-management, or application tool is available.
+4. Confirm that LiteLLM and MCP Gateway record corresponding requests without
+   exposing credential values.
+5. Confirm that the goose container is removed after the session exits.
+
+Any mismatch is a failed compatibility or boundary check. Stop the session,
+preserve only sanitized diagnostics, and reconcile the image's documentation
+and effective configuration before retrying. Do not interpret a fluent answer
+as proof that the intended model and tool path were used.
+
+Inspect recent gateway logs:
+
+```sh
+docker compose logs --since 5m litellm mcp
+```
+
+Confirm the agent version and storage locations, without printing verbose
+configuration, in another temporary container:
+
+```sh
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.goose.yml \
+  --profile agent run --rm goose info
+```
+
+Do not enable debug output when prompts, tool arguments, or returned documents
+contain sensitive data. Debug logs can preserve more information than ordinary
+session output.
+
+### Understand what the container boundary does
+
+The container prevents goose from seeing arbitrary host files unless you mount
+them. It also gives the agent its own process, filesystem, and Linux capability
+boundary. Those protections are valuable, but incomplete:
+
+- The agent can reach services allowed by its Docker network and outbound
+  network policy.
+- It can modify its writable home volume.
+- Docker administrators can inspect or control the container.
+- A mounted directory grants the container the access specified by that mount.
+- Prompt injection can still influence model-selected tool calls.
+- Approval can still be mistaken or too broad.
+
+Never mount `/var/run/docker.sock` into an agent container. Access to the Docker
+socket commonly provides control over the host and the other containers, which
+would defeat the isolation this design is intended to provide.
+
+### Add filesystem access only when required
+
+The fetch example needs no workspace. If a later task must inspect files, add
+one explicit mount to the goose service instead of mounting a home directory.
+Start read-only:
+
+```yaml
+    volumes:
+      - goose-home:/home/goose
+      - /srv/agent-work/demo:/workspace:ro
+    working_dir: /workspace
+```
+
+Use a dedicated path containing only material the agent may read. If the task
+must write, use a disposable worktree or staging directory, change only that
+mount to read-write, and require approval before any commit, publication,
+external message, or production action.
+
+Separate read, propose, and execute permissions. The container may prepare a
+change in a dedicated worktree while a human-controlled process performs the
+final commit, push, deployment, or other consequential action.
+
+### Apply tool permissions and stop conditions
+
+Use goose tool permissions to classify each enabled tool:
+
+- **Always Allow** only for operations that are truly safe and read-only in the
+  current environment.
+- **Ask Before** for writes, commands, external side effects, or operations
+  whose target can vary.
+- **Never Allow** for capabilities the task does not require.
+
+Human confirmation should normally gate deletion, publication, external
+messages, purchases, production changes, credential operations, privilege
+changes, and irreversible or high-impact writes. Approval belongs immediately
+before the consequential action, after the exact target and payload are known.
+
+Set limits that correspond to the potential impact of the task:
+
+- Maximum turns and repeated identical tool calls
+- Maximum elapsed time and retries
+- Provider cost or token budget where applicable
+- Allowed directories, hosts, repositories, and database roles
+- A stop on authentication failure, ambiguous targets, or repeated tool errors
+- A stop when the task needs authority outside the original request
+
+Record the task identity, image digest, selected model, enabled tools, sanitized
+arguments, approvals, results, and final state. Keep enough information to
+reconstruct a failure without turning logs into another store of secrets or
+personal data.
+
+### Test failure and abuse cases
+
+A successful fetch proves only the basic connection. Before permitting writes
+or production access, test:
+
+- Web pages or documents containing prompt injection
+- Tool output that falsely claims an action succeeded
+- Timeouts after a partial write
+- Duplicate retries and repeated identical calls
+- Missing or expired credentials
+- Permission denial and unavailable approval
+- Attempts to reach unapproved networks, files, or environment variables
+- Results that exceed size, turn, time, or cost limits
+- Attempts to access host paths or the Docker socket
+
+Release a workflow only after these tests show that authorization, approvals,
+idempotency, budgets, and stop conditions behave as intended.
+
+### Do not make the first agent an unattended service
+
+The official image can run headless commands or a background goose server, but
+that is not the starting pattern for this guide. A continuously running agent
+needs its own authenticated user interface or API, concurrency policy, approval
+channel, scheduler, audit trail, cancellation behavior, and recovery design.
+
+Keep the initial service definition behind the `agent` profile and invoke it
+with `docker compose run --rm`. Add unattended execution only for a narrowly
+defined task after its credentials, approval behavior, failure recovery, and
+stop conditions have been tested independently.
+
+### Troubleshoot by boundary
+
+If the container cannot start, confirm that the current shell contains
+`GOOSE_IMAGE`, `GOOSE_MODEL`, and `GOOSE_LITELLM_API_KEY`, then render the
+combined Compose configuration. A missing variable should stop interpolation
+instead of silently starting with an empty image reference or credential.
+
+If model calls fail, verify that LiteLLM is healthy, the virtual key is current,
+and the exact alias is allowed by that key. Inside the Compose network, use
+`http://litellm:4000`, not a host loopback address.
+
+If goose cannot list or call a tool, confirm that the endpoint is
+`http://mcp:3000/mcp`, the header contains the `Bearer` scheme, and the gateway
+key is current. Test the fetch server with `mcp_manage` before changing the
+agent configuration.
+
+If a task can see unexpected tools, stop the session. Recheck enabled goose
+extensions, per-tool permissions, the Compose mounts, inherited environment
+variables, and enabled MCP servers before continuing.
+
+### Remove the optional agent
+
+To reverse the example:
+
+1. Exit the goose session and confirm that its temporary container was removed.
+2. Delete the LiteLLM virtual key using the Admin UI or the key-management
+   commands in the [LiteLLM guide](https://github.com/hwdsl2/docker-litellm#virtual-key-management).
+3. Remove `docker-compose.goose.yml` from the stack directory.
+4. Review `ai-tools-goose-home` according to your backup and retention policy.
+   If it may be deleted and no agent container is using it, remove it with
+   `docker volume rm ai-tools-goose-home`.
+5. Clear the credentials from the current shell:
+
+```sh
+unset GOOSE_IMAGE GOOSE_LITELLM_API_KEY GOOSE_MODEL
+```
+
+Removing the overlay prevents new agent containers from being created. It does
+not delete the named volume or its session and configuration data. A retained
+volume still holds the MCP extension credential; protect it as sensitive data.
+Removing the agent volume does not affect Ollama models, LiteLLM state, or MCP
+Gateway configuration. Rotate the gateway key if it may have been exposed,
+accounting for other clients that use it.
+
 ## Upstream references
 
 - [Stack Compose definition](../docker-compose.yml)
+- [AI Tools Compose definition](../stacks/ai-tools/docker-compose.yml)
 - [Stack HTTPS proxy overlay](../docker-compose.proxy.yml)
 - [Stack Caddy configuration](../caddy/Caddyfile)
 - [docker-litellm management commands](https://github.com/hwdsl2/docker-litellm/blob/main/manage.sh)
 - [docker-mcp-gateway management commands](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/manage.sh)
 - [goose 1.52.0 LiteLLM provider implementation](https://github.com/aaif-goose/goose/blob/v1.52.0/crates/goose/src/providers/litellm.rs)
+- [goose container image](https://github.com/aaif-goose/goose/pkgs/container/goose)
+- [goose Docker guide](https://github.com/aaif-goose/goose/blob/main/BUILDING_DOCKER.md)
 - [goose installation](https://goose-docs.ai/docs/getting-started/installation/)
 - [goose provider configuration](https://goose-docs.ai/docs/getting-started/providers/)
 - [goose tool permissions](https://goose-docs.ai/docs/guides/managing-tools/tool-permissions/)
