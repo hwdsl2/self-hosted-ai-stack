@@ -2,6 +2,18 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-09-30
+
+### Added
+
+- Added a guide for connecting goose to the stack's LiteLLM endpoint, with
+  optional MCP Gateway access.
+
+### Changed
+
+- Updated the pinned AnythingLLM image to `1.16.2` in the root, `chat-ui`, and
+  `voice-chat` Compose variants.
+
 ## 2026-07-04
 
 ### Added
