@@ -21,7 +21,7 @@ The model connection works with the full stack and every lightweight stack
 that includes LiteLLM. The optional MCP section requires a deployment that also
 includes MCP Gateway, such as the full stack, `ai-tools`, or `code-assistant`.
 
-This guide reflects Self-Hosted AI Stack version `2026.08.2` and goose 1.52.0.
+This guide reflects Self-Hosted AI Stack version `2026.09.1` and goose 1.52.0.
 goose changes frequently, so compare prompts and menu names with the
 [current installation](https://goose-docs.ai/docs/getting-started/installation/)
 and [provider](https://goose-docs.ai/docs/getting-started/providers/)
