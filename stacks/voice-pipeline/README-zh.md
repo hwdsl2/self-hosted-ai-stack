@@ -4,7 +4,7 @@
 
 语音转文本 → LLM → 文本转语音。转录音频，获取 AI 回复，并以语音输出。
 
-**服务：** Whisper (STT) + Ollama (LLM) + LiteLLM (网关) + Kokoro (TTS)
+**服务：** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (网关) + Kokoro (TTS)
 
 **内存：** ~6 GB RAM（使用 3B 模型）
 
@@ -16,7 +16,7 @@
 
 ```mermaid
 graph LR
-    A["🎤 音频输入"] -->|转录| W["Whisper<br/>(语音转文本)"]
+    A["🎤 音频输入"] -->|转录| W["ScribeCrate<br/>(语音转文本)"]
     W -->|文本| L["LiteLLM<br/>(AI 网关)"]
     L -->|路由至| O["Ollama<br/>(本地 LLM)"]
     L -->|响应| T["Kokoro TTS<br/>(文本转语音)"]
@@ -27,7 +27,7 @@ graph LR
 
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
-| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md)** | 将语音音频转录为文本 | `9000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音音频转录为文本 | `9000` |
 | **[WhisperLive（实时语音转文本）](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 Ollama 及 100+ 供应商 | `4000` |
@@ -41,7 +41,7 @@ graph LR
 默认访问方式：
 
 - LiteLLM 发布在宿主机端口 `4000`。
-- Whisper 默认绑定到 `127.0.0.1:9000`。
+- ScribeCrate 默认绑定到 `127.0.0.1:9000`。
 - Kokoro 默认绑定到 `127.0.0.1:8880`。
 - Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
 
@@ -155,7 +155,7 @@ docker run -d --name litellm --restart always \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     hwdsl2/litellm-server
 
-# Whisper (STT)
+# ScribeCrate (Whisper STT)
 docker run -d --name whisper --restart always \
     --network ai-stack \
     -p 127.0.0.1:9000:9000 \
@@ -198,7 +198,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 |---|---|---|
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md) |
-| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md) |
 | WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
 

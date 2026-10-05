@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-Включает Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling и Kokoro — полностью сконфигурирован и готов к запуску с Docker Compose.
+Включает Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, Docling и Kokoro — полностью сконфигурирован и готов к запуску с Docker Compose.
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon): практическое руководство по этому стеку, охватывающее развёртывание, безопасность, резервное копирование и обновления.
 
@@ -34,7 +34,7 @@
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Веб-чат — защита паролем включена по умолчанию | `3001` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз — маршрутизация запросов к Ollama, OpenAI, Anthropic и 100+ провайдерам | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md)** | Преобразование текста в векторы для семантического поиска и RAG | `8000` |
-| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md)** | Транскрибация речи в текст | `9000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибация речи в текст | `9000` |
 | **[WhisperLive (STT в реальном времени)](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md)** | Преобразование текста в естественную речь | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
@@ -56,8 +56,6 @@ git clone https://github.com/hwdsl2/self-hosted-ai-stack
 cd self-hosted-ai-stack
 docker compose up -d
 ```
-
-> **Существующие установки:** Если вы клонировали проект до переименования из `docker-ai-stack`, существующий checkout и развёртывание продолжают работать. GitHub перенаправляет старый URL репозитория, и вам не нужно переименовывать локальный каталог, контейнеры, тома или сети.
 
 > **Учётные данные PostgreSQL:** Новые установки и существующие установки с паролем по умолчанию обрабатываются автоматически. Если вы ранее задали собственный пароль базы данных, см. [Учётные данные PostgreSQL](#учётные-данные-postgresql) перед запуском.
 
@@ -171,8 +169,8 @@ docker compose -f docker-compose.cuda.yml up -d
 | Стек | Сервисы | Память | Сценарий использования |
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/README-ru.md)** | Ollama + LiteLLM + AnythingLLM | ~5 ГБ | Веб-интерфейс для чата в стиле ChatGPT |
-| **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | Whisper + Ollama + LiteLLM + Kokoro | ~6 ГБ | Речь в текст → LLM → текст в речь |
-| **[voice-chat](stacks/voice-chat/README-ru.md)** | Whisper + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
+| **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro | ~6 ГБ | Речь в текст → LLM → текст в речь |
+| **[voice-chat](stacks/voice-chat/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
 | **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | Ollama + LiteLLM + Embeddings | ~5 ГБ | Семантический поиск + LLM Q&A |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | Ollama + LiteLLM + Embeddings + Docling | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
 | **[code-assistant](stacks/code-assistant/README-ru.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
@@ -189,7 +187,7 @@ docker compose up -d
 
 ```mermaid
 graph LR
-    A["🎤 Аудиовход"] -->|транскрибация| W["Whisper<br/>(речь в текст)"]
+    A["🎤 Аудиовход"] -->|транскрибация| W["ScribeCrate<br/>(речь в текст)"]
     D["📄 Документы"] -->|разбор| DC["Docling<br/>(документ → текст)"]
     DC -->|эмбеддинг| E["Embeddings<br/>(текст → векторы)"]
     E -->|хранение| VDB["pgvector<br/>(в общем Postgres)"]
@@ -273,7 +271,7 @@ docker run -d --name embeddings --restart always \
     -v embeddings-data:/var/lib/embeddings \
     hwdsl2/embeddings-server
 
-# Whisper (STT)
+# ScribeCrate (Whisper STT)
 docker run -d --name whisper --restart always \
     --network ai-stack \
     -p 127.0.0.1:9000:9000 \
@@ -426,7 +424,7 @@ LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
 KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
-# Шаг 1: Транскрибация аудио в текст (Whisper)
+# Шаг 1: Транскрибация аудио в текст (ScribeCrate)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
@@ -536,7 +534,7 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md) |
-| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
 | WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-ru.md) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md) |
 | MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-ru.md) |

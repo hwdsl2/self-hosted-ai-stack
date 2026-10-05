@@ -4,7 +4,7 @@
 
 Speech-to-text → LLM → text-to-speech. Transcribe audio, get an AI response, and hear it spoken back.
 
-**Services:** Whisper (STT) + Ollama (LLM) + LiteLLM (gateway) + Kokoro (TTS)
+**Services:** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (gateway) + Kokoro (TTS)
 
 **Memory:** ~6 GB RAM (with a 3B model)
 
@@ -16,7 +16,7 @@ Speech-to-text → LLM → text-to-speech. Transcribe audio, get an AI response,
 
 ```mermaid
 graph LR
-    A["🎤 Audio input"] -->|transcribe| W["Whisper<br/>(speech-to-text)"]
+    A["🎤 Audio input"] -->|transcribe| W["ScribeCrate<br/>(speech-to-text)"]
     W -->|text| L["LiteLLM<br/>(AI gateway)"]
     L -->|routes to| O["Ollama<br/>(local LLM)"]
     L -->|response| T["Kokoro TTS<br/>(text-to-speech)"]
@@ -27,7 +27,7 @@ graph LR
 
 | Service | Role | Default port |
 |---|---|---|
-| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Transcribes spoken audio to text | `9000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate)** | Transcribes spoken audio to text | `9000` |
 | **[WhisperLive (real-time STT)](https://github.com/hwdsl2/docker-whisper-live)** | Real-time speech-to-text transcription over WebSocket | `9090` |
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
@@ -41,7 +41,7 @@ graph LR
 Default access:
 
 - LiteLLM is published on host port `4000`.
-- Whisper is bound to `127.0.0.1:9000` by default.
+- ScribeCrate is bound to `127.0.0.1:9000` by default.
 - Kokoro is bound to `127.0.0.1:8880` by default.
 - Ollama is internal to the Docker network; use LiteLLM for host or browser access.
 
@@ -155,7 +155,7 @@ docker run -d --name litellm --restart always \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     hwdsl2/litellm-server
 
-# Whisper (STT)
+# ScribeCrate (Whisper STT)
 docker run -d --name whisper --restart always \
     --network ai-stack \
     -p 127.0.0.1:9000:9000 \
@@ -198,7 +198,7 @@ Each service can be configured with an optional env file. Copy the example env f
 |---|---|---|
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
-| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
 | WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
 

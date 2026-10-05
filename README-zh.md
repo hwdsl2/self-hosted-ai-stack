@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-包含 Ollama、LiteLLM、AnythingLLM、Whisper、MCP Gateway、Embeddings、Docling 和 Kokoro — 使用 Docker Compose 完整配置，开箱即用。
+包含 Ollama、LiteLLM、AnythingLLM、ScribeCrate、MCP Gateway、Embeddings、Docling 和 Kokoro — 使用 Docker Compose 完整配置，开箱即用。
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技术栈的实用配套指南，涵盖部署、安全、备份和升级。
 
@@ -34,7 +34,7 @@
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于 Web 的聊天界面 — 默认启用密码保护 | `3001` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | AI 网关（含管理界面）— 将请求路由至 Ollama 及 100+ 提供商 | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
-| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md)** | 将语音转录为文本 | `9000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音转录为文本 | `9000` |
 | **[WhisperLive（实时语音转文本）](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md)** | 将文本转换为自然语音 | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
@@ -56,8 +56,6 @@ git clone https://github.com/hwdsl2/self-hosted-ai-stack
 cd self-hosted-ai-stack
 docker compose up -d
 ```
-
-> **现有安装：** 如果您在本项目从 `docker-ai-stack` 更名前已经克隆，现有检出和部署会继续工作。GitHub 会重定向旧仓库 URL，您无需重命名本地目录、容器、卷或网络。
 
 > **PostgreSQL 凭据：** 全新安装和现有默认安装会自动处理。如果您之前设置过自定义数据库密码，请在启动前参阅 [PostgreSQL 凭据](#postgresql-凭据)。
 
@@ -171,8 +169,8 @@ docker compose -f docker-compose.cuda.yml up -d
 | 技术栈 | 服务 | 内存 | 使用场景 |
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/README-zh.md)** | Ollama + LiteLLM + AnythingLLM | ~5 GB | 基于 Web 的 ChatGPT 式聊天界面 |
-| **[voice-pipeline](stacks/voice-pipeline/README-zh.md)** | Whisper + Ollama + LiteLLM + Kokoro | ~6 GB | 语音转文本 → LLM → 文本转语音 |
-| **[voice-chat](stacks/voice-chat/README-zh.md)** | Whisper + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
+| **[voice-pipeline](stacks/voice-pipeline/README-zh.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro | ~6 GB | 语音转文本 → LLM → 文本转语音 |
+| **[voice-chat](stacks/voice-chat/README-zh.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
 | **[rag-pipeline](stacks/rag-pipeline/README-zh.md)** | Ollama + LiteLLM + Embeddings | ~5 GB | 语义搜索 + LLM 问答 |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh.md)** | Ollama + LiteLLM + Embeddings + Docling | ~6 GB | 文档解析 + 语义搜索 + LLM 问答 |
 | **[code-assistant](stacks/code-assistant/README-zh.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 GB | AI 编程，支持工具 + 语义代码搜索 |
@@ -189,7 +187,7 @@ docker compose up -d
 
 ```mermaid
 graph LR
-    A["🎤 音频输入"] -->|转录| W["Whisper<br/>(语音转文本)"]
+    A["🎤 音频输入"] -->|转录| W["ScribeCrate<br/>(语音转文本)"]
     D["📄 文档"] -->|解析| DC["Docling<br/>(文档 → 文本)"]
     DC -->|嵌入| E["Embeddings<br/>(文本 → 向量)"]
     E -->|存储| VDB["pgvector<br/>(共享 Postgres 中)"]
@@ -273,7 +271,7 @@ docker run -d --name embeddings --restart always \
     -v embeddings-data:/var/lib/embeddings \
     hwdsl2/embeddings-server
 
-# Whisper (STT)
+# ScribeCrate (Whisper STT)
 docker run -d --name whisper --restart always \
     --network ai-stack \
     -p 127.0.0.1:9000:9000 \
@@ -426,7 +424,7 @@ LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
 KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
-# 第 1 步：将音频转录为文本（Whisper）
+# 第 1 步：将音频转录为文本（ScribeCrate）
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
@@ -536,7 +534,7 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md) |
-| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper/blob/main/README-zh.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
 | WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-zh.md) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md) |
 | MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh.md) |

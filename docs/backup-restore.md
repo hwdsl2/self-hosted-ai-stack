@@ -17,7 +17,7 @@ Each service stores its data in a named Docker volume:
 | `litellm-db` | LiteLLM | PostgreSQL database (usage data, logs) |
 | `ai-stack-shared` | Stack | Generated PostgreSQL password for fresh Compose installs |
 | `embeddings-data` | Embeddings | Embedding model cache, generated API key |
-| `whisper-data` | Whisper | Whisper model cache, generated API key |
+| `whisper-data` | ScribeCrate | Whisper model cache, generated API key |
 | `whisper-live-data` | WhisperLive | Real-time STT model cache, generated API key |
 | `kokoro-data` | Kokoro | TTS model/voice cache, generated API key |
 | `mcp-data` | MCP Gateway | API key, tool configuration |
@@ -26,7 +26,7 @@ Each service stores its data in a named Docker volume:
 | `caddy-data` | Caddy | TLS certificates, private keys, OCSP staples, ACME account state |
 | `caddy-config` | Caddy | Internal Caddy configuration storage |
 
-**Important:** API keys for Ollama, LiteLLM, MCP Gateway, and fresh persistent installs of Whisper, WhisperLive, Kokoro, Embeddings, and Docling are stored inside these volumes. If you lose a volume, you lose its key. Connected clients will need to be updated with new keys.
+**Important:** API keys for Ollama, LiteLLM, MCP Gateway, and fresh persistent installs of ScribeCrate, WhisperLive, Kokoro, Embeddings, and Docling are stored inside these volumes. If you lose a volume, you lose its key. Connected clients will need to be updated with new keys.
 
 **Important (AnythingLLM):** The current admin password and its `JWT_SECRET` live in `anythingllm-data` (`server/.env`). The `.initial_admin_password` file is only the first-run password copy and may be stale if you changed the password in Settings. Backing up this volume preserves the current password. Restoring it on a different host re-uses the same password — no need to re-seed.
 
@@ -43,7 +43,7 @@ echo "=== API Keys ===" > ai-stack-keys.txt
 echo "Ollama:      $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "LiteLLM:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "MCP:         $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Whisper:     $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ScribeCrate: $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "WhisperLive: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "Kokoro:      $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "Embeddings:  $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt

@@ -4,7 +4,7 @@
 
 Речь в текст → LLM → текст в речь. Транскрибируйте аудио, получите ответ AI и прослушайте его.
 
-**Сервисы:** Whisper (STT) + Ollama (LLM) + LiteLLM (шлюз) + Kokoro (TTS)
+**Сервисы:** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (шлюз) + Kokoro (TTS)
 
 **Память:** ~6 ГБ RAM (с моделью 3B)
 
@@ -16,7 +16,7 @@
 
 ```mermaid
 graph LR
-    A["🎤 Аудиовход"] -->|транскрипция| W["Whisper<br/>(речь в текст)"]
+    A["🎤 Аудиовход"] -->|транскрипция| W["ScribeCrate<br/>(речь в текст)"]
     W -->|текст| L["LiteLLM<br/>(AI-шлюз)"]
     L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
     L -->|ответ| T["Kokoro TTS<br/>(текст в речь)"]
@@ -27,7 +27,7 @@ graph LR
 
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
-| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md)** | Транскрибирует речь в текст | `9000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибирует речь в текст | `9000` |
 | **[WhisperLive (STT в реальном времени)](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
@@ -41,7 +41,7 @@ graph LR
 Доступ по умолчанию:
 
 - LiteLLM опубликован на порту хоста `4000`.
-- Whisper по умолчанию привязан к `127.0.0.1:9000`.
+- ScribeCrate по умолчанию привязан к `127.0.0.1:9000`.
 - Kokoro по умолчанию привязан к `127.0.0.1:8880`.
 - Ollama доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте LiteLLM.
 
@@ -155,7 +155,7 @@ docker run -d --name litellm --restart always \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     hwdsl2/litellm-server
 
-# Whisper (STT)
+# ScribeCrate (Whisper STT)
 docker run -d --name whisper --restart always \
     --network ai-stack \
     -p 127.0.0.1:9000:9000 \
@@ -198,7 +198,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 |---|---|---|
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
-| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md) |
 | WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
 

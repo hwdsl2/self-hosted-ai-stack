@@ -156,7 +156,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 ## Опциональные сервисы
 
-В полном compose-файле Embeddings и Whisper включены по умолчанию. Kokoro, Docling и WhisperLive закомментированы для уменьшения потребления памяти.
+В полном compose-файле Embeddings и ScribeCrate включены по умолчанию. Kokoro, Docling и WhisperLive закомментированы для уменьшения потребления памяти.
 
 Чтобы включить закомментированный сервис:
 
@@ -172,7 +172,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 | Ollama | https://github.com/hwdsl2/docker-ollama |
 | LiteLLM | https://github.com/hwdsl2/docker-litellm |
 | Embeddings | https://github.com/hwdsl2/docker-embeddings |
-| Whisper | https://github.com/hwdsl2/docker-whisper |
+| ScribeCrate | https://github.com/hwdsl2/scribecrate |
 | WhisperLive | https://github.com/hwdsl2/docker-whisper-live |
 | Kokoro | https://github.com/hwdsl2/docker-kokoro |
 | MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
@@ -196,7 +196,7 @@ docker compose -f docker-compose.cuda.yml up -d
 Если GPU-ускорение не используется:
 
 - Убедитесь, что запущен `docker-compose.cuda.yml`, а не `docker-compose.yml`.
-- Проверьте `docker compose logs --tail=100 ollama` и, если Whisper включен, `docker compose logs --tail=100 whisper`.
+- Проверьте `docker compose logs --tail=100 ollama` и, если ScribeCrate включен, `docker compose logs --tail=100 whisper`.
 - Убедитесь, что хост может запускать GPU-контейнеры через NVIDIA Container Toolkit.
 
 Для Podman блок GPU `deploy.resources` из Compose не используется. Следуйте инструкциям Podman CDI в README.

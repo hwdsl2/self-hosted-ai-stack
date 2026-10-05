@@ -4,7 +4,7 @@
 
 Веб-интерфейс чата с голосовым вводом (речь в текст) и голосовым выводом (текст в речь) — полноценный локальный AI-ассистент.
 
-**Сервисы:** Ollama (LLM) + LiteLLM (шлюз) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (чат-интерфейс) + Whisper (STT) + Kokoro (TTS)
+**Сервисы:** Ollama (LLM) + LiteLLM (шлюз) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (чат-интерфейс) + ScribeCrate (Whisper STT) + Kokoro (TTS)
 
 **Память:** ~6.5 ГБ RAM (с моделью 3B)
 
@@ -17,7 +17,7 @@
 ```mermaid
 graph LR
     U["👤 Пользователь"] -->|чат| A["AnythingLLM<br/>(чат-интерфейс)"]
-    U -->|говорит| W["Whisper<br/>(речь в текст)"]
+    U -->|говорит| W["ScribeCrate<br/>(речь в текст)"]
     A -->|API| L["LiteLLM<br/>(AI-шлюз)"]
     L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
     L -->|ответ| K["Kokoro<br/>(текст в речь)"]
@@ -32,7 +32,7 @@ graph LR
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Веб-интерфейс чата с рабочими пространствами, RAG и поддержкой агентов | `3001` |
-| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md)** | Транскрибирует аудио в текст | `9000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибирует аудио в текст | `9000` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md)** | Преобразует текст в естественную речь | `8880` |
 
 > [!IMPORTANT]
@@ -42,7 +42,7 @@ graph LR
 
 - LiteLLM опубликован на порту хоста `4000`.
 - AnythingLLM опубликован на порту хоста `3001`.
-- Whisper по умолчанию привязан к `127.0.0.1:9000`.
+- ScribeCrate по умолчанию привязан к `127.0.0.1:9000`.
 - Kokoro по умолчанию привязан к `127.0.0.1:8880`.
 - Ollama доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте LiteLLM.
 
@@ -199,7 +199,7 @@ docker run -d --name anythingllm --restart always \
     mintplexlabs/anythingllm:1.16.2 \
     /usr/local/bin/chat-ui-bootstrap.sh
 
-# Whisper (STT)
+# ScribeCrate (Whisper STT)
 docker run -d --name whisper --restart always \
     --network ai-stack \
     -p 127.0.0.1:9000:9000 \
@@ -234,7 +234,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 |---|---|---|
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
-| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper/blob/main/README-ru.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md) |
 
 AnythingLLM настраивается через веб-интерфейс `http://<server-ip>:3001`. Вы можете изменить провайдер LLM, модель, движок эмбеддингов и другие параметры в **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
@@ -243,7 +243,7 @@ AnythingLLM настраивается через веб-интерфейс `htt
 
 ## Использование обратного прокси
 
-Для развёртываний с выходом в интернет используйте включённый Caddy overlay для автоматического HTTPS. Выполняйте эти команды из каталога `stacks/voice-chat`. Корневой overlay `../../docker-compose.proxy.yml` намеренно монтирует локальный для этого стека `caddy/Caddyfile`. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и LiteLLM заново привязываются к `127.0.0.1`. По умолчанию прокси открывает только AnythingLLM; Whisper и Kokoro остаются привязанными согласно compose-файлу этого подстека.
+Для развёртываний с выходом в интернет используйте включённый Caddy overlay для автоматического HTTPS. Выполняйте эти команды из каталога `stacks/voice-chat`. Корневой overlay `../../docker-compose.proxy.yml` намеренно монтирует локальный для этого стека `caddy/Caddyfile`. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и LiteLLM заново привязываются к `127.0.0.1`. По умолчанию прокси открывает только AnythingLLM; ScribeCrate и Kokoro остаются привязанными согласно compose-файлу этого подстека.
 
 Требования:
 
@@ -364,7 +364,7 @@ LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
 KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
-# Шаг 1: Транскрибировать аудио в текст (Whisper)
+# Шаг 1: Транскрибировать аудио в текст (ScribeCrate)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)

@@ -17,7 +17,7 @@
 | `litellm-db` | LiteLLM | PostgreSQL 数据库（使用数据、日志） |
 | `ai-stack-shared` | Stack | 全新 Compose 安装生成的 PostgreSQL 密码 |
 | `embeddings-data` | Embeddings | 嵌入模型缓存、已生成的 API 密钥 |
-| `whisper-data` | Whisper | Whisper 模型缓存、已生成的 API 密钥 |
+| `whisper-data` | ScribeCrate | Whisper 模型缓存、已生成的 API 密钥 |
 | `whisper-live-data` | WhisperLive | 实时语音转文本模型缓存、已生成的 API 密钥 |
 | `kokoro-data` | Kokoro | TTS 模型/语音缓存、已生成的 API 密钥 |
 | `mcp-data` | MCP Gateway | API 密钥、工具配置 |
@@ -26,7 +26,7 @@
 | `caddy-data` | Caddy | TLS 证书、私钥、OCSP staple、ACME 账户状态 |
 | `caddy-config` | Caddy | Caddy 内部配置存储 |
 
-**重要提示：** Ollama、LiteLLM、MCP Gateway，以及 Whisper、WhisperLive、Kokoro、Embeddings 和 Docling 的新持久化安装所生成的 API 密钥，都会存储在这些卷中。如果丢失卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
+**重要提示：** Ollama、LiteLLM、MCP Gateway，以及 ScribeCrate、WhisperLive、Kokoro、Embeddings 和 Docling 的新持久化安装所生成的 API 密钥，都会存储在这些卷中。如果丢失卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
 
 **重要提示（AnythingLLM）：** 当前管理员密码及其 `JWT_SECRET` 位于 `anythingllm-data` 卷中的 `server/.env`。`.initial_admin_password` 只是首次运行时的密码副本；如果你已在 Settings 中更改密码，该文件可能已经过期。备份此卷会保留当前密码。在其他主机上恢复时会重用相同的密码 — 无需重新生成。
 
@@ -43,7 +43,7 @@ echo "=== API Keys ===" > ai-stack-keys.txt
 echo "Ollama:      $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "LiteLLM:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "MCP:         $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Whisper:     $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ScribeCrate: $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "WhisperLive: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "Kokoro:      $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "Embeddings:  $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt

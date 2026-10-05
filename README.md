@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling, and Kokoro — fully configured and ready to run with Docker Compose.
+Includes Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, Docling, and Kokoro — fully configured and ready to run with Docker Compose.
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
@@ -34,7 +34,7 @@ Includes Ollama, LiteLLM, AnythingLLM, Whisper, MCP Gateway, Embeddings, Docling
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Web-based chat UI — password-protected by default | `3001` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | Converts text to vectors for semantic search and RAG | `8000` |
-| **[Whisper (STT)](https://github.com/hwdsl2/docker-whisper)** | Transcribes spoken audio to text | `9000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate)** | Transcribes spoken audio to text | `9000` |
 | **[WhisperLive (real-time STT)](https://github.com/hwdsl2/docker-whisper-live)** | Real-time speech-to-text transcription over WebSocket | `9090` |
 | **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Converts text to natural-sounding speech | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
@@ -56,8 +56,6 @@ git clone https://github.com/hwdsl2/self-hosted-ai-stack
 cd self-hosted-ai-stack
 docker compose up -d
 ```
-
-> **Existing installs:** If you cloned this project before it was renamed from `docker-ai-stack`, your existing checkout and deployment continue to work. GitHub redirects the old repository URL, and you do not need to rename your local directory, containers, volumes, or networks.
 
 > **PostgreSQL credentials:** Fresh installs and existing default installs are handled automatically. If you previously set a custom database password, see [PostgreSQL credentials](#postgresql-credentials) before starting.
 
@@ -171,8 +169,8 @@ Don't need the full stack? Use a pre-configured subset from the `stacks/` folder
 | Stack | Services | Memory | Use case |
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/)** | Ollama + LiteLLM + AnythingLLM | ~5 GB | Web-based ChatGPT-like chat interface |
-| **[voice-pipeline](stacks/voice-pipeline/)** | Whisper + Ollama + LiteLLM + Kokoro | ~6 GB | Speech-to-text → LLM → text-to-speech |
-| **[voice-chat](stacks/voice-chat/)** | Whisper + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 GB | Chat UI with voice input/output |
+| **[voice-pipeline](stacks/voice-pipeline/)** | ScribeCrate + Ollama + LiteLLM + Kokoro | ~6 GB | Speech-to-text → LLM → text-to-speech |
+| **[voice-chat](stacks/voice-chat/)** | ScribeCrate + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 GB | Chat UI with voice input/output |
 | **[rag-pipeline](stacks/rag-pipeline/)** | Ollama + LiteLLM + Embeddings | ~5 GB | Semantic search + LLM Q&A |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/)** | Ollama + LiteLLM + Embeddings + Docling | ~6 GB | Document parsing + semantic search + LLM Q&A |
 | **[code-assistant](stacks/code-assistant/)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 GB | AI coding with tools + semantic code search |
@@ -189,7 +187,7 @@ docker compose up -d
 
 ```mermaid
 graph LR
-    A["🎤 Audio input"] -->|transcribe| W["Whisper<br/>(speech-to-text)"]
+    A["🎤 Audio input"] -->|transcribe| W["ScribeCrate<br/>(speech-to-text)"]
     D["📄 Documents"] -->|parse| DC["Docling<br/>(document → text)"]
     DC -->|embed| E["Embeddings<br/>(text → vectors)"]
     E -->|store| VDB["pgvector<br/>(in shared Postgres)"]
@@ -273,7 +271,7 @@ docker run -d --name embeddings --restart always \
     -v embeddings-data:/var/lib/embeddings \
     hwdsl2/embeddings-server
 
-# Whisper (STT)
+# ScribeCrate (Whisper STT)
 docker run -d --name whisper --restart always \
     --network ai-stack \
     -p 127.0.0.1:9000:9000 \
@@ -426,7 +424,7 @@ LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
 KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
 
-# Step 1: Transcribe audio to text (Whisper)
+# Step 1: Transcribe audio to text (ScribeCrate)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $WHISPER_KEY" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
@@ -536,7 +534,7 @@ Each service can be configured with an optional env file. Copy the example env f
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings) |
-| Whisper | `whisper.env` | [docker-whisper](https://github.com/hwdsl2/docker-whisper) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate) |
 | WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
 | Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
 | MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway) |

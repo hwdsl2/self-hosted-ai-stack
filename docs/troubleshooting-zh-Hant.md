@@ -156,7 +156,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 ## 可選服務
 
-在完整 compose 檔案中，Embeddings 和 Whisper 預設啟用。Kokoro、Docling 和 WhisperLive 為降低記憶體使用而預設註解掉。
+在完整 compose 檔案中，Embeddings 和 ScribeCrate 預設啟用。Kokoro、Docling 和 WhisperLive 為降低記憶體使用而預設註解掉。
 
 啟用被註解的服務：
 
@@ -172,7 +172,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 | Ollama | https://github.com/hwdsl2/docker-ollama |
 | LiteLLM | https://github.com/hwdsl2/docker-litellm |
 | Embeddings | https://github.com/hwdsl2/docker-embeddings |
-| Whisper | https://github.com/hwdsl2/docker-whisper |
+| ScribeCrate | https://github.com/hwdsl2/scribecrate |
 | WhisperLive | https://github.com/hwdsl2/docker-whisper-live |
 | Kokoro | https://github.com/hwdsl2/docker-kokoro |
 | MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
@@ -196,7 +196,7 @@ docker compose -f docker-compose.cuda.yml up -d
 如果未使用 GPU 加速：
 
 - 確認啟動的是 `docker-compose.cuda.yml`，而不是 `docker-compose.yml`。
-- 查看 `docker compose logs --tail=100 ollama`，以及啟用 Whisper 時的 `docker compose logs --tail=100 whisper`。
+- 查看 `docker compose logs --tail=100 ollama`，以及啟用 ScribeCrate 時的 `docker compose logs --tail=100 whisper`。
 - 確認主機可以透過 NVIDIA Container Toolkit 執行 GPU 容器。
 
 對於 Podman，Compose 的 `deploy.resources` GPU 區塊不會生效。請按照 README 中的 Podman CDI 說明操作。
