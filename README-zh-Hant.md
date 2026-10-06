@@ -16,15 +16,15 @@
 
 **功能特性：**
 
-- 零配置：所有服務在首次啟動時自動配置
-- 預設安全：AnythingLLM 預設啟用密碼保護，內建 API 服務會自動產生 API 金鑰
-- HTTPS 就緒：可選 Caddy 疊加檔案提供自動 TLS，並將直接 HTTP 連接埠繫結到 localhost
-- 隱私：預設在本機執行，可透過 LiteLLM 選擇性接入外部提供商
-- AI 代理就緒：依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)，將本機安裝的 [goose](https://github.com/aaif-goose/goose) 連接到 LiteLLM
-- 彈性配置：可透過簡單的 env 檔案自訂模型、連接埠、提供商和 API 金鑰
-- 提供[輕量級技術堆疊](#輕量級技術堆疊)，降低記憶體需求（最低約 4.5 GB）
-- 支援 NVIDIA CUDA GPU 加速
-- 多架構：`linux/amd64`、`linux/arm64`
+- **零配置：** 所有服務在首次啟動時自動配置
+- **預設安全：** AnythingLLM 預設啟用密碼保護，內建 API 服務會自動產生 API 金鑰
+- **HTTPS 就緒：** 可選 Caddy 疊加檔案提供自動 TLS，並將直接 HTTP 連接埠繫結到 localhost
+- **預設在本機執行：** 預設在本機執行，可透過 LiteLLM 選擇性接入外部提供商
+- **AI 代理就緒：** 依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)，將本機安裝的 [goose](https://github.com/aaif-goose/goose) 連接到 LiteLLM
+- **彈性配置：** 可透過簡單的 env 檔案自訂模型、連接埠、提供商和 API 金鑰
+- **[輕量級技術堆疊](#輕量級技術堆疊)：** 降低記憶體需求（最低約 4.5 GB）
+- **GPU 加速：** 支援 NVIDIA CUDA
+- **多架構支援：** `linux/amd64`、`linux/arm64`
 
 ## 包含的服務
 

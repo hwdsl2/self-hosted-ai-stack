@@ -16,15 +16,15 @@ Includes Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, Doc
 
 **Features:**
 
-- Zero-config: all services auto-configure on first start
-- Secure by default: AnythingLLM password protection is enabled, and bundled API services auto-generate keys
-- HTTPS-ready: optional Caddy overlay provides automatic TLS and binds direct HTTP ports to localhost
-- Private: runs locally by default with optional external provider support via LiteLLM
-- AI agent ready: connect [goose](https://github.com/aaif-goose/goose) on your workstation to LiteLLM with the [setup guide](https://selfhostedaistack.com/goose)
-- Flexible: customize models, ports, providers, and API keys with simple env files
-- [Lightweight stacks](#lightweight-stacks) for lower memory requirements (as low as ~4.5 GB)
-- GPU acceleration via NVIDIA CUDA
-- Multi-arch: `linux/amd64`, `linux/arm64`
+- **Zero-config:** all services auto-configure on first start.
+- **Secure by default:** AnythingLLM password protection is enabled, and bundled API services auto-generate keys.
+- **HTTPS-ready:** optional Caddy overlay provides automatic TLS and binds direct HTTP ports to localhost.
+- **Local by default:** runs locally, with optional external provider support via LiteLLM.
+- **AI agent ready:** connect [goose](https://github.com/aaif-goose/goose) on your workstation to LiteLLM with the [setup guide](https://selfhostedaistack.com/goose).
+- **Flexible configuration:** customize models, ports, providers, and API keys with simple env files.
+- **[Lightweight stacks](#lightweight-stacks):** for lower memory requirements (as low as ~4.5 GB).
+- **GPU acceleration:** via NVIDIA CUDA.
+- **Multi-architecture support:** `linux/amd64`, `linux/arm64`.
 
 ## Included services
 
