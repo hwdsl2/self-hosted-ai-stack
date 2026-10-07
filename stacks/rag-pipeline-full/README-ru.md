@@ -4,7 +4,7 @@
 
 Разбор документов, создание эмбеддингов для семантического поиска и ответы на вопросы с помощью локальной LLM.
 
-**Сервисы:** Ollama (LLM) + LiteLLM (шлюз) + Embeddings + Docling (разбор документов)
+**Сервисы:** Ollama (LLM) + LiteLLM (шлюз) + Embeddings + ParseCrate (разбор документов)
 
 **Память:** ~6 ГБ RAM (с моделью 3B)
 
@@ -16,7 +16,7 @@
 
 ```mermaid
 graph LR
-    D["📄 Документы<br/>(PDF, DOCX и др.)"] -->|разбор| DC["Docling<br/>(документ → текст)"]
+    D["📄 Документы<br/>(PDF, DOCX и др.)"] -->|разбор| DC["ParseCrate<br/>(документ → текст)"]
     DC -->|эмбеддинг| E["Embeddings<br/>(текст → векторы)"]
     E -->|хранение| VDB["pgvector<br/>(в общем Postgres)"]
     VDB -->|контекст| L["LiteLLM<br/>(AI-шлюз)"]
@@ -30,7 +30,7 @@ graph LR
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизация запросов к Ollama и 100+ провайдерам | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md)** | Преобразование текста в векторы для семантического поиска и RAG | `8000` |
-| **[Docling](https://github.com/hwdsl2/docker-docling/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
+| **[ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
 
 > [!IMPORTANT]
 > Лёгкие подстеки используют общие стандартные имена контейнеров, порты и имена Docker volumes. С compose-файлами по умолчанию запускайте только один вариант подстека за раз; перед переключением на другой вариант остановите текущий.
@@ -39,7 +39,7 @@ graph LR
 
 - LiteLLM опубликован на порту хоста `4000`.
 - Embeddings по умолчанию привязан к `127.0.0.1:8000`.
-- Docling по умолчанию привязан к `127.0.0.1:5001`.
+- ParseCrate по умолчанию привязан к `127.0.0.1:5001`.
 - Ollama доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте LiteLLM.
 
 ## Быстрый старт
@@ -159,7 +159,7 @@ docker run -d --name embeddings --restart always \
     -v embeddings-data:/var/lib/embeddings \
     hwdsl2/embeddings-server
 
-# Docling (разбор документов)
+# ParseCrate (разбор документов)
 docker run -d --name docling --restart always \
     --network ai-stack \
     -p 127.0.0.1:5001:5001 \
@@ -188,7 +188,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md) |
-| Docling | `docling.env` | [docker-docling](https://github.com/hwdsl2/docker-docling/blob/main/README-ru.md) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md) |
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 

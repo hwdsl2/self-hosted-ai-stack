@@ -4,7 +4,7 @@
 
 Speech-to-text → LLM → text-to-speech. Transcribe audio, get an AI response, and hear it spoken back.
 
-**Services:** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (gateway) + Kokoro (TTS)
+**Services:** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (gateway) + SpeakCrate (TTS)
 
 **Memory:** ~6 GB RAM (with a 3B model)
 
@@ -19,7 +19,7 @@ graph LR
     A["🎤 Audio input"] -->|transcribe| W["ScribeCrate<br/>(speech-to-text)"]
     W -->|text| L["LiteLLM<br/>(AI gateway)"]
     L -->|routes to| O["Ollama<br/>(local LLM)"]
-    L -->|response| T["Kokoro TTS<br/>(text-to-speech)"]
+    L -->|response| T["SpeakCrate TTS<br/>(text-to-speech)"]
     T --> B["🔊 Audio output"]
 ```
 
@@ -28,12 +28,12 @@ graph LR
 | Service | Role | Default port |
 |---|---|---|
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate)** | Transcribes spoken audio to text | `9000` |
-| **[WhisperLive (real-time STT)](https://github.com/hwdsl2/docker-whisper-live)** | Real-time speech-to-text transcription over WebSocket | `9090` |
+| **[ScribeCrate Live (real-time STT)](https://github.com/hwdsl2/scribecrate-live)** | Real-time speech-to-text transcription over WebSocket | `9090` |
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Converts text to natural-sounding speech | `8880` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate)** | Converts text to natural-sounding speech | `8880` |
 
-**Note:** WhisperLive (real-time STT) is commented out by default in `docker-compose.yml`. Uncomment it to enable real-time transcription over WebSocket.
+**Note:** ScribeCrate Live (real-time STT) is commented out by default in `docker-compose.yml`. Uncomment it to enable real-time transcription over WebSocket.
 
 > [!IMPORTANT]
 > The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
@@ -42,7 +42,7 @@ Default access:
 
 - LiteLLM is published on host port `4000`.
 - ScribeCrate is bound to `127.0.0.1:9000` by default.
-- Kokoro is bound to `127.0.0.1:8880` by default.
+- SpeakCrate is bound to `127.0.0.1:8880` by default.
 - Ollama is internal to the Docker network; use LiteLLM for host or browser access.
 
 ## Quick start
@@ -162,14 +162,14 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
     -v kokoro-data:/var/lib/kokoro \
     hwdsl2/kokoro-server
 
-# Optional: WhisperLive (real-time STT)
+# Optional: ScribeCrate Live (real-time STT)
 docker run -d --name whisper-live --restart always \
     --network ai-stack \
     -p 127.0.0.1:9090:9090 \
@@ -199,8 +199,8 @@ Each service can be configured with an optional env file. Copy the example env f
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
-| WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live) |
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 

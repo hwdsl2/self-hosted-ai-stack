@@ -18,15 +18,15 @@ Each service stores its data in a named Docker volume:
 | `ai-stack-shared` | Stack | Generated PostgreSQL password for fresh Compose installs |
 | `embeddings-data` | Embeddings | Embedding model cache, generated API key |
 | `whisper-data` | ScribeCrate | Whisper model cache, generated API key |
-| `whisper-live-data` | WhisperLive | Real-time STT model cache, generated API key |
-| `kokoro-data` | Kokoro | TTS model/voice cache, generated API key |
+| `whisper-live-data` | ScribeCrate Live | Real-time STT model cache, generated API key |
+| `kokoro-data` | SpeakCrate | TTS model/voice cache, generated API key |
 | `mcp-data` | MCP Gateway | API key, tool configuration |
-| `docling-data` | Docling | Document conversion model cache, generated API key |
+| `docling-data` | ParseCrate | Document conversion model cache, generated API key |
 | `anythingllm-data` | AnythingLLM | Chat history, workspaces, settings, uploaded documents, **admin password** (`server/.env` with `AUTH_TOKEN`/`JWT_SECRET`, plus the first-run `.initial_admin_password` copy) |
 | `caddy-data` | Caddy | TLS certificates, private keys, OCSP staples, ACME account state |
 | `caddy-config` | Caddy | Internal Caddy configuration storage |
 
-**Important:** API keys for Ollama, LiteLLM, MCP Gateway, and fresh persistent installs of ScribeCrate, WhisperLive, Kokoro, Embeddings, and Docling are stored inside these volumes. If you lose a volume, you lose its key. Connected clients will need to be updated with new keys.
+**Important:** API keys for Ollama, LiteLLM, MCP Gateway, and fresh persistent installs of ScribeCrate, ScribeCrate Live, SpeakCrate, Embeddings, and ParseCrate are stored inside these volumes. If you lose a volume, you lose its key. Connected clients will need to be updated with new keys.
 
 **Important (AnythingLLM):** The current admin password and its `JWT_SECRET` live in `anythingllm-data` (`server/.env`). The `.initial_admin_password` file is only the first-run password copy and may be stale if you changed the password in Settings. Backing up this volume preserves the current password. Restoring it on a different host re-uses the same password — no need to re-seed.
 

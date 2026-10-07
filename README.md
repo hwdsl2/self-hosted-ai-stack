@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-Includes Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, Docling, and Kokoro — fully configured and ready to run with Docker Compose.
+Includes Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, ParseCrate, and SpeakCrate — fully configured and ready to run with Docker Compose.
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
@@ -35,10 +35,10 @@ Includes Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, Doc
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | Converts text to vectors for semantic search and RAG | `8000` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate)** | Transcribes spoken audio to text | `9000` |
-| **[WhisperLive (real-time STT)](https://github.com/hwdsl2/docker-whisper-live)** | Real-time speech-to-text transcription over WebSocket | `9090` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Converts text to natural-sounding speech | `8880` |
+| **[ScribeCrate Live (real-time STT)](https://github.com/hwdsl2/scribecrate-live)** | Real-time speech-to-text transcription over WebSocket | `9090` |
+| **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate)** | Converts text to natural-sounding speech | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
-| **[Docling](https://github.com/hwdsl2/docker-docling)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
+| **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
 
 ## Quick start
 
@@ -169,10 +169,10 @@ Don't need the full stack? Use a pre-configured subset from the `stacks/` folder
 | Stack | Services | Memory | Use case |
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/)** | Ollama + LiteLLM + AnythingLLM | ~5 GB | Web-based ChatGPT-like chat interface |
-| **[voice-pipeline](stacks/voice-pipeline/)** | ScribeCrate + Ollama + LiteLLM + Kokoro | ~6 GB | Speech-to-text → LLM → text-to-speech |
-| **[voice-chat](stacks/voice-chat/)** | ScribeCrate + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 GB | Chat UI with voice input/output |
+| **[voice-pipeline](stacks/voice-pipeline/)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate | ~6 GB | Speech-to-text → LLM → text-to-speech |
+| **[voice-chat](stacks/voice-chat/)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate + AnythingLLM | ~6.5 GB | Chat UI with voice input/output |
 | **[rag-pipeline](stacks/rag-pipeline/)** | Ollama + LiteLLM + Embeddings | ~5 GB | Semantic search + LLM Q&A |
-| **[rag-pipeline-full](stacks/rag-pipeline-full/)** | Ollama + LiteLLM + Embeddings + Docling | ~6 GB | Document parsing + semantic search + LLM Q&A |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/)** | Ollama + LiteLLM + Embeddings + ParseCrate | ~6 GB | Document parsing + semantic search + LLM Q&A |
 | **[code-assistant](stacks/code-assistant/)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 GB | AI coding with tools + semantic code search |
 | **[ai-tools](stacks/ai-tools/)** | Ollama + LiteLLM + MCP Gateway | ~5 GB | AI coding assistant with tool access |
 | **[chat-only](stacks/chat-only/)** | Ollama + LiteLLM | ~4.5 GB | Minimal local ChatGPT replacement |
@@ -188,14 +188,14 @@ docker compose up -d
 ```mermaid
 graph LR
     A["🎤 Audio input"] -->|transcribe| W["ScribeCrate<br/>(speech-to-text)"]
-    D["📄 Documents"] -->|parse| DC["Docling<br/>(document → text)"]
+    D["📄 Documents"] -->|parse| DC["ParseCrate<br/>(document → text)"]
     DC -->|embed| E["Embeddings<br/>(text → vectors)"]
     E -->|store| VDB["pgvector<br/>(in shared Postgres)"]
     W -->|query| E
     VDB -->|context| L["LiteLLM<br/>(AI gateway)"]
     W -->|text| L
     L -->|routes to| O["Ollama<br/>(local LLM)"]
-    L -->|response| T["Kokoro TTS<br/>(text-to-speech)"]
+    L -->|response| T["SpeakCrate TTS<br/>(text-to-speech)"]
     T --> B["🔊 Audio output"]
     C["🤖 AI client<br/>(goose, Cline, Claude, etc.)"] -->|MCP tools| M["MCP Gateway<br/>(MCP endpoint)"]
     C -->|chat| L
@@ -211,7 +211,7 @@ graph LR
 **Notes:**
 
 - Ollama's port (`11434`) and MCP Gateway's port (`3000`) are internal to the Docker network and not exposed to the host by default. Access your LLM through LiteLLM on port `4000`.
-- Kokoro (TTS), Docling (document parsing), and WhisperLive (real-time STT) are disabled by default to reduce memory usage. Uncomment these services in `docker-compose.yml` to enable them.
+- SpeakCrate (TTS), ParseCrate (document parsing), and ScribeCrate Live (real-time STT) are disabled by default to reduce memory usage. Uncomment these services in `docker-compose.yml` to enable them.
 
 ## Running without Docker Compose
 
@@ -278,7 +278,7 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# WhisperLive (real-time STT)
+# ScribeCrate Live (real-time STT)
 docker run -d --name whisper-live --restart always \
     --network ai-stack \
     -p 127.0.0.1:9090:9090 \
@@ -304,14 +304,14 @@ docker run -d --name anythingllm --restart always \
     mintplexlabs/anythingllm:1.16.2 \
     /usr/local/bin/chat-ui-bootstrap.sh
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
     -v kokoro-data:/var/lib/kokoro \
     hwdsl2/kokoro-server
 
-# Docling (document parsing)
+# ParseCrate (document parsing)
 docker run -d --name docling --restart always \
     --network ai-stack \
     -p 127.0.0.1:5001:5001 \
@@ -410,7 +410,7 @@ Once connected, AI clients that call LiteLLM can use MCP tools (filesystem, fetc
 
 Transcribe a spoken question, get a local LLM response via Ollama, and convert it to speech:
 
-**Note:** Kokoro (TTS) is disabled by default. To use this example, first uncomment the `kokoro` service in `docker-compose.yml`, then run `docker compose up -d`.
+**Note:** SpeakCrate (TTS) is disabled by default. To use this example, first uncomment the `kokoro` service in `docker-compose.yml`, then run `docker compose up -d`.
 
 **Tip:** Need a sample audio file? Download this English speech sample (WAV, MIT License) from the [Azure Samples](https://github.com/Azure-Samples/cognitive-services-speech-sdk) repository:
 
@@ -436,7 +436,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
 
-# Step 3: Convert the response to speech (Kokoro TTS)
+# Step 3: Convert the response to speech (SpeakCrate TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $KOKORO_KEY" \
@@ -535,10 +535,10 @@ Each service can be configured with an optional env file. Copy the example env f
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate) |
-| WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate) |
 | MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway) |
-| Docling | `docling.env` | [docker-docling](https://github.com/hwdsl2/docker-docling) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate) |
 
 AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
 

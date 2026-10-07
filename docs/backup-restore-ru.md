@@ -18,15 +18,15 @@
 | `ai-stack-shared` | Stack | Сгенерированный пароль PostgreSQL для новых установок Compose |
 | `embeddings-data` | Embeddings | Кэш модели эмбеддингов, сгенерированный API-ключ |
 | `whisper-data` | ScribeCrate | Кэш модели Whisper, сгенерированный API-ключ |
-| `whisper-live-data` | WhisperLive | Кэш модели STT в реальном времени, сгенерированный API-ключ |
-| `kokoro-data` | Kokoro | Кэш модели/голосов TTS, сгенерированный API-ключ |
+| `whisper-live-data` | ScribeCrate Live | Кэш модели STT в реальном времени, сгенерированный API-ключ |
+| `kokoro-data` | SpeakCrate | Кэш модели/голосов TTS, сгенерированный API-ключ |
 | `mcp-data` | MCP Gateway | API-ключ, конфигурация инструментов |
-| `docling-data` | Docling | Кэш моделей конвертации документов, сгенерированный API-ключ |
+| `docling-data` | ParseCrate | Кэш моделей конвертации документов, сгенерированный API-ключ |
 | `anythingllm-data` | AnythingLLM | История чатов, рабочие пространства, настройки, загруженные документы, **пароль администратора** (`server/.env` с `AUTH_TOKEN`/`JWT_SECRET`, а также первая копия `.initial_admin_password`) |
 | `caddy-data` | Caddy | TLS-сертификаты, приватные ключи, OCSP staples, состояние ACME-аккаунта |
 | `caddy-config` | Caddy | Внутреннее хранилище конфигурации Caddy |
 
-**Важно:** API-ключи для Ollama, LiteLLM, MCP Gateway, а также для новых постоянных установок ScribeCrate, WhisperLive, Kokoro, Embeddings и Docling хранятся в этих томах. Если вы потеряете том, вы потеряете ключ. Подключённым клиентам потребуется обновить ключи.
+**Важно:** API-ключи для Ollama, LiteLLM, MCP Gateway, а также для новых постоянных установок ScribeCrate, ScribeCrate Live, SpeakCrate, Embeddings и ParseCrate хранятся в этих томах. Если вы потеряете том, вы потеряете ключ. Подключённым клиентам потребуется обновить ключи.
 
 **Важно (AnythingLLM):** Текущий пароль администратора и его `JWT_SECRET` находятся в `server/.env` в томе `anythingllm-data`. Файл `.initial_admin_password` содержит только пароль первого запуска и может устареть, если вы изменили пароль в Settings. Резервное копирование этого тома сохраняет текущий пароль. При восстановлении на другом хосте используется тот же пароль — повторное создание не требуется.
 

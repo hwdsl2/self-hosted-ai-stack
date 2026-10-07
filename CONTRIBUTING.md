@@ -7,7 +7,7 @@ Thanks for helping improve Self-Hosted AI Stack. This repository maintains the m
 - Search existing issues and pull requests.
 - Keep changes focused and easy to review.
 - Use this repo for stack composition, service wiring, examples, documentation, and cross-service behavior.
-- Use the individual service repos for image/runtime changes to Ollama, LiteLLM, Whisper, Kokoro, Embeddings, Docling, or MCP Gateway.
+- Use the individual service repos for image/runtime changes to Ollama, LiteLLM, Whisper, SpeakCrate, Embeddings, ParseCrate, or MCP Gateway.
 - Do not include API keys, provider credentials, model files, private prompts, private documents, or logs with secrets.
 
 ## Pull Requests

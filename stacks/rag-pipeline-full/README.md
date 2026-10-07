@@ -4,7 +4,7 @@
 
 Parse documents, embed them for semantic search, and answer questions with a local LLM.
 
-**Services:** Ollama (LLM) + LiteLLM (gateway) + Embeddings + Docling (document parsing)
+**Services:** Ollama (LLM) + LiteLLM (gateway) + Embeddings + ParseCrate (document parsing)
 
 **Memory:** ~6 GB RAM (with a 3B model)
 
@@ -16,7 +16,7 @@ Parse documents, embed them for semantic search, and answer questions with a loc
 
 ```mermaid
 graph LR
-    D["📄 Documents<br/>(PDF, DOCX, etc.)"] -->|parse| DC["Docling<br/>(document → text)"]
+    D["📄 Documents<br/>(PDF, DOCX, etc.)"] -->|parse| DC["ParseCrate<br/>(document → text)"]
     DC -->|embed| E["Embeddings<br/>(text → vectors)"]
     E -->|store| VDB["pgvector<br/>(in shared Postgres)"]
     VDB -->|context| L["LiteLLM<br/>(AI gateway)"]
@@ -30,7 +30,7 @@ graph LR
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | Converts text to vectors for semantic search and RAG | `8000` |
-| **[Docling](https://github.com/hwdsl2/docker-docling)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
+| **[ParseCrate](https://github.com/hwdsl2/parsecrate)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
 
 > [!IMPORTANT]
 > The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
@@ -39,7 +39,7 @@ Default access:
 
 - LiteLLM is published on host port `4000`.
 - Embeddings is bound to `127.0.0.1:8000` by default.
-- Docling is bound to `127.0.0.1:5001` by default.
+- ParseCrate is bound to `127.0.0.1:5001` by default.
 - Ollama is internal to the Docker network; use LiteLLM for host or browser access.
 
 ## Quick start
@@ -159,7 +159,7 @@ docker run -d --name embeddings --restart always \
     -v embeddings-data:/var/lib/embeddings \
     hwdsl2/embeddings-server
 
-# Docling (document parsing)
+# ParseCrate (document parsing)
 docker run -d --name docling --restart always \
     --network ai-stack \
     -p 127.0.0.1:5001:5001 \
@@ -188,7 +188,7 @@ Each service can be configured with an optional env file. Copy the example env f
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings) |
-| Docling | `docling.env` | [docker-docling](https://github.com/hwdsl2/docker-docling) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate) |
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
@@ -244,7 +244,7 @@ LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
 EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
 DOCLING_KEY=$(docker exec docling docling_manage --getkey)
 
-# Step 1: Convert a PDF to Markdown using Docling
+# Step 1: Convert a PDF to Markdown using ParseCrate
 curl -s -X POST http://localhost:5001/v1/convert/file \
     -H "X-Api-Key: $DOCLING_KEY" \
     -F "file=@document.pdf" \

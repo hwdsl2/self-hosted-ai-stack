@@ -4,7 +4,7 @@
 
 Web-based chat UI with voice input (speech-to-text) and voice output (text-to-speech) — a complete local AI personal assistant.
 
-**Services:** Ollama (LLM) + LiteLLM (gateway) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (chat UI) + ScribeCrate (Whisper STT) + Kokoro (TTS)
+**Services:** Ollama (LLM) + LiteLLM (gateway) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (chat UI) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
 
 **Memory:** ~6.5 GB RAM (with a 3B model)
 
@@ -20,7 +20,7 @@ graph LR
     U -->|speak| W["ScribeCrate<br/>(speech-to-text)"]
     A -->|API| L["LiteLLM<br/>(AI gateway)"]
     L -->|routes to| O["Ollama<br/>(local LLM)"]
-    L -->|response| K["Kokoro<br/>(text-to-speech)"]
+    L -->|response| K["SpeakCrate<br/>(text-to-speech)"]
     K --> S["🔊 Audio output"]
     W -->|text| L
 ```
@@ -33,7 +33,7 @@ graph LR
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Web-based chat UI with workspaces, RAG, and agent support | `3001` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate)** | Transcribes spoken audio to text | `9000` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro)** | Converts text to natural-sounding speech | `8880` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate)** | Converts text to natural-sounding speech | `8880` |
 
 > [!IMPORTANT]
 > The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
@@ -43,7 +43,7 @@ Default access:
 - LiteLLM is published on host port `4000`.
 - AnythingLLM is published on host port `3001`.
 - ScribeCrate is bound to `127.0.0.1:9000` by default.
-- Kokoro is bound to `127.0.0.1:8880` by default.
+- SpeakCrate is bound to `127.0.0.1:8880` by default.
 - Ollama is internal to the Docker network; use LiteLLM for host or browser access.
 
 ## Quick start
@@ -206,7 +206,7 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
@@ -235,7 +235,7 @@ Each service can be configured with an optional env file. Copy the example env f
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate) |
 
 AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.
 
@@ -243,7 +243,7 @@ For detailed configuration options, API reference, and model management, see the
 
 ## Using a reverse proxy
 
-For internet-facing deployments, use the included Caddy overlay to add automatic HTTPS. Run these commands from the `stacks/voice-chat` directory. The root `../../docker-compose.proxy.yml` overlay intentionally mounts this stack's local `caddy/Caddyfile`. In proxy mode, Caddy is the only public listener on ports `80` and `443`; the direct AnythingLLM and LiteLLM ports are rebound to `127.0.0.1`. The proxy exposes only AnythingLLM by default; ScribeCrate and Kokoro remain bound according to the sub-stack compose file.
+For internet-facing deployments, use the included Caddy overlay to add automatic HTTPS. Run these commands from the `stacks/voice-chat` directory. The root `../../docker-compose.proxy.yml` overlay intentionally mounts this stack's local `caddy/Caddyfile`. In proxy mode, Caddy is the only public listener on ports `80` and `443`; the direct AnythingLLM and LiteLLM ports are rebound to `127.0.0.1`. The proxy exposes only AnythingLLM by default; ScribeCrate and SpeakCrate remain bound according to the sub-stack compose file.
 
 Prerequisites:
 
@@ -376,7 +376,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
 
-# Step 3: Convert the response to speech (Kokoro TTS)
+# Step 3: Convert the response to speech (SpeakCrate TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $KOKORO_KEY" \

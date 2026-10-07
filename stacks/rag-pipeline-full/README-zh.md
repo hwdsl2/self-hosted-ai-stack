@@ -4,7 +4,7 @@
 
 解析文档，嵌入用于语义搜索，并使用本地 LLM 回答问题。
 
-**服务：** Ollama (LLM) + LiteLLM (网关) + Embeddings + Docling (文档解析)
+**服务：** Ollama (LLM) + LiteLLM (网关) + Embeddings + ParseCrate (文档解析)
 
 **内存：** ~6 GB RAM（使用 3B 模型）
 
@@ -16,7 +16,7 @@
 
 ```mermaid
 graph LR
-    D["📄 文档<br/>(PDF、DOCX 等)"] -->|解析| DC["Docling<br/>(文档 → 文本)"]
+    D["📄 文档<br/>(PDF、DOCX 等)"] -->|解析| DC["ParseCrate<br/>(文档 → 文本)"]
     DC -->|嵌入| E["Embeddings<br/>(文本 → 向量)"]
     E -->|存储| VDB["pgvector<br/>(共享 Postgres 中)"]
     VDB -->|上下文| L["LiteLLM<br/>(AI 网关)"]
@@ -30,7 +30,7 @@ graph LR
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md)** | 运行本地大语言模型（llama3、qwen、mistral 等） | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 Ollama 及 100+ 提供商 | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
-| **[Docling](https://github.com/hwdsl2/docker-docling/blob/main/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
+| **[ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
 
 > [!IMPORTANT]
 > 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
@@ -39,7 +39,7 @@ graph LR
 
 - LiteLLM 发布在宿主机端口 `4000`。
 - Embeddings 默认绑定到 `127.0.0.1:8000`。
-- Docling 默认绑定到 `127.0.0.1:5001`。
+- ParseCrate 默认绑定到 `127.0.0.1:5001`。
 - Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
 
 ## 快速开始
@@ -188,7 +188,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md) |
-| Docling | `docling.env` | [docker-docling](https://github.com/hwdsl2/docker-docling/blob/main/README-zh.md) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md) |
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 

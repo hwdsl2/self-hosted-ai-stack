@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-Включает Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, Docling и Kokoro — полностью сконфигурирован и готов к запуску с Docker Compose.
+Включает Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, ParseCrate и SpeakCrate — полностью сконфигурирован и готов к запуску с Docker Compose.
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon): практическое руководство по этому стеку, охватывающее развёртывание, безопасность, резервное копирование и обновления.
 
@@ -35,10 +35,10 @@
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз — маршрутизация запросов к Ollama, OpenAI, Anthropic и 100+ провайдерам | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md)** | Преобразование текста в векторы для семантического поиска и RAG | `8000` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибация речи в текст | `9000` |
-| **[WhisperLive (STT в реальном времени)](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md)** | Преобразование текста в естественную речь | `8880` |
+| **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
+| **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md)** | Преобразование текста в естественную речь | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
-| **[Docling](https://github.com/hwdsl2/docker-docling/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
+| **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
 
 ## Быстрый старт
 
@@ -169,10 +169,10 @@ docker compose -f docker-compose.cuda.yml up -d
 | Стек | Сервисы | Память | Сценарий использования |
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/README-ru.md)** | Ollama + LiteLLM + AnythingLLM | ~5 ГБ | Веб-интерфейс для чата в стиле ChatGPT |
-| **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro | ~6 ГБ | Речь в текст → LLM → текст в речь |
-| **[voice-chat](stacks/voice-chat/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
+| **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate | ~6 ГБ | Речь в текст → LLM → текст в речь |
+| **[voice-chat](stacks/voice-chat/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
 | **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | Ollama + LiteLLM + Embeddings | ~5 ГБ | Семантический поиск + LLM Q&A |
-| **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | Ollama + LiteLLM + Embeddings + Docling | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | Ollama + LiteLLM + Embeddings + ParseCrate | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
 | **[code-assistant](stacks/code-assistant/README-ru.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
 | **[ai-tools](stacks/ai-tools/README-ru.md)** | Ollama + LiteLLM + MCP Gateway | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
 | **[chat-only](stacks/chat-only/README-ru.md)** | Ollama + LiteLLM | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
@@ -188,14 +188,14 @@ docker compose up -d
 ```mermaid
 graph LR
     A["🎤 Аудиовход"] -->|транскрибация| W["ScribeCrate<br/>(речь в текст)"]
-    D["📄 Документы"] -->|разбор| DC["Docling<br/>(документ → текст)"]
+    D["📄 Документы"] -->|разбор| DC["ParseCrate<br/>(документ → текст)"]
     DC -->|эмбеддинг| E["Embeddings<br/>(текст → векторы)"]
     E -->|хранение| VDB["pgvector<br/>(в общем Postgres)"]
     W -->|запрос| E
     VDB -->|контекст| L["LiteLLM<br/>(AI-шлюз)"]
     W -->|текст| L
     L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
-    L -->|ответ| T["Kokoro TTS<br/>(текст в речь)"]
+    L -->|ответ| T["SpeakCrate TTS<br/>(текст в речь)"]
     T --> B["🔊 Аудиовыход"]
     C["🤖 AI-клиент<br/>(goose, Cline, Claude и др.)"] -->|MCP-инструменты| M["MCP Gateway<br/>(MCP-эндпоинт)"]
     C -->|чат| L
@@ -211,7 +211,7 @@ graph LR
 **Примечания:**
 
 - Порт Ollama (`11434`) и порт MCP Gateway (`3000`) доступны только внутри сети Docker и не открыты на хосте по умолчанию. Доступ к LLM осуществляется через LiteLLM на порту `4000`.
-- Для снижения потребления памяти сервисы Kokoro (TTS), Docling (парсинг документов) и WhisperLive (распознавание речи в реальном времени) по умолчанию отключены. Чтобы включить их, раскомментируйте соответствующие сервисы в `docker-compose.yml`.
+- Для снижения потребления памяти сервисы SpeakCrate (TTS), ParseCrate (парсинг документов) и ScribeCrate Live (распознавание речи в реальном времени) по умолчанию отключены. Чтобы включить их, раскомментируйте соответствующие сервисы в `docker-compose.yml`.
 
 ## Запуск без Docker Compose
 
@@ -278,7 +278,7 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# WhisperLive (real-time STT)
+# ScribeCrate Live (real-time STT)
 docker run -d --name whisper-live --restart always \
     --network ai-stack \
     -p 127.0.0.1:9090:9090 \
@@ -304,14 +304,14 @@ docker run -d --name anythingllm --restart always \
     mintplexlabs/anythingllm:1.16.2 \
     /usr/local/bin/chat-ui-bootstrap.sh
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
     -v kokoro-data:/var/lib/kokoro \
     hwdsl2/kokoro-server
 
-# Docling (разбор документов)
+# ParseCrate (разбор документов)
 docker run -d --name docling --restart always \
     --network ai-stack \
     -p 127.0.0.1:5001:5001 \
@@ -410,7 +410,7 @@ API-ключи автоматически передаются между сер
 
 Транскрибируйте голосовой вопрос, получите ответ от локальной LLM через Ollama и преобразуйте его в речь:
 
-**Примечание:** Kokoro (TTS) отключён по умолчанию. Чтобы использовать этот пример, сначала раскомментируйте сервис `kokoro` в файле `docker-compose.yml`, затем выполните `docker compose up -d`.
+**Примечание:** SpeakCrate (TTS) отключён по умолчанию. Чтобы использовать этот пример, сначала раскомментируйте сервис `kokoro` в файле `docker-compose.yml`, затем выполните `docker compose up -d`.
 
 **Совет:** Нужен образец аудиофайла? Скачайте этот образец английской речи (WAV, лицензия MIT) из репозитория [Azure Samples](https://github.com/Azure-Samples/cognitive-services-speech-sdk):
 
@@ -436,7 +436,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
 
-# Шаг 3: Преобразование ответа в речь (Kokoro TTS)
+# Шаг 3: Преобразование ответа в речь (SpeakCrate TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $KOKORO_KEY" \
@@ -535,10 +535,10 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
-| WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-ru.md) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md) |
 | MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-ru.md) |
-| Docling | `docling.env` | [docker-docling](https://github.com/hwdsl2/docker-docling/blob/main/README-ru.md) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md) |
 
 AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
 

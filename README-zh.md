@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-包含 Ollama、LiteLLM、AnythingLLM、ScribeCrate、MCP Gateway、Embeddings、Docling 和 Kokoro — 使用 Docker Compose 完整配置，开箱即用。
+包含 Ollama、LiteLLM、AnythingLLM、ScribeCrate、MCP Gateway、Embeddings、ParseCrate 和 SpeakCrate — 使用 Docker Compose 完整配置，开箱即用。
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技术栈的实用配套指南，涵盖部署、安全、备份和升级。
 
@@ -35,10 +35,10 @@
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | AI 网关（含管理界面）— 将请求路由至 Ollama 及 100+ 提供商 | `4000` |
 | **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音转录为文本 | `9000` |
-| **[WhisperLive（实时语音转文本）](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md)** | 将文本转换为自然语音 | `8880` |
+| **[ScribeCrate Live（实时语音转文本）](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
+| **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md)** | 将文本转换为自然语音 | `8880` |
 | **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
-| **[Docling](https://github.com/hwdsl2/docker-docling/blob/main/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
+| **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
 
 ## 快速开始
 
@@ -169,10 +169,10 @@ docker compose -f docker-compose.cuda.yml up -d
 | 技术栈 | 服务 | 内存 | 使用场景 |
 |---|---|---|---|
 | **[chat-ui](stacks/chat-ui/README-zh.md)** | Ollama + LiteLLM + AnythingLLM | ~5 GB | 基于 Web 的 ChatGPT 式聊天界面 |
-| **[voice-pipeline](stacks/voice-pipeline/README-zh.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro | ~6 GB | 语音转文本 → LLM → 文本转语音 |
-| **[voice-chat](stacks/voice-chat/README-zh.md)** | ScribeCrate + Ollama + LiteLLM + Kokoro + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
+| **[voice-pipeline](stacks/voice-pipeline/README-zh.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate | ~6 GB | 语音转文本 → LLM → 文本转语音 |
+| **[voice-chat](stacks/voice-chat/README-zh.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
 | **[rag-pipeline](stacks/rag-pipeline/README-zh.md)** | Ollama + LiteLLM + Embeddings | ~5 GB | 语义搜索 + LLM 问答 |
-| **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh.md)** | Ollama + LiteLLM + Embeddings + Docling | ~6 GB | 文档解析 + 语义搜索 + LLM 问答 |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh.md)** | Ollama + LiteLLM + Embeddings + ParseCrate | ~6 GB | 文档解析 + 语义搜索 + LLM 问答 |
 | **[code-assistant](stacks/code-assistant/README-zh.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 GB | AI 编程，支持工具 + 语义代码搜索 |
 | **[ai-tools](stacks/ai-tools/README-zh.md)** | Ollama + LiteLLM + MCP Gateway | ~5 GB | AI 编程助手，支持工具访问 |
 | **[chat-only](stacks/chat-only/README-zh.md)** | Ollama + LiteLLM | ~4.5 GB | 最小化本地 ChatGPT 替代方案 |
@@ -188,14 +188,14 @@ docker compose up -d
 ```mermaid
 graph LR
     A["🎤 音频输入"] -->|转录| W["ScribeCrate<br/>(语音转文本)"]
-    D["📄 文档"] -->|解析| DC["Docling<br/>(文档 → 文本)"]
+    D["📄 文档"] -->|解析| DC["ParseCrate<br/>(文档 → 文本)"]
     DC -->|嵌入| E["Embeddings<br/>(文本 → 向量)"]
     E -->|存储| VDB["pgvector<br/>(共享 Postgres 中)"]
     W -->|查询| E
     VDB -->|上下文| L["LiteLLM<br/>(AI 网关)"]
     W -->|文本| L
     L -->|路由至| O["Ollama<br/>(本地 LLM)"]
-    L -->|响应| T["Kokoro TTS<br/>(文本转语音)"]
+    L -->|响应| T["SpeakCrate TTS<br/>(文本转语音)"]
     T --> B["🔊 音频输出"]
     C["🤖 AI 客户端<br/>(goose、Cline、Claude 等)"] -->|MCP 工具| M["MCP Gateway<br/>(MCP 端点)"]
     C -->|对话| L
@@ -211,7 +211,7 @@ graph LR
 **注：**
 
 - Ollama 的端口（`11434`）和 MCP Gateway 的端口（`3000`）仅在 Docker 网络内部可用，默认不暴露给主机。请通过 LiteLLM 的端口 `4000` 访问您的 LLM。
-- 为减少内存占用，Kokoro（TTS）、Docling（文档解析）和 WhisperLive（实时语音转文本）默认处于禁用状态。如需启用，请在 `docker-compose.yml` 中取消注释这些服务。
+- 为减少内存占用，SpeakCrate（TTS）、ParseCrate（文档解析）和 ScribeCrate Live（实时语音转文本）默认处于禁用状态。如需启用，请在 `docker-compose.yml` 中取消注释这些服务。
 
 ## 不使用 Docker Compose 运行
 
@@ -278,7 +278,7 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# WhisperLive (real-time STT)
+# ScribeCrate Live (real-time STT)
 docker run -d --name whisper-live --restart always \
     --network ai-stack \
     -p 127.0.0.1:9090:9090 \
@@ -304,14 +304,14 @@ docker run -d --name anythingllm --restart always \
     mintplexlabs/anythingllm:1.16.2 \
     /usr/local/bin/chat-ui-bootstrap.sh
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
     -v kokoro-data:/var/lib/kokoro \
     hwdsl2/kokoro-server
 
-# Docling (文档解析)
+# ParseCrate (文档解析)
 docker run -d --name docling --restart always \
     --network ai-stack \
     -p 127.0.0.1:5001:5001 \
@@ -410,7 +410,7 @@ compose 文件中已预配置 `LITELLM_MCP_URL=http://mcp:3000/mcp` 和 `LITELLM
 
 转录语音问题，通过 Ollama 获取本地 LLM 响应，然后转换为语音：
 
-**注：** Kokoro（TTS）默认已禁用。如需使用此示例，请先取消 `docker-compose.yml` 中 `kokoro` 服务的注释，然后运行 `docker compose up -d`。
+**注：** SpeakCrate（TTS）默认已禁用。如需使用此示例，请先取消 `docker-compose.yml` 中 `kokoro` 服务的注释，然后运行 `docker compose up -d`。
 
 **提示：** 需要示例音频文件？可以从 [Azure Samples](https://github.com/Azure-Samples/cognitive-services-speech-sdk) 仓库下载这个英语语音示例（WAV 格式，MIT 许可证）：
 
@@ -535,10 +535,10 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md) |
 | Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
-| WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-zh.md) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md) |
 | MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh.md) |
-| Docling | `docling.env` | [docker-docling](https://github.com/hwdsl2/docker-docling/blob/main/README-zh.md) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md) |
 
 AnythingLLM 通过其 Web 界面 `http://<服务器IP>:3001` 进行配置。您可以在 **Settings** 中更改 LLM 供应商、模型、嵌入引擎和其他设置。详情请参阅 [AnythingLLM 文档](https://docs.useanything.com/)。
 

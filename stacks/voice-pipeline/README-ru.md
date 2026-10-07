@@ -4,7 +4,7 @@
 
 Речь в текст → LLM → текст в речь. Транскрибируйте аудио, получите ответ AI и прослушайте его.
 
-**Сервисы:** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (шлюз) + Kokoro (TTS)
+**Сервисы:** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (шлюз) + SpeakCrate (TTS)
 
 **Память:** ~6 ГБ RAM (с моделью 3B)
 
@@ -19,7 +19,7 @@ graph LR
     A["🎤 Аудиовход"] -->|транскрипция| W["ScribeCrate<br/>(речь в текст)"]
     W -->|текст| L["LiteLLM<br/>(AI-шлюз)"]
     L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
-    L -->|ответ| T["Kokoro TTS<br/>(текст в речь)"]
+    L -->|ответ| T["SpeakCrate TTS<br/>(текст в речь)"]
     T --> B["🔊 Аудиовыход"]
 ```
 
@@ -28,12 +28,12 @@ graph LR
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибирует речь в текст | `9000` |
-| **[WhisperLive (STT в реальном времени)](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
+| **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md)** | Преобразует текст в естественную речь | `8880` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md)** | Преобразует текст в естественную речь | `8880` |
 
-**Примечание:** WhisperLive (STT в реальном времени) закомментирован по умолчанию в `docker-compose.yml`. Раскомментируйте его для включения транскрипции в реальном времени через WebSocket.
+**Примечание:** ScribeCrate Live (STT в реальном времени) закомментирован по умолчанию в `docker-compose.yml`. Раскомментируйте его для включения транскрипции в реальном времени через WebSocket.
 
 > [!IMPORTANT]
 > Лёгкие подстеки используют общие стандартные имена контейнеров, порты и имена Docker volumes. С compose-файлами по умолчанию запускайте только один вариант подстека за раз; перед переключением на другой вариант остановите текущий.
@@ -42,7 +42,7 @@ graph LR
 
 - LiteLLM опубликован на порту хоста `4000`.
 - ScribeCrate по умолчанию привязан к `127.0.0.1:9000`.
-- Kokoro по умолчанию привязан к `127.0.0.1:8880`.
+- SpeakCrate по умолчанию привязан к `127.0.0.1:8880`.
 - Ollama доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте LiteLLM.
 
 ## Быстрый старт
@@ -162,14 +162,14 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
     -v kokoro-data:/var/lib/kokoro \
     hwdsl2/kokoro-server
 
-# Необязательно: WhisperLive (STT в реальном времени)
+# Необязательно: ScribeCrate Live (STT в реальном времени)
 docker run -d --name whisper-live --restart always \
     --network ai-stack \
     -p 127.0.0.1:9090:9090 \
@@ -199,8 +199,8 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-ru.md) |
-| WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md) |
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 

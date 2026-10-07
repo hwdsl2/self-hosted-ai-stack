@@ -156,7 +156,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 ## 可選服務
 
-在完整 compose 檔案中，Embeddings 和 ScribeCrate 預設啟用。Kokoro、Docling 和 WhisperLive 為降低記憶體使用而預設註解掉。
+在完整 compose 檔案中，Embeddings 和 ScribeCrate 預設啟用。SpeakCrate、ParseCrate 和 ScribeCrate Live 為降低記憶體使用而預設註解掉。
 
 啟用被註解的服務：
 
@@ -173,10 +173,10 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 | LiteLLM | https://github.com/hwdsl2/docker-litellm |
 | Embeddings | https://github.com/hwdsl2/docker-embeddings |
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
-| WhisperLive | https://github.com/hwdsl2/docker-whisper-live |
-| Kokoro | https://github.com/hwdsl2/docker-kokoro |
+| ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
+| SpeakCrate | https://github.com/hwdsl2/speakcrate |
 | MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
-| Docling | https://github.com/hwdsl2/docker-docling |
+| ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU 和 CUDA
 

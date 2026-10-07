@@ -4,7 +4,7 @@
 
 语音转文本 → LLM → 文本转语音。转录音频，获取 AI 回复，并以语音输出。
 
-**服务：** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (网关) + Kokoro (TTS)
+**服务：** ScribeCrate (Whisper STT) + Ollama (LLM) + LiteLLM (网关) + SpeakCrate (TTS)
 
 **内存：** ~6 GB RAM（使用 3B 模型）
 
@@ -19,7 +19,7 @@ graph LR
     A["🎤 音频输入"] -->|转录| W["ScribeCrate<br/>(语音转文本)"]
     W -->|文本| L["LiteLLM<br/>(AI 网关)"]
     L -->|路由至| O["Ollama<br/>(本地 LLM)"]
-    L -->|响应| T["Kokoro TTS<br/>(文本转语音)"]
+    L -->|响应| T["SpeakCrate TTS<br/>(文本转语音)"]
     T --> B["🔊 音频输出"]
 ```
 
@@ -28,12 +28,12 @@ graph LR
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音音频转录为文本 | `9000` |
-| **[WhisperLive（实时语音转文本）](https://github.com/hwdsl2/docker-whisper-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
+| **[ScribeCrate Live（实时语音转文本）](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
 | **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 Ollama 及 100+ 供应商 | `4000` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md)** | 将文本转换为自然语音 | `8880` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md)** | 将文本转换为自然语音 | `8880` |
 
-**注：** WhisperLive（实时 STT）在 `docker-compose.yml` 中默认被注释掉。取消注释即可启用通过 WebSocket 的实时转录。
+**注：** ScribeCrate Live（实时 STT）在 `docker-compose.yml` 中默认被注释掉。取消注释即可启用通过 WebSocket 的实时转录。
 
 > [!IMPORTANT]
 > 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
@@ -42,7 +42,7 @@ graph LR
 
 - LiteLLM 发布在宿主机端口 `4000`。
 - ScribeCrate 默认绑定到 `127.0.0.1:9000`。
-- Kokoro 默认绑定到 `127.0.0.1:8880`。
+- SpeakCrate 默认绑定到 `127.0.0.1:8880`。
 - Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
 
 ## 快速开始
@@ -162,7 +162,7 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
@@ -199,8 +199,8 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh.md) |
-| WhisperLive | `whisper-live.env` | [docker-whisper-live](https://github.com/hwdsl2/docker-whisper-live) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md) |
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 

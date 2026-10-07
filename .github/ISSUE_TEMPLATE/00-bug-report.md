@@ -16,7 +16,7 @@ assignees: ''
 A clear and concise description of the problem.
 
 **Affected service(s)**
-Examples: Ollama, LiteLLM, AnythingLLM, Whisper, WhisperLive, Kokoro, Embeddings, MCP Gateway, Docling, PostgreSQL/pgvector, Caddy, Docker Compose, unsure.
+Examples: Ollama, LiteLLM, AnythingLLM, Whisper, ScribeCrate Live, SpeakCrate, Embeddings, MCP Gateway, ParseCrate, PostgreSQL/pgvector, Caddy, Docker Compose, unsure.
 
 **Stack used**
 - [ ] Full stack

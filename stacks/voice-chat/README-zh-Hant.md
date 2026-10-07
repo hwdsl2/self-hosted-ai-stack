@@ -4,7 +4,7 @@
 
 基於網頁的聊天介面，搭配語音輸入（語音轉文字）和語音輸出（文字轉語音）— 完整的本機 AI 個人助手。
 
-**服務：** Ollama (LLM) + LiteLLM (閘道) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (聊天介面) + ScribeCrate (Whisper STT) + Kokoro (TTS)
+**服務：** Ollama (LLM) + LiteLLM (閘道) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (聊天介面) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
 
 **記憶體：** ~6.5 GB RAM（使用 3B 模型）
 
@@ -20,7 +20,7 @@ graph LR
     U -->|說話| W["ScribeCrate<br/>(語音轉文字)"]
     A -->|API| L["LiteLLM<br/>(AI 閘道)"]
     L -->|路由至| O["Ollama<br/>(本機 LLM)"]
-    L -->|回應| K["Kokoro<br/>(文字轉語音)"]
+    L -->|回應| K["SpeakCrate<br/>(文字轉語音)"]
     K --> S["🔊 音訊輸出"]
     W -->|文字| L
 ```
@@ -33,7 +33,7 @@ graph LR
 | **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 Ollama 及 100+ 供應商 | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基於網頁的聊天介面，支援工作區、RAG 和代理 | `3001` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh-Hant.md)** | 將語音音訊轉錄為文字 | `9000` |
-| **[Kokoro (TTS)](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh-Hant.md)** | 將文字轉換為自然語音 | `8880` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh-Hant.md)** | 將文字轉換為自然語音 | `8880` |
 
 > [!IMPORTANT]
 > 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。
@@ -43,7 +43,7 @@ graph LR
 - LiteLLM 發布在主機連接埠 `4000`。
 - AnythingLLM 發布在主機連接埠 `3001`。
 - ScribeCrate 預設繫結到 `127.0.0.1:9000`。
-- Kokoro 預設繫結到 `127.0.0.1:8880`。
+- SpeakCrate 預設繫結到 `127.0.0.1:8880`。
 - Ollama 僅在 Docker 網路內部存取；主機或瀏覽器存取請使用 LiteLLM。
 
 ## 快速開始
@@ -206,7 +206,7 @@ docker run -d --name whisper --restart always \
     -v whisper-data:/var/lib/whisper \
     hwdsl2/whisper-server
 
-# Kokoro (TTS)
+# SpeakCrate (TTS)
 docker run -d --name kokoro --restart always \
     --network ai-stack \
     -p 127.0.0.1:8880:8880 \
@@ -235,7 +235,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 | Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md) |
 | LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh-Hant.md) |
-| Kokoro | `kokoro.env` | [docker-kokoro](https://github.com/hwdsl2/docker-kokoro/blob/main/README-zh-Hant.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh-Hant.md) |
 
 AnythingLLM 透過其網頁介面 `http://<server-ip>:3001` 進行設定。您可以在 **Settings** 中更改 LLM 供應商、模型、嵌入引擎和其他設定。詳情請參閱 [AnythingLLM 文件](https://docs.useanything.com/)。
 
@@ -243,7 +243,7 @@ AnythingLLM 透過其網頁介面 `http://<server-ip>:3001` 進行設定。您�
 
 ## 使用反向代理
 
-對於面向網際網路的部署，請使用內建的 Caddy 疊加檔案新增自動 HTTPS。請從 `stacks/voice-chat` 目錄執行以下命令。根目錄的 `../../docker-compose.proxy.yml` 疊加檔案會有意掛載此技術棧本地的 `caddy/Caddyfile`。在代理模式下，Caddy 是唯一監聽公網 `80` 和 `443` 連接埠的服務；AnythingLLM 和 LiteLLM 的直接連接埠會重新繫結到 `127.0.0.1`。預設情況下，代理只暴露 AnythingLLM；ScribeCrate 和 Kokoro 仍按此子堆疊的 compose 檔案繫結。
+對於面向網際網路的部署，請使用內建的 Caddy 疊加檔案新增自動 HTTPS。請從 `stacks/voice-chat` 目錄執行以下命令。根目錄的 `../../docker-compose.proxy.yml` 疊加檔案會有意掛載此技術棧本地的 `caddy/Caddyfile`。在代理模式下，Caddy 是唯一監聽公網 `80` 和 `443` 連接埠的服務；AnythingLLM 和 LiteLLM 的直接連接埠會重新繫結到 `127.0.0.1`。預設情況下，代理只暴露 AnythingLLM；ScribeCrate 和 SpeakCrate 仍按此子堆疊的 compose 檔案繫結。
 
 前提條件：
 

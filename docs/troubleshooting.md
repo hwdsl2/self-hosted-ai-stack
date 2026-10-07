@@ -156,7 +156,7 @@ If you changed the AnythingLLM password in Settings, `.initial_admin_password` m
 
 ## Optional services
 
-In the full compose file, Embeddings and ScribeCrate are enabled by default. Kokoro, Docling, and WhisperLive are commented out to reduce memory usage.
+In the full compose file, Embeddings and ScribeCrate are enabled by default. SpeakCrate, ParseCrate, and ScribeCrate Live are commented out to reduce memory usage.
 
 To enable a commented service:
 
@@ -173,10 +173,10 @@ Service-specific docs:
 | LiteLLM | https://github.com/hwdsl2/docker-litellm |
 | Embeddings | https://github.com/hwdsl2/docker-embeddings |
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
-| WhisperLive | https://github.com/hwdsl2/docker-whisper-live |
-| Kokoro | https://github.com/hwdsl2/docker-kokoro |
+| ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
+| SpeakCrate | https://github.com/hwdsl2/speakcrate |
 | MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
-| Docling | https://github.com/hwdsl2/docker-docling |
+| ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU and CUDA
 

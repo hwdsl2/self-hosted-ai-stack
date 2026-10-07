@@ -18,15 +18,15 @@
 | `ai-stack-shared` | Stack | 全新 Compose 安裝產生的 PostgreSQL 密碼 |
 | `embeddings-data` | Embeddings | 嵌入模型快取、已產生的 API 金鑰 |
 | `whisper-data` | ScribeCrate | Whisper 模型快取、已產生的 API 金鑰 |
-| `whisper-live-data` | WhisperLive | 即時語音轉文字模型快取、已產生的 API 金鑰 |
-| `kokoro-data` | Kokoro | TTS 模型/語音快取、已產生的 API 金鑰 |
+| `whisper-live-data` | ScribeCrate Live | 即時語音轉文字模型快取、已產生的 API 金鑰 |
+| `kokoro-data` | SpeakCrate | TTS 模型/語音快取、已產生的 API 金鑰 |
 | `mcp-data` | MCP Gateway | API 金鑰、工具設定 |
-| `docling-data` | Docling | 文件轉換模型快取、已產生的 API 金鑰 |
+| `docling-data` | ParseCrate | 文件轉換模型快取、已產生的 API 金鑰 |
 | `anythingllm-data` | AnythingLLM | 聊天記錄、工作區、設定、上傳的文件、**管理員密碼**（`server/.env` 中的 `AUTH_TOKEN`/`JWT_SECRET`，以及首次執行時產生的 `.initial_admin_password` 副本） |
 | `caddy-data` | Caddy | TLS 憑證、私鑰、OCSP staple、ACME 帳戶狀態 |
 | `caddy-config` | Caddy | Caddy 內部設定儲存 |
 
-**重要提示：** Ollama、LiteLLM、MCP Gateway，以及 ScribeCrate、WhisperLive、Kokoro、Embeddings 和 Docling 的新持久化安裝所產生的 API 金鑰，都會儲存在這些磁碟區中。如果遺失磁碟區，金鑰也會遺失。已連線的用戶端需要更新為新金鑰。
+**重要提示：** Ollama、LiteLLM、MCP Gateway，以及 ScribeCrate、ScribeCrate Live、SpeakCrate、Embeddings 和 ParseCrate 的新持久化安裝所產生的 API 金鑰，都會儲存在這些磁碟區中。如果遺失磁碟區，金鑰也會遺失。已連線的用戶端需要更新為新金鑰。
 
 **重要提示（AnythingLLM）：** 目前管理員密碼及其 `JWT_SECRET` 位於 `anythingllm-data` 磁碟區中的 `server/.env`。`.initial_admin_password` 只是首次執行時的密碼副本；如果你已在 Settings 中變更密碼，該檔案可能已過期。備份此磁碟區會保留目前密碼。在其他主機上還原時會重用相同的密碼 — 無需重新產生。
 

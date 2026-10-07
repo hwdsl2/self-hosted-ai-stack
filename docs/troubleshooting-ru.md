@@ -156,7 +156,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 ## Опциональные сервисы
 
-В полном compose-файле Embeddings и ScribeCrate включены по умолчанию. Kokoro, Docling и WhisperLive закомментированы для уменьшения потребления памяти.
+В полном compose-файле Embeddings и ScribeCrate включены по умолчанию. SpeakCrate, ParseCrate и ScribeCrate Live закомментированы для уменьшения потребления памяти.
 
 Чтобы включить закомментированный сервис:
 
@@ -173,10 +173,10 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 | LiteLLM | https://github.com/hwdsl2/docker-litellm |
 | Embeddings | https://github.com/hwdsl2/docker-embeddings |
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
-| WhisperLive | https://github.com/hwdsl2/docker-whisper-live |
-| Kokoro | https://github.com/hwdsl2/docker-kokoro |
+| ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
+| SpeakCrate | https://github.com/hwdsl2/speakcrate |
 | MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
-| Docling | https://github.com/hwdsl2/docker-docling |
+| ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU и CUDA
 
