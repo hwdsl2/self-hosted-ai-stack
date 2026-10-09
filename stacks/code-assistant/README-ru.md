@@ -241,18 +241,18 @@ LiteLLM автоматически подключается к MCP Gateway вн�
 
 ```bash
 # Получение API-ключей
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # Используйте с AI-клиентом (например, Cline в VS Code):
-# LLM-эндпоинт: http://localhost:4000 (с LITELLM_KEY)
-# MCP-эндпоинт: http://localhost:3000/mcp (с MCP_KEY)
+# LLM-эндпоинт: http://localhost:4000 (с gateway_master_key)
+# MCP-эндпоинт: http://localhost:3000/mcp (с uplink_api_key)
 
 # Генерация эмбеддингов для семантического поиска по коду
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "function to handle authentication", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding[:5]'
 

@@ -229,20 +229,20 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 > **注意：** 下面的範例使用 `jq` 格式化 JSON 回應。如尚未安裝，請先安裝。
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # 嵌入文件片段
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → 將向量儲存到 pgvector（已包含在本棧的 Postgres 中），或 Qdrant、Chroma 等其他向量資料庫
 
 # 查詢：嵌入問題，從向量資料庫擷取上下文，然後向 LLM 提問
 curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d '{
       "model": "ollama/llama3.2:3b",

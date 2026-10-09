@@ -229,20 +229,20 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 > **Примечание:** В примерах ниже используется `jq` для форматирования JSON-ответов. Установите его, если он ещё не доступен.
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # Создание эмбеддинга фрагмента документа
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Сохраните вектор в pgvector (входит в Postgres этого стека) или в другую векторную БД, например Qdrant или Chroma
 
 # Запрос: создайте эмбеддинг вопроса, извлеките контекст из векторной БД, затем спросите LLM
 curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d '{
       "model": "ollama/llama3.2:3b",

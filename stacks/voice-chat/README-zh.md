@@ -360,18 +360,18 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
-KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+scribe_api_key="$(docker exec whisper whisper_manage --getkey)"
+speak_api_key="$(docker exec kokoro kokoro_manage --getkey)"
 
 # 步骤 1：将音频转录为文本 (ScribeCrate)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
-    -H "Authorization: Bearer $WHISPER_KEY" \
+    -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
 # 步骤 2：通过 LiteLLM 将文本发送给 Ollama 并获取响应
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
@@ -379,7 +379,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
 # 步骤 3：将响应转换为语音 (Kokoro TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $KOKORO_KEY" \
+    -H "Authorization: Bearer $speak_api_key" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
 

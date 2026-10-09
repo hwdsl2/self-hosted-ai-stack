@@ -241,18 +241,18 @@ LiteLLM can reach MCP Gateway inside Docker automatically. For a host-side AI cl
 
 ```bash
 # Get API keys
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # Use with an AI client (e.g., Cline in VS Code):
-# LLM endpoint: http://localhost:4000 (with LITELLM_KEY)
-# MCP endpoint: http://localhost:3000/mcp (with MCP_KEY)
+# LLM endpoint: http://localhost:4000 (with gateway_master_key)
+# MCP endpoint: http://localhost:3000/mcp (with uplink_api_key)
 
 # Generate embeddings for semantic code search
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "function to handle authentication", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding[:5]'
 

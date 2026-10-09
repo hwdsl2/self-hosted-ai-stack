@@ -239,18 +239,18 @@ LiteLLM 可在 Docker 內部自動連接 MCP Gateway。如需讓主機上的 AI 
 
 ```bash
 # 取得 API 金鑰
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # 在 AI 用戶端中使用（例如 VS Code 中的 Cline）：
-# LLM 端點：http://localhost:4000（使用 LITELLM_KEY）
-# MCP 端點：http://localhost:3000/mcp（使用 MCP_KEY）
+# LLM 端點：http://localhost:4000（使用 gateway_master_key）
+# MCP 端點：http://localhost:3000/mcp（使用 uplink_api_key）
 
 # 產生嵌入向量用於語意程式碼搜尋
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "function to handle authentication", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding[:5]'
 

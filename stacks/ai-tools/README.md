@@ -228,11 +228,11 @@ LiteLLM can reach MCP Gateway inside Docker automatically. For a host-side AI cl
 
 ```bash
 # Get API keys
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
 
 # Use with an AI client (e.g., Cline in VS Code):
-# LLM endpoint: http://localhost:4000 (with LITELLM_KEY)
-# MCP endpoint: http://localhost:3000/mcp (with MCP_KEY)
+# LLM endpoint: http://localhost:4000 (with gateway_master_key)
+# MCP endpoint: http://localhost:3000/mcp (with uplink_api_key)
 
 ```

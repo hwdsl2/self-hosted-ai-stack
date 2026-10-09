@@ -229,20 +229,20 @@ You can then create a table with a `vector` column (use the dimension of your em
 > **Note:** The examples below use `jq` to format JSON responses. Install it first if it is not already available.
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # Embed a document chunk
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Store the vector in pgvector (included in the stack's Postgres), or another vector DB such as Qdrant or Chroma.
 
 # Query: embed the question, retrieve context from vector DB, then ask the LLM
 curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d '{
       "model": "ollama/llama3.2:3b",

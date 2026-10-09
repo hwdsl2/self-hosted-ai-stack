@@ -420,18 +420,18 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
-KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+scribe_api_key="$(docker exec whisper whisper_manage --getkey)"
+speak_api_key="$(docker exec kokoro kokoro_manage --getkey)"
 
 # Шаг 1: Транскрибация аудио в текст (ScribeCrate)
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
-    -H "Authorization: Bearer $WHISPER_KEY" \
+    -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
 # Шаг 2: Отправка текста в Ollama через LiteLLM и получение ответа
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
@@ -439,7 +439,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
 # Шаг 3: Преобразование ответа в речь (SpeakCrate TTS)
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $KOKORO_KEY" \
+    -H "Authorization: Bearer $speak_api_key" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
 ```
@@ -467,13 +467,13 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 Создание эмбеддингов документов для семантического поиска, извлечение контекста и ответы на вопросы с помощью локальной модели Ollama:
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # Шаг 1: Создание эмбеддинга фрагмента документа и сохранение вектора в векторной БД
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → Сохраните возвращённый вектор вместе с исходным текстом в pgvector (входит в Postgres этого стека) или в другую векторную БД, например Qdrant или Chroma.
@@ -481,7 +481,7 @@ curl -s http://localhost:8000/v1/embeddings \
 # Шаг 2: При запросе создайте эмбеддинг вопроса, извлеките наиболее релевантные фрагменты
 #          из векторной БД, затем отправьте вопрос и контекст в Ollama через LiteLLM.
 curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d '{
       "model": "ollama/llama3.2:3b",
@@ -500,7 +500,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 По умолчанию MCP Gateway доступен только внутри Docker-сети. Перед использованием `http://localhost:3000/mcp` из AI-клиента на хосте или через `curl` на хосте раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
 
 ```bash
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
 
 # Используйте MCP-эндпоинт с AI-клиентом (например, Cline в VS Code)
 # URL MCP-сервера: http://localhost:3000/mcp
@@ -509,7 +509,7 @@ MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 # Или протестируйте MCP-эндпоинт напрямую
 curl -s http://localhost:3000/mcp \
     -X POST \
-    -H "Authorization: Bearer $MCP_KEY" \
+    -H "Authorization: Bearer $uplink_api_key" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json, text/event-stream" \
     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'

@@ -199,10 +199,10 @@ Your data is preserved in the Docker volumes. **Always [back up](../../docs/back
 > **Note:** The examples below use `jq` to format JSON responses. Install it first if it is not already available.
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
 
 curl http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d '{
       "model": "ollama/llama3.2:3b",

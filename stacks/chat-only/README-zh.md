@@ -199,10 +199,10 @@ docker compose up -d
 > **注意：** 下面的示例使用 `jq` 格式化 JSON 响应。如尚未安装，请先安装。
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
 
 curl http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d '{
       "model": "ollama/llama3.2:3b",

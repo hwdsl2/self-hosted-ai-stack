@@ -170,12 +170,12 @@ then enter the virtual key without echoing it:
 
 ```bash
 export AI_STACK_LITELLM_URL='http://127.0.0.1:4000'
-read -r -s -p 'LiteLLM virtual key: ' AI_STACK_LITELLM_KEY
+read -r -s -p 'LiteLLM virtual key: ' gateway_virtual_key
 printf '\n'
-export AI_STACK_LITELLM_KEY
+export gateway_virtual_key
 
 curl -fsS "$AI_STACK_LITELLM_URL/v1/models" \
-  -H "Authorization: Bearer $AI_STACK_LITELLM_KEY"
+  -H "Authorization: Bearer $gateway_virtual_key"
 ```
 
 Use your LAN or HTTPS URL instead when applicable. A successful response should
@@ -184,7 +184,7 @@ contain the model alias permitted by the virtual key.
 Clear the temporary variables after testing:
 
 ```bash
-unset AI_STACK_LITELLM_KEY AI_STACK_LITELLM_URL
+unset gateway_virtual_key AI_STACK_LITELLM_URL
 ```
 
 ## 5. Install goose on the workstation

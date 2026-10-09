@@ -420,18 +420,18 @@ curl -L -o sample_speech.wav \
 ```
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-WHISPER_KEY=$(docker exec whisper whisper_manage --getkey)
-KOKORO_KEY=$(docker exec kokoro kokoro_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+scribe_api_key="$(docker exec whisper whisper_manage --getkey)"
+speak_api_key="$(docker exec kokoro kokoro_manage --getkey)"
 
 # 第 1 步：将音频转录为文本（ScribeCrate）
 TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
-    -H "Authorization: Bearer $WHISPER_KEY" \
+    -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
 # 第 2 步：通过 LiteLLM 将文本发送至 Ollama 并获取响应
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
@@ -439,7 +439,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
 # 第 3 步：将响应转换为语音（Kokoro TTS）
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $KOKORO_KEY" \
+    -H "Authorization: Bearer $speak_api_key" \
     -d "{\"model\":\"tts-1\",\"input\":\"$RESPONSE\",\"voice\":\"af_heart\"}" \
     --output response.mp3
 ```
@@ -467,13 +467,13 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 嵌入文档用于语义搜索，检索上下文，然后使用本地 Ollama 模型回答问题：
 
 ```bash
-LITELLM_KEY=$(docker exec litellm litellm_manage --getkey)
-EMBED_KEY=$(docker exec embeddings embed_manage --getkey)
+gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
+embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 
 # 第 1 步：嵌入文档片段并将向量存储到向量数据库
 curl -s http://localhost:8000/v1/embeddings \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $EMBED_KEY" \
+    -H "Authorization: Bearer $embed_api_key" \
     -d '{"input": "Docker simplifies deployment by packaging apps in containers.", "model": "text-embedding-ada-002"}' \
     | jq '.data[0].embedding'
 # → 将返回的向量与源文本一起存储到 pgvector（已包含在本栈的 Postgres 中），或 Qdrant、Chroma 等其他向量数据库。
@@ -481,7 +481,7 @@ curl -s http://localhost:8000/v1/embeddings \
 # 第 2 步：查询时，嵌入问题，从向量数据库中检索最匹配的片段，
 #          然后通过 LiteLLM 将问题和检索到的上下文发送至 Ollama。
 curl -s http://localhost:4000/v1/chat/completions \
-    -H "Authorization: Bearer $LITELLM_KEY" \
+    -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
     -d '{
       "model": "ollama/llama3.2:3b",
@@ -500,7 +500,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 默认情况下，MCP Gateway 仅在 Docker 网络内部可用。从主机上的 AI 客户端或主机上的 `curl` 使用 `http://localhost:3000/mcp` 之前，请先在 `docker-compose.yml` 的 `mcp` 服务中取消注释 `3000:3000/tcp` 端口映射并重启服务。
 
 ```bash
-MCP_KEY=$(docker exec mcp mcp_manage --getkey)
+uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
 
 # 在 AI 客户端中使用 MCP 端点（例如 VS Code 中的 Cline）
 # 设置 MCP 服务器 URL：http://localhost:3000/mcp
@@ -509,7 +509,7 @@ MCP_KEY=$(docker exec mcp mcp_manage --getkey)
 # 或直接测试 MCP 端点
 curl -s http://localhost:3000/mcp \
     -X POST \
-    -H "Authorization: Bearer $MCP_KEY" \
+    -H "Authorization: Bearer $uplink_api_key" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json, text/event-stream" \
     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
