@@ -57,11 +57,11 @@ docker compose logs --tail=100 mcp
 docker compose logs --tail=100 anythingllm
 ```
 
-LiteLLM зависит от Ollama, ToolUplink и PostgreSQL. AnythingLLM зависит от LiteLLM. Если зависимость еще запускается, нижестоящие сервисы могут быть временно не готовы.
+GatewayCrate зависит от InferCrate, ToolUplink и PostgreSQL. AnythingLLM зависит от GatewayCrate. Если зависимость еще запускается, нижестоящие сервисы могут быть временно не готовы.
 
 ## Проблемы Ollama и локальных моделей
 
-Стек запускает Ollama автоматически, но перед отправкой LLM-запросов нужно загрузить хотя бы одну модель:
+Стек запускает InferCrate (на основе Ollama) автоматически, но перед отправкой LLM-запросов нужно загрузить хотя бы одну модель:
 
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
@@ -73,40 +73,40 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker exec ollama ollama_manage --listmodels
 ```
 
-Если LiteLLM или AnythingLLM сообщает об ошибках модели, сначала убедитесь, что модель есть в Ollama и что `./stack-check.sh` показывает успешную проверку маршрутизации LiteLLM.
+Если GatewayCrate или AnythingLLM сообщает об ошибках модели, сначала убедитесь, что модель есть в InferCrate и что `./stack-check.sh` показывает успешную проверку маршрутизации GatewayCrate.
 
-По вопросам, связанным с образом Ollama, используйте репозиторий `docker-ollama`. Если проблема относится к поведению upstream Ollama и не связана с этим Docker-образом, используйте issue tracker upstream Ollama.
+По вопросам, связанным с образом, используйте [репозиторий InferCrate](https://github.com/hwdsl2/infercrate). Если проблема относится к поведению upstream Ollama и не связана с этим Docker-образом, используйте issue tracker upstream Ollama.
 
 ## Проблемы LiteLLM
 
-LiteLLM по умолчанию доступен на порту `4000`. Административный интерфейс доступен по адресу:
+GatewayCrate (на основе LiteLLM) по умолчанию доступен на порту `4000`. Административный интерфейс доступен по адресу:
 
 ```text
 http://<server-ip>:4000/ui
 ```
 
-Используйте имя пользователя `admin` и master key LiteLLM в качестве пароля.
+Используйте имя пользователя `admin` и master key GatewayCrate в качестве пароля.
 
-Показать master key LiteLLM:
+Показать master key GatewayCrate:
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-Проверить endpoint работоспособности LiteLLM:
+Проверить endpoint работоспособности GatewayCrate:
 
 ```bash
 curl http://localhost:4000/health/liveliness
 ```
 
-Если локальные модели Ollama не работают через LiteLLM:
+Если локальные модели не работают через GatewayCrate:
 
-- Убедитесь, что модель Ollama загружена.
+- Убедитесь, что модель загружена в InferCrate.
 - Убедитесь, что в compose-файле или env-файле есть `LITELLM_OLLAMA_BASE_URL=http://ollama:11434`.
 - Проверьте `docker compose logs --tail=100 litellm`.
-- Запустите `./stack-check.sh` и проверьте тест маршрутизации LiteLLM.
+- Запустите `./stack-check.sh` и проверьте тест маршрутизации GatewayCrate.
 
-Compose-файлы автоматически передают API-ключи Ollama и MCP в LiteLLM через Docker-тома. Не удаляйте `ollama-data`, `mcp-data` или `litellm-data`, если у вас нет резервной копии.
+Compose-файлы автоматически передают API-ключи InferCrate и ToolUplink в GatewayCrate через Docker-тома. Не удаляйте `ollama-data`, `mcp-data` или `litellm-data`, если у вас нет резервной копии.
 
 ## Проблемы ToolUplink
 
@@ -148,7 +148,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 Если AnythingLLM не может подключиться к локальной модели:
 
-- Убедитесь, что LiteLLM доступен внутри Docker-сети по адресу `http://litellm:4000/v1`.
+- Убедитесь, что GatewayCrate доступен внутри Docker-сети по адресу `http://litellm:4000/v1`.
 - Убедитесь, что модель `ollama/llama3.2:3b` существует, или настройте AnythingLLM на существующую модель.
 - Проверьте `docker compose logs --tail=100 anythingllm`.
 
@@ -156,7 +156,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 ## Опциональные сервисы
 
-В полном compose-файле Embeddings и ScribeCrate включены по умолчанию. SpeakCrate, ParseCrate и ScribeCrate Live закомментированы для уменьшения потребления памяти.
+В полном compose-файле EmbedCrate и ScribeCrate включены по умолчанию. SpeakCrate, ParseCrate и ScribeCrate Live закомментированы для уменьшения потребления памяти.
 
 Чтобы включить закомментированный сервис:
 
@@ -210,7 +210,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
   docker compose -f docker-compose.yml -f docker-compose.proxy.yml up -d
 ```
 
-В режиме proxy Caddy является публичным слушателем на портах `80` и `443`. Прямые порты AnythingLLM и LiteLLM привязываются к `127.0.0.1`.
+В режиме proxy Caddy является публичным слушателем на портах `80` и `443`. Прямые порты AnythingLLM и GatewayCrate привязываются к `127.0.0.1`.
 
 Проверить журналы Caddy:
 
@@ -235,7 +235,7 @@ API-ключи, кэши моделей, история чатов, конфиг
 
 - [Резервное копирование и восстановление](backup-restore-ru.md)
 
-Не удаляйте тома при диагностике, если у вас нет актуальной резервной копии. Удаление томов может удалить API-ключи, кэши моделей, данные AnythingLLM, конфигурацию LiteLLM, настройки ToolUplink, ключи опциональных сервисов и сертификаты Caddy.
+Не удаляйте тома при диагностике, если у вас нет актуальной резервной копии. Удаление томов может удалить API-ключи, кэши моделей, данные AnythingLLM, конфигурацию GatewayCrate, настройки ToolUplink, ключи опциональных сервисов и сертификаты Caddy.
 
 После обновления образов выполните:
 

@@ -73,7 +73,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker exec litellm litellm_manage --showkey
 ```
 
-**Откройте Admin UI GatewayCrate:**
+**Откройте панель администратора LiteLLM в GatewayCrate:**
 
 Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key GatewayCrate в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
 
@@ -114,7 +114,7 @@ docker network create ai-stack
 
 Затем запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например InferCrate или MCP, перед запуском GatewayCrate; если используется AnythingLLM, дождитесь готовности GatewayCrate перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и GatewayCrate.
+> **Примечание:** При ручном использовании `docker run` сначала запустите PostgreSQL, затем сервисы моделей и инструментов, входящие в ваш стек. Дождитесь готовности зависимостей перед запуском GatewayCrate, а затем запустите AnythingLLM, если он входит в стек. В примерах ниже создаётся одна переменная пароля PostgreSQL, которая используется и для Postgres, и для GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)

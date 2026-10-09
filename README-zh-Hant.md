@@ -10,9 +10,7 @@
        width="100%">
 </p>
 
-包含 InferCrate、GatewayCrate、AnythingLLM、ScribeCrate、ToolUplink、EmbedCrate、ParseCrate 和 SpeakCrate — 使用 Docker Compose 完整配置，開箱即用。
-
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技術堆疊的實用配套指南，涵蓋部署、安全、備份與升級。
+使用 Docker Compose 執行本機 AI 模型、根據文件內容進行對話、轉錄音訊並連接 MCP 工具。可選服務提供文件解析、文字轉語音和即時轉錄功能。
 
 **功能特性：**
 
@@ -25,6 +23,8 @@
 - **[輕量級技術堆疊](#輕量級技術堆疊)：** 降低記憶體需求（最低約 4.5 GB）
 - **GPU 加速：** 支援 NVIDIA CUDA
 - **多架構支援：** `linux/amd64`、`linux/arm64`
+
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技術堆疊的實用配套指南，涵蓋部署、安全、備份與升級。
 
 ## 包含的服務
 
@@ -113,7 +113,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 > [!NOTE]
 > 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請使用內建的 Caddy HTTPS 疊加檔案，以加密傳輸中的密碼並將直接 HTTP 連接埠繫結到 localhost。請參閱下方 [面向網際網路的部署](#面向網際網路的部署)。
 
-**存取 GatewayCrate 管理介面：**
+**存取 GatewayCrate 的 LiteLLM 管理介面：**
 
 在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 GatewayCrate 主密鑰作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
 
@@ -223,7 +223,7 @@ docker network create ai-stack
 
 然後產生 PostgreSQL 密碼，並在共享網路上啟動各服務：
 
-> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 InferCrate 或 MCP），再啟動 GatewayCrate；如果使用 AnythingLLM，請先等待 GatewayCrate 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 GatewayCrate 中重複使用。
+> **注意：** 手動使用 `docker run` 時，先啟動 PostgreSQL，再啟動目前技術堆疊中的模型和工具服務。等待相依服務就緒後再啟動 GatewayCrate；如果包含 AnythingLLM，最後啟動它。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 GatewayCrate 中重複使用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
@@ -436,7 +436,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
 
-# 第 3 步：將回應轉換為語音（Kokoro TTS）
+# 第 3 步：將回應轉換為語音（SpeakCrate TTS）
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $speak_api_key" \

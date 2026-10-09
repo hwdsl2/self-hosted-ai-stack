@@ -57,11 +57,11 @@ docker compose logs --tail=100 mcp
 docker compose logs --tail=100 anythingllm
 ```
 
-LiteLLM 依賴 Ollama、ToolUplink 和 PostgreSQL。AnythingLLM 依賴 LiteLLM。如果依賴項仍在啟動，下游服務可能暫時尚未就緒。
+GatewayCrate 依賴 InferCrate、ToolUplink 和 PostgreSQL。AnythingLLM 依賴 GatewayCrate。如果依賴項仍在啟動，下游服務可能暫時尚未就緒。
 
 ## Ollama 和本機模型問題
 
-技術堆疊會自動啟動 Ollama，但在傳送 LLM 請求前必須先拉取至少一個模型：
+技術堆疊會自動啟動 InferCrate（基於 Ollama），但在傳送 LLM 請求前必須先拉取至少一個模型：
 
 ```bash
 docker exec ollama ollama_manage --pull llama3.2:3b
@@ -73,40 +73,40 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker exec ollama ollama_manage --listmodels
 ```
 
-如果 LiteLLM 或 AnythingLLM 回報模型錯誤，請先確認該模型已存在於 Ollama 中，並確認 `./stack-check.sh` 顯示 LiteLLM 路由測試成功。
+如果 GatewayCrate 或 AnythingLLM 回報模型錯誤，請先確認該模型已存在於 InferCrate 中，並確認 `./stack-check.sh` 顯示 GatewayCrate 路由測試成功。
 
-對於 Ollama 映像檔相關問題，請使用 `docker-ollama` 儲存庫。對於與此 Docker 映像檔無關的上游 Ollama 行為，請使用上游 Ollama issue tracker。
+對於映像檔相關問題，請使用 [InferCrate 儲存庫](https://github.com/hwdsl2/infercrate)。對於與此 Docker 映像檔無關的上游 Ollama 行為，請使用上游 Ollama issue tracker。
 
 ## LiteLLM 問題
 
-LiteLLM 預設暴露在連接埠 `4000`。管理介面地址：
+GatewayCrate（基於 LiteLLM）預設暴露在連接埠 `4000`。管理介面地址：
 
 ```text
 http://<server-ip>:4000/ui
 ```
 
-使用者名稱使用 `admin`，密碼使用 LiteLLM master key。
+使用者名稱使用 `admin`，密碼使用 GatewayCrate master key。
 
-顯示 LiteLLM master key：
+顯示 GatewayCrate master key：
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-檢查 LiteLLM 健康端點：
+檢查 GatewayCrate 健康端點：
 
 ```bash
 curl http://localhost:4000/health/liveliness
 ```
 
-如果本機 Ollama 模型無法透過 LiteLLM 使用：
+如果本機模型無法透過 GatewayCrate 使用：
 
-- 確認已下載 Ollama 模型。
+- 確認已在 InferCrate 中下載模型。
 - 確認 compose 檔案或 env 檔案中存在 `LITELLM_OLLAMA_BASE_URL=http://ollama:11434`。
 - 查看 `docker compose logs --tail=100 litellm`。
-- 執行 `./stack-check.sh` 並查看 LiteLLM 路由檢查。
+- 執行 `./stack-check.sh` 並查看 GatewayCrate 路由檢查。
 
-compose 檔案會透過 Docker 磁碟區自動將 Ollama 和 MCP API 金鑰共享給 LiteLLM。除非已有備份，否則不要刪除 `ollama-data`、`mcp-data` 或 `litellm-data`。
+compose 檔案會透過 Docker 磁碟區自動將 InferCrate 和 ToolUplink API 金鑰共享給 GatewayCrate。除非已有備份，否則不要刪除 `ollama-data`、`mcp-data` 或 `litellm-data`。
 
 ## ToolUplink 問題
 
@@ -148,7 +148,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 如果 AnythingLLM 無法連接本機模型：
 
-- 確認 Docker 網路內部可存取 LiteLLM 的 `http://litellm:4000/v1`。
+- 確認 Docker 網路內部可存取 GatewayCrate 的 `http://litellm:4000/v1`。
 - 確認模型 `ollama/llama3.2:3b` 存在，或將 AnythingLLM 更新為使用已存在的模型。
 - 查看 `docker compose logs --tail=100 anythingllm`。
 
@@ -156,7 +156,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 ## 可選服務
 
-在完整 compose 檔案中，Embeddings 和 ScribeCrate 預設啟用。SpeakCrate、ParseCrate 和 ScribeCrate Live 為降低記憶體使用而預設註解掉。
+在完整 compose 檔案中，EmbedCrate 和 ScribeCrate 預設啟用。SpeakCrate、ParseCrate 和 ScribeCrate Live 為降低記憶體使用而預設註解掉。
 
 啟用被註解的服務：
 
@@ -210,7 +210,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
   docker compose -f docker-compose.yml -f docker-compose.proxy.yml up -d
 ```
 
-在代理模式下，Caddy 是連接埠 `80` 和 `443` 上的公網監聽服務。AnythingLLM 和 LiteLLM 的直接連接埠會重新繫結到 `127.0.0.1`。
+在代理模式下，Caddy 是連接埠 `80` 和 `443` 上的公網監聽服務。AnythingLLM 和 GatewayCrate 的直接連接埠會重新繫結到 `127.0.0.1`。
 
 查看 Caddy 日誌：
 
@@ -235,7 +235,7 @@ API 金鑰、模型快取、聊天記錄、服務設定和 Caddy 憑證狀態儲
 
 - [備份與還原](backup-restore-zh-Hant.md)
 
-排查問題時，除非已有目前備份，否則不要刪除磁碟區。刪除磁碟區可能會移除 API 金鑰、模型快取、AnythingLLM 資料、LiteLLM 設定、ToolUplink 設定、可選服務金鑰和 Caddy 憑證。
+排查問題時，除非已有目前備份，否則不要刪除磁碟區。刪除磁碟區可能會移除 API 金鑰、模型快取、AnythingLLM 資料、GatewayCrate 設定、ToolUplink 設定、可選服務金鑰和 Caddy 憑證。
 
 更新映像檔後執行：
 

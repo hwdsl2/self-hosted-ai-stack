@@ -10,9 +10,7 @@
        width="100%">
 </p>
 
-Includes InferCrate, GatewayCrate, AnythingLLM, ScribeCrate, ToolUplink, EmbedCrate, ParseCrate, and SpeakCrate — fully configured and ready to run with Docker Compose.
-
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
+Run local AI models, chat with your documents, transcribe audio, and connect MCP tools with Docker Compose. Optional services add document parsing, text-to-speech, and real-time transcription.
 
 **Features:**
 
@@ -25,6 +23,8 @@ Includes InferCrate, GatewayCrate, AnythingLLM, ScribeCrate, ToolUplink, EmbedCr
 - **[Lightweight stacks](#lightweight-stacks):** for lower memory requirements (as low as ~4.5 GB).
 - **GPU acceleration:** via NVIDIA CUDA.
 - **Multi-architecture support:** `linux/amd64`, `linux/arm64`.
+
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
 ## Included services
 
@@ -113,7 +113,7 @@ Open `http://<server-ip>:3001` in your browser and log in with the password abov
 > [!NOTE]
 > When exposing AnythingLLM beyond `localhost` or a trusted LAN, use the included Caddy HTTPS overlay so the password is encrypted in transit and direct HTTP ports are bound to localhost. See [Internet-facing deployments](#internet-facing-deployments) below.
 
-**Access the GatewayCrate Admin UI:**
+**Access GatewayCrate's LiteLLM Admin UI:**
 
 Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your GatewayCrate master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
 
@@ -223,7 +223,7 @@ docker network create ai-stack
 
 Then generate a PostgreSQL password and start each service on the shared network:
 
-> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as InferCrate or MCP, before GatewayCrate; if using AnythingLLM, wait for GatewayCrate before starting it). The examples below generate one PostgreSQL password variable and reuse it for Postgres and GatewayCrate.
+> **Note:** With manual `docker run`, start PostgreSQL first, then the model and tool services included in your stack. Wait for dependencies to be ready before starting GatewayCrate, then start AnythingLLM if included. The examples below generate one PostgreSQL password variable and reuse it for Postgres and GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)

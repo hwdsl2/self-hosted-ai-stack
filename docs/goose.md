@@ -10,11 +10,11 @@ local or external model inference:
 
 ```text
 Workstation                              Self-Hosted AI Stack
-+----------------------+                 +---------------------------+
-| goose Desktop or CLI | -- LiteLLM --> | LiteLLM -> Ollama/model   |
-| local project files  |                 |                           |
-| approval prompts     | -- optional -->| ToolUplink -> tools       |
-+----------------------+                 +---------------------------+
++----------------------+                 +----------------------------+
+| goose Desktop or CLI | -- LiteLLM -->  | GatewayCrate -> InferCrate |
+| local project files  |                 |                            |
+| approval prompts     | -- optional --> | ToolUplink -> tools        |
++----------------------+                 +----------------------------+
 ```
 
 The model connection works with the full stack and every lightweight stack
@@ -564,9 +564,9 @@ The existing platform supplies model and controlled-tool interfaces. The goose
 container adds the planning loop, session state, and approval experience.
 
 ```text
-User -> temporary goose container -> LiteLLM -> Ollama or hosted model
+User -> temporary goose container -> GatewayCrate -> InferCrate or hosted model
                     |
-                    +-> MCP Gateway -> enabled MCP servers
+                    +-> ToolUplink -> enabled MCP servers
                     |
                     +-> goose home volume
 ```
@@ -1075,8 +1075,8 @@ accounting for other clients that use it.
 - [AI Tools Compose definition](../stacks/ai-tools/docker-compose.yml)
 - [Stack HTTPS proxy overlay](../docker-compose.proxy.yml)
 - [Stack Caddy configuration](../caddy/Caddyfile)
-- [docker-litellm management commands](https://github.com/hwdsl2/gatewaycrate/blob/main/manage.sh)
-- [docker-mcp-gateway management commands](https://github.com/hwdsl2/tooluplink/blob/main/manage.sh)
+- [GatewayCrate management commands](https://github.com/hwdsl2/gatewaycrate/blob/main/manage.sh)
+- [ToolUplink management commands](https://github.com/hwdsl2/tooluplink/blob/main/manage.sh)
 - [goose 1.52.0 LiteLLM provider implementation](https://github.com/aaif-goose/goose/blob/v1.52.0/crates/goose/src/providers/litellm.rs)
 - [goose container image](https://github.com/aaif-goose/goose/pkgs/container/goose)
 - [goose Docker guide](https://github.com/aaif-goose/goose/blob/main/BUILDING_DOCKER.md)

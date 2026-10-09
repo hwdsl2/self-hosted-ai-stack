@@ -4,7 +4,7 @@
 
 Local LLM with MCP tool access for AI agents and coding assistants (goose, Cline, Claude, Cursor, etc.).
 
-**Services:** InferCrate (LLM) + GatewayCrate (gateway) + ToolUplink
+**Services:** InferCrate (LLM) + GatewayCrate (gateway) + ToolUplink (MCP tools)
 
 **Memory:** ~5 GB RAM (with a 3B model)
 
@@ -78,7 +78,7 @@ Run the health check to verify the services are working:
 docker exec litellm litellm_manage --showkey
 ```
 
-**Access the GatewayCrate Admin UI:**
+**Access GatewayCrate's LiteLLM Admin UI:**
 
 Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your GatewayCrate master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
 
@@ -121,7 +121,7 @@ docker network create ai-stack
 
 Then start each service on the shared network:
 
-> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as InferCrate or MCP, before GatewayCrate; if using AnythingLLM, wait for GatewayCrate before starting it). The examples below generate one PostgreSQL password variable and reuse it for Postgres and GatewayCrate.
+> **Note:** With manual `docker run`, start PostgreSQL first, then the model and tool services included in your stack. Wait for dependencies to be ready before starting GatewayCrate, then start AnythingLLM if included. The examples below generate one PostgreSQL password variable and reuse it for Postgres and GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)

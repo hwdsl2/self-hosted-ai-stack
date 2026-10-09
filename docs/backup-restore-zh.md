@@ -12,11 +12,11 @@
 
 | 卷名称 | 服务 | 包含内容 |
 |---|---|---|
-| `ollama-data` | Ollama | 已下载的模型、API 密钥、端口/服务器配置 |
-| `litellm-data` | LiteLLM | API 密钥、代理配置 |
-| `litellm-db` | LiteLLM | PostgreSQL 数据库（使用数据、日志） |
+| `ollama-data` | InferCrate | 已下载的模型、API 密钥、端口/服务器配置 |
+| `litellm-data` | GatewayCrate | API 密钥、代理配置 |
+| `litellm-db` | GatewayCrate | PostgreSQL 数据库（使用数据、日志） |
 | `ai-stack-shared` | Stack | 全新 Compose 安装生成的 PostgreSQL 密码 |
-| `embeddings-data` | Embeddings | 嵌入模型缓存、已生成的 API 密钥 |
+| `embeddings-data` | EmbedCrate | 嵌入模型缓存、已生成的 API 密钥 |
 | `whisper-data` | ScribeCrate | Whisper 模型缓存、已生成的 API 密钥 |
 | `whisper-live-data` | ScribeCrate Live | 实时语音转文本模型缓存、已生成的 API 密钥 |
 | `kokoro-data` | SpeakCrate | TTS 模型/语音缓存、已生成的 API 密钥 |
@@ -26,7 +26,7 @@
 | `caddy-data` | Caddy | TLS 证书、私钥、OCSP staple、ACME 账户状态 |
 | `caddy-config` | Caddy | Caddy 内部配置存储 |
 
-**重要提示：** Ollama、LiteLLM、ToolUplink，以及 ScribeCrate、ScribeCrate Live、SpeakCrate、Embeddings 和 ParseCrate 的新持久化安装所生成的 API 密钥，都会存储在这些卷中。如果丢失卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
+**重要提示：** API 密钥存储在上面列出的服务数据卷中。如果丢失存有密钥的卷，密钥也会丢失。已连接的客户端需要更新为新密钥。
 
 **重要提示（AnythingLLM）：** 当前管理员密码及其 `JWT_SECRET` 位于 `anythingllm-data` 卷中的 `server/.env`。`.initial_admin_password` 只是首次运行时的密码副本；如果你已在 Settings 中更改密码，该文件可能已经过期。备份此卷会保留当前密码。在其他主机上恢复时会重用相同的密码 — 无需重新生成。
 
@@ -40,14 +40,14 @@
 
 ```bash
 echo "=== API Keys ===" > ai-stack-keys.txt
-echo "Ollama:      $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "LiteLLM:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "MCP:         $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "ScribeCrate: $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "WhisperLive: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Kokoro:      $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Embeddings:  $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Docling:     $(docker exec docling docling_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "InferCrate:       $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "GatewayCrate:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ToolUplink:       $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ScribeCrate:      $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ScribeCrate Live: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "SpeakCrate:       $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "EmbedCrate:       $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ParseCrate:       $(docker exec docling docling_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo ""
 echo "Keys saved to ai-stack-keys.txt"
 cat ai-stack-keys.txt
@@ -251,7 +251,7 @@ docker compose up -d
 ## 注意事项
 
 - **模型权重**（在 `ollama-data` 中）可能很大（每个模型数 GB）。仅在重新下载不便时才需备份（网速慢、自定义微调模型）。
-- **模型缓存**（`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`）在首次启动时自动下载。如果带宽不是问题，可以跳过备份 — 它们会被重新下载。
+- **模型缓存**（`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`）在首次启动时自动下载。如果重新下载方便，可以不备份可下载的模型文件，但应保留同一数据卷中的 API 密钥和配置。
 - **关键卷**，应始终备份：密钥/配置卷（`litellm-data`、`litellm-db`、`ai-stack-shared`、`mcp-data`），需要保留模型或已生成密钥的服务数据卷（`ollama-data`、`embeddings-data`、`whisper-data`、`whisper-live-data`、`kokoro-data`、`docling-data`），`anythingllm-data`（聊天记录和工作区），以及 `caddy-data`（如果使用 HTTPS 代理叠加文件）。
 - 备份文件是标准的 `.tar.gz` 压缩包。可以使用以下命令查看内容：`tar tzf backups/ollama-data.tar.gz`
 

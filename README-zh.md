@@ -10,9 +10,7 @@
        width="100%">
 </p>
 
-包含 InferCrate、GatewayCrate、AnythingLLM、ScribeCrate、ToolUplink、EmbedCrate、ParseCrate 和 SpeakCrate — 使用 Docker Compose 完整配置，开箱即用。
-
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技术栈的实用配套指南，涵盖部署、安全、备份和升级。
+使用 Docker Compose 运行本地 AI 模型、围绕文档内容进行对话、转录音频并连接 MCP 工具。可选服务提供文档解析、文本转语音和实时转录功能。
 
 **功能特性：**
 
@@ -25,6 +23,8 @@
 - **[轻量级技术栈](#轻量级技术栈)：** 降低内存要求（最低约 4.5 GB）
 - **GPU 加速：** 支持 NVIDIA CUDA
 - **多架构支持：** `linux/amd64`、`linux/arm64`
+
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技术栈的实用配套指南，涵盖部署、安全、备份和升级。
 
 ## 包含的服务
 
@@ -113,7 +113,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 > [!NOTE]
 > 当 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外时，请使用内置的 Caddy HTTPS 叠加文件，以加密传输中的密码并将直接 HTTP 端口绑定到 localhost。请参阅下方 [面向互联网的部署](#面向互联网的部署)。
 
-**访问 GatewayCrate 管理界面：**
+**访问 GatewayCrate 的 LiteLLM 管理界面：**
 
 在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 GatewayCrate 主密钥作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
 
@@ -223,7 +223,7 @@ docker network create ai-stack
 
 然后生成 PostgreSQL 密码，并在共享网络上启动各服务：
 
-> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 InferCrate 或 MCP），再启动 GatewayCrate；如果使用 AnythingLLM，请先等待 GatewayCrate 就绪再启动它）。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 GatewayCrate 中复用。
+> **注意：** 手动使用 `docker run` 时，先启动 PostgreSQL，再启动当前技术栈中的模型和工具服务。等待依赖项就绪后再启动 GatewayCrate；如果包含 AnythingLLM，最后启动它。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 GatewayCrate 中复用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
@@ -436,7 +436,7 @@ RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -d "{\"model\":\"ollama/llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"$TEXT\"}]}" \
     | jq -r '.choices[0].message.content')
 
-# 第 3 步：将响应转换为语音（Kokoro TTS）
+# 第 3 步：将响应转换为语音（SpeakCrate TTS）
 curl -s http://localhost:8880/v1/audio/speech \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $speak_api_key" \

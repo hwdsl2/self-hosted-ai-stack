@@ -4,7 +4,7 @@
 
 解析文档，嵌入用于语义搜索，并使用本地 LLM 回答问题。
 
-**服务：** InferCrate (LLM) + GatewayCrate (网关) + EmbedCrate + ParseCrate (文档解析)
+**服务：** InferCrate (LLM) + GatewayCrate (网关) + EmbedCrate (文本嵌入) + ParseCrate (文档解析)
 
 **内存：** ~6 GB RAM（使用 3B 模型）
 
@@ -80,7 +80,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker exec litellm litellm_manage --showkey
 ```
 
-**访问 GatewayCrate 管理界面：**
+**访问 GatewayCrate 的 LiteLLM 管理界面：**
 
 在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 GatewayCrate master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
 
@@ -121,7 +121,7 @@ docker network create ai-stack
 
 然后在共享网络上启动各服务：
 
-> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 InferCrate 或 MCP），再启动 GatewayCrate；如果使用 AnythingLLM，请先等待 GatewayCrate 就绪再启动它）。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 GatewayCrate 中复用。
+> **注意：** 手动使用 `docker run` 时，先启动 PostgreSQL，再启动当前技术栈中的模型和工具服务。等待依赖项就绪后再启动 GatewayCrate；如果包含 AnythingLLM，最后启动它。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 GatewayCrate 中复用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
@@ -159,7 +159,7 @@ docker run -d --name embeddings --restart always \
     -v embeddings-data:/var/lib/embeddings \
     hwdsl2/embeddings-server
 
-# Docling（文档解析）
+# ParseCrate（文档解析）
 docker run -d --name docling --restart always \
     --network ai-stack \
     -p 127.0.0.1:5001:5001 \
@@ -244,7 +244,7 @@ gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
 embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 parse_api_key="$(docker exec docling docling_manage --getkey)"
 
-# 第 1 步：使用 Docling 将 PDF 转换为 Markdown
+# 第 1 步：使用 ParseCrate 将 PDF 转换为 Markdown
 curl -s -X POST http://localhost:5001/v1/convert/file \
     -H "X-Api-Key: $parse_api_key" \
     -F "file=@document.pdf" \

@@ -4,7 +4,7 @@
 
 Разбор документов, создание эмбеддингов для семантического поиска и ответы на вопросы с помощью локальной LLM.
 
-**Сервисы:** InferCrate (LLM) + GatewayCrate (шлюз) + EmbedCrate + ParseCrate (разбор документов)
+**Сервисы:** InferCrate (LLM) + GatewayCrate (шлюз) + EmbedCrate (эмбеддинги) + ParseCrate (разбор документов)
 
 **Память:** ~6 ГБ RAM (с моделью 3B)
 
@@ -80,7 +80,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker exec litellm litellm_manage --showkey
 ```
 
-**Откройте Admin UI GatewayCrate:**
+**Откройте панель администратора LiteLLM в GatewayCrate:**
 
 Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key GatewayCrate в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
 
@@ -121,7 +121,7 @@ docker network create ai-stack
 
 Затем запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например InferCrate или MCP, перед запуском GatewayCrate; если используется AnythingLLM, дождитесь готовности GatewayCrate перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и GatewayCrate.
+> **Примечание:** При ручном использовании `docker run` сначала запустите PostgreSQL, затем сервисы моделей и инструментов, входящие в ваш стек. Дождитесь готовности зависимостей перед запуском GatewayCrate, а затем запустите AnythingLLM, если он входит в стек. В примерах ниже создаётся одна переменная пароля PostgreSQL, которая используется и для Postgres, и для GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
@@ -244,7 +244,7 @@ gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
 embed_api_key="$(docker exec embeddings embed_manage --getkey)"
 parse_api_key="$(docker exec docling docling_manage --getkey)"
 
-# Шаг 1: Конвертация PDF в Markdown с помощью Docling
+# Шаг 1: Конвертация PDF в Markdown с помощью ParseCrate
 curl -s -X POST http://localhost:5001/v1/convert/file \
     -H "X-Api-Key: $parse_api_key" \
     -F "file=@document.pdf" \

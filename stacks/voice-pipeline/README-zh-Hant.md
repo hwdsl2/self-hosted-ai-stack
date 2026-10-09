@@ -83,7 +83,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 docker exec litellm litellm_manage --showkey
 ```
 
-**存取 GatewayCrate 管理介面：**
+**存取 GatewayCrate 的 LiteLLM 管理介面：**
 
 在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 GatewayCrate master key 作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
 
@@ -124,7 +124,7 @@ docker network create ai-stack
 
 然後在共享網路上啟動各服務：
 
-> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 InferCrate 或 MCP），再啟動 GatewayCrate；如果使用 AnythingLLM，請先等待 GatewayCrate 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 GatewayCrate 中重複使用。
+> **注意：** 手動使用 `docker run` 時，先啟動 PostgreSQL，再啟動目前技術堆疊中的模型和工具服務。等待相依服務就緒後再啟動 GatewayCrate；如果包含 AnythingLLM，最後啟動它。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 GatewayCrate 中重複使用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
@@ -169,7 +169,7 @@ docker run -d --name kokoro --restart always \
     -v kokoro-data:/var/lib/kokoro \
     hwdsl2/kokoro-server
 
-# 選用：WhisperLive（即時語音轉文字）
+# 選用：ScribeCrate Live（即時語音轉文字）
 docker run -d --name whisper-live --restart always \
     --network ai-stack \
     -p 127.0.0.1:9090:9090 \

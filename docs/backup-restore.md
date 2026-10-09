@@ -12,11 +12,11 @@ Each service stores its data in a named Docker volume:
 
 | Volume | Service | Contains |
 |---|---|---|
-| `ollama-data` | Ollama | Downloaded models, API key, port/server config |
-| `litellm-data` | LiteLLM | API key, proxy configuration |
-| `litellm-db` | LiteLLM | PostgreSQL database (usage data, logs) |
+| `ollama-data` | InferCrate | Downloaded models, API key, port/server config |
+| `litellm-data` | GatewayCrate | API key, proxy configuration |
+| `litellm-db` | GatewayCrate | PostgreSQL database (usage data, logs) |
 | `ai-stack-shared` | Stack | Generated PostgreSQL password for fresh Compose installs |
-| `embeddings-data` | Embeddings | Embedding model cache, generated API key |
+| `embeddings-data` | EmbedCrate | Embedding model cache, generated API key |
 | `whisper-data` | ScribeCrate | Whisper model cache, generated API key |
 | `whisper-live-data` | ScribeCrate Live | Real-time STT model cache, generated API key |
 | `kokoro-data` | SpeakCrate | TTS model/voice cache, generated API key |
@@ -26,7 +26,7 @@ Each service stores its data in a named Docker volume:
 | `caddy-data` | Caddy | TLS certificates, private keys, OCSP staples, ACME account state |
 | `caddy-config` | Caddy | Internal Caddy configuration storage |
 
-**Important:** API keys for Ollama, LiteLLM, ToolUplink, and fresh persistent installs of ScribeCrate, ScribeCrate Live, SpeakCrate, Embeddings, and ParseCrate are stored inside these volumes. If you lose a volume, you lose its key. Connected clients will need to be updated with new keys.
+**Important:** API keys are stored in the service data volumes listed above. If you lose a volume containing a key, you lose that key. Connected clients will need to be updated with new keys.
 
 **Important (AnythingLLM):** The current admin password and its `JWT_SECRET` live in `anythingllm-data` (`server/.env`). The `.initial_admin_password` file is only the first-run password copy and may be stale if you changed the password in Settings. Backing up this volume preserves the current password. Restoring it on a different host re-uses the same password — no need to re-seed.
 
@@ -40,14 +40,14 @@ Before any maintenance, save your current API keys:
 
 ```bash
 echo "=== API Keys ===" > ai-stack-keys.txt
-echo "Ollama:      $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "LiteLLM:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "MCP:         $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "ScribeCrate: $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "WhisperLive: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Kokoro:      $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Embeddings:  $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "Docling:     $(docker exec docling docling_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "InferCrate:       $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "GatewayCrate:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ToolUplink:       $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ScribeCrate:      $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ScribeCrate Live: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "SpeakCrate:       $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "EmbedCrate:       $(docker exec embeddings embed_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "ParseCrate:       $(docker exec docling docling_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo ""
 echo "Keys saved to ai-stack-keys.txt"
 cat ai-stack-keys.txt
@@ -251,7 +251,7 @@ docker compose up -d
 ## Notes
 
 - **Model weights** (in `ollama-data`) can be large (several GB per model). Back up only if re-downloading is impractical (slow internet, custom fine-tuned models).
-- **Model caches** (`embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`) are downloaded automatically on first start. You can skip backing these up if bandwidth is not a concern — they will be re-downloaded.
+- **Model caches** (`embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`) are downloaded automatically on first start. You can omit the downloadable model files from backups if downloading them again is practical, but preserve the API keys and configuration stored in the same volumes.
 - **Critical volumes** that should always be backed up: key/config volumes (`litellm-data`, `litellm-db`, `ai-stack-shared`, `mcp-data`), service data volumes whose models or generated keys you need to preserve (`ollama-data`, `embeddings-data`, `whisper-data`, `whisper-live-data`, `kokoro-data`, `docling-data`), `anythingllm-data` (chat history and workspaces), and `caddy-data` (if using the HTTPS proxy overlay).
 - Backups are standard `.tar.gz` archives. You can inspect contents with: `tar tzf backups/ollama-data.tar.gz`
 
