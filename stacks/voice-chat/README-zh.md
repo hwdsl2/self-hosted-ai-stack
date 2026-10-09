@@ -4,7 +4,7 @@
 
 基于网页的聊天界面，配合语音输入（语音转文字）和语音输出（文字转语音）— 完整的本地 AI 个人助手。
 
-**服务：** Ollama (LLM) + LiteLLM (网关) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (聊天界面) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
+**服务：** InferCrate (LLM) + GatewayCrate (网关) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (聊天界面) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
 
 **内存：** ~6.5 GB RAM（使用 3B 模型）
 
@@ -18,8 +18,8 @@
 graph LR
     U["👤 用户"] -->|聊天| A["AnythingLLM<br/>(聊天界面)"]
     U -->|说话| W["ScribeCrate<br/>(语音转文字)"]
-    A -->|API| L["LiteLLM<br/>(AI 网关)"]
-    L -->|路由至| O["Ollama<br/>(本地 LLM)"]
+    A -->|API| L["GatewayCrate<br/>(AI 网关)"]
+    L -->|路由至| O["InferCrate<br/>(本地 LLM)"]
     L -->|响应| K["SpeakCrate<br/>(文字转语音)"]
     K --> S["🔊 音频输出"]
     W -->|文本| L
@@ -29,8 +29,8 @@ graph LR
 
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 Ollama 及 100+ 供应商 | `4000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 InferCrate 及 100+ 供应商 | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于网页的聊天界面，支持工作区、RAG 和代理 | `3001` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音音频转录为文字 | `9000` |
 | **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md)** | 将文字转换为自然语音 | `8880` |
@@ -40,11 +40,11 @@ graph LR
 
 默认访问方式：
 
-- LiteLLM 发布在宿主机端口 `4000`。
+- GatewayCrate 发布在宿主机端口 `4000`。
 - AnythingLLM 发布在宿主机端口 `3001`。
 - ScribeCrate 默认绑定到 `127.0.0.1:9000`。
 - SpeakCrate 默认绑定到 `127.0.0.1:8880`。
-- Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
+- InferCrate 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 GatewayCrate。
 
 ## 快速开始
 
@@ -78,21 +78,21 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **提示：** 首次启动时，服务可能需要几分钟完成初始化。如有检查失败，请稍等后再次运行 `../../stack-check.sh`。使用 `docker compose logs` 查看进度。
 
-**获取 LiteLLM master key**（用于登录管理界面以及直接发起 LLM API 请求）：
+**获取 GatewayCrate master key**（用于登录管理界面以及直接发起 LLM API 请求）：
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**访问 LiteLLM 管理界面：**
+**访问 GatewayCrate 管理界面：**
 
-在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
+在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 GatewayCrate master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
 
 > **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama-chat/llama3.2:3b`）并开始对话，这是验证本地 LLM 端到端正常工作的一种快速方式。
 
 **打开聊天界面：**
 
-AnythingLLM 已预配置连接到 LiteLLM。API 密钥通过 Docker 卷自动共享 — 无需手动设置。LLM 供应商、基础 URL 和模型均已预配置。
+AnythingLLM 已预配置连接到 GatewayCrate。API 密钥通过 Docker 卷自动共享 — 无需手动设置。LLM 供应商、基础 URL 和模型均已预配置。
 
 首次启动时，AnythingLLM 可能需要几分钟才能就绪（使用 `docker logs anythingllm` 查看进度）。
 
@@ -148,12 +148,12 @@ docker network create ai-stack
 
 然后在共享网络上启动各服务：
 
-> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 Ollama 或 MCP），再启动 LiteLLM；如果使用 AnythingLLM，请先等待 LiteLLM 就绪再启动它）。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 LiteLLM 中复用。
+> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 InferCrate 或 MCP），再启动 GatewayCrate；如果使用 AnythingLLM，请先等待 GatewayCrate 就绪再启动它）。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 GatewayCrate 中复用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -162,14 +162,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI 网关)
+# GatewayCrate (AI 网关)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -214,7 +214,7 @@ docker run -d --name kokoro --restart always \
     hwdsl2/kokoro-server
 ```
 
-**注：** 共享网络允许服务通过容器名称互相访问（例如 AnythingLLM 通过 `http://litellm:4000` 连接 LiteLLM）。
+**注：** 共享网络允许服务通过容器名称互相访问（例如 AnythingLLM 通过 `http://litellm:4000` 连接 GatewayCrate）。
 
 **拉取模型**（发出 LLM 请求前必须执行）：
 
@@ -232,8 +232,8 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | 服务 | Env 文件 | 仓库 |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md) |
 
@@ -243,7 +243,7 @@ AnythingLLM 通过其网页界面 `http://<server-ip>:3001` 进行配置。您�
 
 ## 使用反向代理
 
-对于面向互联网的部署，请使用内置的 Caddy 叠加文件添加自动 HTTPS。请从 `stacks/voice-chat` 目录运行以下命令。根目录的 `../../docker-compose.proxy.yml` 叠加文件会有意挂载此技术栈本地的 `caddy/Caddyfile`。在代理模式下，Caddy 是唯一监听公网 `80` 和 `443` 端口的服务；AnythingLLM 和 LiteLLM 的直接端口会重新绑定到 `127.0.0.1`。默认情况下，代理只暴露 AnythingLLM；ScribeCrate 和 SpeakCrate 仍按此子栈的 compose 文件绑定。
+对于面向互联网的部署，请使用内置的 Caddy 叠加文件添加自动 HTTPS。请从 `stacks/voice-chat` 目录运行以下命令。根目录的 `../../docker-compose.proxy.yml` 叠加文件会有意挂载此技术栈本地的 `caddy/Caddyfile`。在代理模式下，Caddy 是唯一监听公网 `80` 和 `443` 端口的服务；AnythingLLM 和 GatewayCrate 的直接端口会重新绑定到 `127.0.0.1`。默认情况下，代理只暴露 AnythingLLM；ScribeCrate 和 SpeakCrate 仍按此子栈的 compose 文件绑定。
 
 前提条件：
 
@@ -268,7 +268,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
 
 打开 `https://chat.example.com`（替换为你的 `DOMAIN`）访问 AnythingLLM。在代理模式下，主机本机仍可访问 `http://127.0.0.1:3001` 和 `http://127.0.0.1:4000/ui`，但服务器外部无法直接访问 `3001` 和 `4000` 端口。
 
-标准 compose 文件会在 `4000` 端口发布 LiteLLM。代理叠加文件会将该直接端口改为仅 localhost 可访问，且内置 Caddyfile 默认只路由 AnythingLLM。取消注释可选的 LiteLLM 主机名配置块会通过 Caddy 暴露 LiteLLM，请妥善保管 LiteLLM 主密钥。
+标准 compose 文件会在 `4000` 端口发布 GatewayCrate。代理叠加文件会将该直接端口改为仅 localhost 可访问，且内置 Caddyfile 默认只路由 AnythingLLM。取消注释可选的 GatewayCrate 主机名配置块会通过 Caddy 暴露 GatewayCrate，请妥善保管 GatewayCrate 主密钥。
 
 故障排查：
 
@@ -369,7 +369,7 @@ TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
-# 步骤 2：通过 LiteLLM 将文本发送给 Ollama 并获取响应
+# 步骤 2：通过 GatewayCrate 将文本发送给 InferCrate 并获取响应
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \

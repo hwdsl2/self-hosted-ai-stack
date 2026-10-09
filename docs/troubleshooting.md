@@ -57,7 +57,7 @@ docker compose logs --tail=100 mcp
 docker compose logs --tail=100 anythingllm
 ```
 
-LiteLLM depends on Ollama, MCP Gateway, and PostgreSQL. AnythingLLM depends on LiteLLM. If a dependency is still starting, downstream services may not be ready yet.
+LiteLLM depends on Ollama, ToolUplink, and PostgreSQL. AnythingLLM depends on LiteLLM. If a dependency is still starting, downstream services may not be ready yet.
 
 ## Ollama and local model issues
 
@@ -108,11 +108,11 @@ If local Ollama models do not work through LiteLLM:
 
 The compose files automatically share Ollama and MCP API keys with LiteLLM through Docker volumes. Avoid deleting `ollama-data`, `mcp-data`, or `litellm-data` unless you have a backup.
 
-## MCP Gateway issues
+## ToolUplink issues
 
-MCP Gateway runs inside the Docker network on port `3000`. Its port is not exposed to the host by default in the main compose file.
+ToolUplink runs inside the Docker network on port `3000`. Its port is not exposed to the host by default in the main compose file.
 
-Show the MCP Gateway API key:
+Show the ToolUplink API key:
 
 ```bash
 docker exec mcp mcp_manage --showkey
@@ -169,13 +169,13 @@ Service-specific docs:
 
 | Service | Repository |
 |---|---|
-| Ollama | https://github.com/hwdsl2/docker-ollama |
-| LiteLLM | https://github.com/hwdsl2/docker-litellm |
-| Embeddings | https://github.com/hwdsl2/docker-embeddings |
+| InferCrate | https://github.com/hwdsl2/infercrate |
+| GatewayCrate | https://github.com/hwdsl2/gatewaycrate |
+| EmbedCrate | https://github.com/hwdsl2/embedcrate |
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
 | ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
 | SpeakCrate | https://github.com/hwdsl2/speakcrate |
-| MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
+| ToolUplink | https://github.com/hwdsl2/tooluplink |
 | ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU and CUDA
@@ -235,7 +235,7 @@ See the full backup guide:
 
 - [Backup and Restore](backup-restore.md)
 
-Avoid deleting volumes while troubleshooting unless you have a current backup. Deleting volumes can remove API keys, model caches, AnythingLLM data, LiteLLM configuration, MCP Gateway settings, optional service keys, and Caddy certificates.
+Avoid deleting volumes while troubleshooting unless you have a current backup. Deleting volumes can remove API keys, model caches, AnythingLLM data, LiteLLM configuration, ToolUplink settings, optional service keys, and Caddy certificates.
 
 After updating images, run:
 

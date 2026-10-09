@@ -4,7 +4,7 @@
 
 最小化本地聊天设置 — 本地 LLM 搭配 OpenAI 兼容 API 网关。
 
-**服务：** Ollama (LLM) + LiteLLM (网关)
+**服务：** InferCrate (LLM) + GatewayCrate (网关)
 
 **内存：** ~4.5 GB RAM（使用 3B 模型）
 
@@ -16,24 +16,24 @@
 
 ```mermaid
 graph LR
-    C["💬 AI 客户端"] -->|聊天| L["LiteLLM<br/>(AI 网关)"]
-    L -->|路由至| O["Ollama<br/>(本地 LLM)"]
+    C["💬 AI 客户端"] -->|聊天| L["GatewayCrate<br/>(AI 网关)"]
+    L -->|路由至| O["InferCrate<br/>(本地 LLM)"]
 ```
 
 ## 服务
 
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 Ollama 及 100+ 供应商 | `4000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 InferCrate 及 100+ 供应商 | `4000` |
 
 > [!IMPORTANT]
 > 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
 
 默认访问方式：
 
-- LiteLLM 发布在宿主机端口 `4000`。
-- Ollama 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 LiteLLM。
+- GatewayCrate 发布在宿主机端口 `4000`。
+- InferCrate 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 GatewayCrate。
 
 ## 快速开始
 
@@ -67,15 +67,15 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **提示：** 首次启动时，服务可能需要几分钟完成初始化。如有检查失败，请稍等后再次运行 `../../stack-check.sh`。使用 `docker compose logs` 查看进度。
 
-**获取 LiteLLM master key**（用于登录管理界面以及直接发起 LLM API 请求）：
+**获取 GatewayCrate master key**（用于登录管理界面以及直接发起 LLM API 请求）：
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**访问 LiteLLM 管理界面：**
+**访问 GatewayCrate 管理界面：**
 
-在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 LiteLLM master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
+在浏览器中打开 `http://<server-ip>:4000/ui`。使用用户名 `admin` 和您的 GatewayCrate master key 作为密码登录。管理界面提供虚拟密钥管理、支出追踪和模型配置功能。
 
 > **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama-chat/llama3.2:3b`）并开始对话，这是验证本地 LLM 端到端正常工作的一种快速方式。
 
@@ -114,12 +114,12 @@ docker network create ai-stack
 
 然后在共享网络上启动各服务：
 
-> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 Ollama 或 MCP），再启动 LiteLLM；如果使用 AnythingLLM，请先等待 LiteLLM 就绪再启动它）。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 LiteLLM 中复用。
+> **注意：** 手动使用 `docker run` 时，请先等待每个依赖项就绪，再启动使用它的服务（例如先等待 PostgreSQL 和其他依赖项（如 InferCrate 或 MCP），再启动 GatewayCrate；如果使用 AnythingLLM，请先等待 GatewayCrate 就绪再启动它）。以下示例会生成一个 PostgreSQL 密码变量，并在 Postgres 和 GatewayCrate 中复用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -128,14 +128,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI 网关)
+# GatewayCrate (AI 网关)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -146,7 +146,7 @@ docker run -d --name litellm --restart always \
     hwdsl2/litellm-server
 ```
 
-**注：** 共享网络允许服务通过容器名称互相访问（例如 LiteLLM 通过 `http://ollama:11434` 连接 Ollama）。
+**注：** 共享网络允许服务通过容器名称互相访问（例如 GatewayCrate 通过 `http://ollama:11434` 连接 InferCrate）。
 
 **拉取模型**（发出 LLM 请求前必须执行）：
 
@@ -164,14 +164,14 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | 服务 | Env 文件 | 仓库 |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md) |
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 
 ## 面向互联网的部署
 
-默认情况下，LiteLLM 会发布在宿主机端口 `4000`；各子栈的辅助 API 默认为仅 localhost 访问或仅内部访问，除非您修改其端口映射。对于面向互联网的部署，请在技术栈前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理这些端口时，请将 `4000` 等直接 HTTP 端口绑定到 `127.0.0.1`。每个服务仓库都包含详细的[反向代理指南](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh.md#使用反向代理)，含 Caddy 和 nginx 示例。
+默认情况下，GatewayCrate 会发布在宿主机端口 `4000`；各子栈的辅助 API 默认为仅 localhost 访问或仅内部访问，除非您修改其端口映射。对于面向互联网的部署，请在技术栈前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理这些端口时，请将 `4000` 等直接 HTTP 端口绑定到 `127.0.0.1`。每个服务仓库都包含详细的[反向代理指南](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md#使用反向代理)，含 Caddy 和 nginx 示例。
 
 ## 备份和恢复
 

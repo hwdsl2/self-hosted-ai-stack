@@ -4,7 +4,7 @@
 
 Embed documents for semantic search and answer questions with a local LLM.
 
-**Services:** Ollama (LLM) + LiteLLM (gateway) + Embeddings
+**Services:** InferCrate (LLM) + GatewayCrate (gateway) + EmbedCrate
 
 **Memory:** ~5 GB RAM (with a 3B model)
 
@@ -16,28 +16,28 @@ Embed documents for semantic search and answer questions with a local LLM.
 
 ```mermaid
 graph LR
-    D["📄 Documents"] -->|embed| E["Embeddings<br/>(text → vectors)"]
+    D["📄 Documents"] -->|embed| E["EmbedCrate<br/>(text → vectors)"]
     E -->|store| VDB["pgvector<br/>(in shared Postgres)"]
-    VDB -->|context| L["LiteLLM<br/>(AI gateway)"]
-    L -->|routes to| O["Ollama<br/>(local LLM)"]
+    VDB -->|context| L["GatewayCrate<br/>(AI gateway)"]
+    L -->|routes to| O["InferCrate<br/>(local LLM)"]
 ```
 
 ## Services
 
 | Service | Role | Default port |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
-| **[Embeddings](https://github.com/hwdsl2/docker-embeddings)** | Converts text to vectors for semantic search and RAG | `8000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate)** | AI gateway with Admin UI — routes requests to InferCrate and 100+ providers | `4000` |
+| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate)** | Converts text to vectors for semantic search and RAG | `8000` |
 
 > [!IMPORTANT]
 > The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
 
 Default access:
 
-- LiteLLM is published on host port `4000`.
-- Embeddings is bound to `127.0.0.1:8000` by default.
-- Ollama is internal to the Docker network; use LiteLLM for host or browser access.
+- GatewayCrate is published on host port `4000`.
+- EmbedCrate is bound to `127.0.0.1:8000` by default.
+- InferCrate is internal to the Docker network; use GatewayCrate for host or browser access.
 
 ## Quick start
 
@@ -71,15 +71,15 @@ Run the health check to verify the services are working:
 
 > **Tip:** On first start, services may take a few minutes to initialize. If any checks fail, wait and run `../../stack-check.sh` again. Use `docker compose logs` to check progress.
 
-**Get the LiteLLM master key** (used to log into the Admin UI and for direct LLM API requests):
+**Get the GatewayCrate master key** (used to log into the Admin UI and for direct LLM API requests):
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**Access the LiteLLM Admin UI:**
+**Access the GatewayCrate Admin UI:**
 
-Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
+Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your GatewayCrate master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
 
 > **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
 
@@ -118,12 +118,12 @@ docker network create ai-stack
 
 Then start each service on the shared network:
 
-> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as Ollama or MCP, before LiteLLM; if using AnythingLLM, wait for LiteLLM before starting it). The examples below generate one PostgreSQL password variable and reuse it for Postgres and LiteLLM.
+> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as InferCrate or MCP, before GatewayCrate; if using AnythingLLM, wait for GatewayCrate before starting it). The examples below generate one PostgreSQL password variable and reuse it for Postgres and GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -132,14 +132,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI gateway)
+# GatewayCrate (AI gateway)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -149,7 +149,7 @@ docker run -d --name litellm --restart always \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     hwdsl2/litellm-server
 
-# Embeddings
+# EmbedCrate
 docker run -d --name embeddings --restart always \
     --network ai-stack \
     -p 127.0.0.1:8000:8000 \
@@ -157,7 +157,7 @@ docker run -d --name embeddings --restart always \
     hwdsl2/embeddings-server
 ```
 
-**Note:** The shared network allows services to reach each other by container name (e.g., LiteLLM connects to Ollama via `http://ollama:11434`).
+**Note:** The shared network allows services to reach each other by container name (e.g., GatewayCrate connects to InferCrate via `http://ollama:11434`).
 
 **Pull a model** (required before making LLM requests):
 
@@ -175,15 +175,15 @@ Each service can be configured with an optional env file. Copy the example env f
 
 | Service | Env file | Repository |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
-| Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate) |
+| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate) |
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
 ## Internet-facing deployments
 
-By default, LiteLLM is published on host port `4000`; stack-specific helper APIs are localhost-only or internal unless you change their port mappings. For internet-facing deployments, place a reverse proxy (e.g., [Caddy](https://caddyserver.com/), Nginx, or Traefik) in front of the stack to provide HTTPS, and bind direct HTTP ports such as `4000` to `127.0.0.1` when proxying them. Each service repository includes a detailed [reverse proxy guide](https://github.com/hwdsl2/docker-litellm#using-a-reverse-proxy) with Caddy and nginx examples.
+By default, GatewayCrate is published on host port `4000`; stack-specific helper APIs are localhost-only or internal unless you change their port mappings. For internet-facing deployments, place a reverse proxy (e.g., [Caddy](https://caddyserver.com/), Nginx, or Traefik) in front of the stack to provide HTTPS, and bind direct HTTP ports such as `4000` to `127.0.0.1` when proxying them. Each service repository includes a detailed [reverse proxy guide](https://github.com/hwdsl2/gatewaycrate#using-a-reverse-proxy) with Caddy and nginx examples.
 
 ## Backup and restore
 
@@ -208,7 +208,7 @@ Your data is preserved in the Docker volumes. **Always [back up](../../docs/back
 
 ## Vector database
 
-The stack's PostgreSQL ships with the [pgvector](https://github.com/pgvector/pgvector) extension, so you can store and query embeddings in the same database that LiteLLM uses — no separate vector database required.
+The stack's PostgreSQL ships with the [pgvector](https://github.com/pgvector/pgvector) extension, so you can store and query embeddings in the same database that GatewayCrate uses — no separate vector database required.
 
 Enable the extension once (the database persists, so this only needs to be done a single time):
 

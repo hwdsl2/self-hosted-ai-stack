@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-包含 Ollama、LiteLLM、AnythingLLM、ScribeCrate、MCP Gateway、Embeddings、ParseCrate 和 SpeakCrate — 使用 Docker Compose 完整配置，開箱即用。
+包含 InferCrate、GatewayCrate、AnythingLLM、ScribeCrate、ToolUplink、EmbedCrate、ParseCrate 和 SpeakCrate — 使用 Docker Compose 完整配置，開箱即用。
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技術堆疊的實用配套指南，涵蓋部署、安全、備份與升級。
 
@@ -19,8 +19,8 @@
 - **零配置：** 所有服務在首次啟動時自動配置
 - **預設安全：** AnythingLLM 預設啟用密碼保護，內建 API 服務會自動產生 API 金鑰
 - **HTTPS 就緒：** 可選 Caddy 疊加檔案提供自動 TLS，並將直接 HTTP 連接埠繫結到 localhost
-- **預設在本機執行：** 預設在本機執行，可透過 LiteLLM 選擇性接入外部提供商
-- **AI 代理就緒：** 依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)，將本機安裝的 [goose](https://github.com/aaif-goose/goose) 連接到 LiteLLM
+- **預設在本機執行：** 預設在本機執行，可透過 GatewayCrate 選擇性接入外部提供商
+- **AI 代理就緒：** 依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)，將本機安裝的 [goose](https://github.com/aaif-goose/goose) 連接到 GatewayCrate
 - **彈性配置：** 可透過簡單的 env 檔案自訂模型、連接埠、提供商和 API 金鑰
 - **[輕量級技術堆疊](#輕量級技術堆疊)：** 降低記憶體需求（最低約 4.5 GB）
 - **GPU 加速：** 支援 NVIDIA CUDA
@@ -30,14 +30,14 @@
 
 | 服務 | 用途 | 預設連接埠 |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md)** | 執行本機大型語言模型（llama3、qwen、mistral 等） | `11434` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md)** | 執行本機大型語言模型（llama3、qwen、mistral 等） | `11434` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基於 Web 的聊天介面 — 預設啟用密碼保護 | `3001` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md)** | AI 閘道（含管理介面）— 將請求路由至 Ollama 及 100+ 提供商 | `4000` |
-| **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh-Hant.md)** | 將文字轉換為向量，用於語意搜尋和 RAG | `8000` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md)** | AI 閘道（含管理介面）— 將請求路由至 InferCrate 及 100+ 提供商 | `4000` |
+| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-zh-Hant.md)** | 將文字轉換為向量，用於語意搜尋和 RAG | `8000` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh-Hant.md)** | 將語音轉錄為文字 | `9000` |
 | **[ScribeCrate Live（即時語音轉文字）](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh-Hant.md)** | 透過 WebSocket 即時語音轉文字 | `9090` |
 | **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh-Hant.md)** | 將文字轉換為自然語音 | `8880` |
-| **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、網頁擷取、GitHub、搜尋、資料庫） | `3000` |
+| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、網頁擷取、GitHub、搜尋、資料庫） | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-zh-Hant.md)** | 將文件（PDF、DOCX 等）轉換為結構化文字/Markdown | `5001` |
 
 ## 快速開始
@@ -75,14 +75,14 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 有關詳細疑難排解，請參閱[疑難排解](docs/troubleshooting-zh-Hant.md)指南。
 
-**取得 LiteLLM 主密鑰**（用於登入管理介面和 LLM 請求）：
+**取得 GatewayCrate 主密鑰**（用於登入管理介面和 LLM 請求）：
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>顯示核心 API 金鑰（Ollama、LiteLLM、MCP Gateway）</summary>
+<summary>顯示核心 API 金鑰（InferCrate、GatewayCrate、ToolUplink）</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -94,7 +94,7 @@ docker exec mcp mcp_manage --showkey
 
 **存取 AnythingLLM（聊天介面）：**
 
-AnythingLLM 已預設透過 LiteLLM 連接本機大型語言模型。首次啟動時，可能需要幾分鐘才能就緒（使用 `docker logs anythingllm` 檢視進度）。
+AnythingLLM 已預設透過 GatewayCrate 連接本機大型語言模型。首次啟動時，可能需要幾分鐘才能就緒（使用 `docker logs anythingllm` 檢視進度）。
 
 **預設啟用密碼保護。** 首次啟動時會自動產生隨機管理員密碼，僅列印一次到 `docker logs anythingllm`，並儲存到 `anythingllm-data` 資料卷中的 `/app/server/storage/.initial_admin_password` 檔案。種子密碼會在容器升級後持久保留。可隨時在 **Settings → Security** 中變更；變更後，`.initial_admin_password` 可能不再與目前登入密碼一致。
 
@@ -113,15 +113,15 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 > [!NOTE]
 > 當 AnythingLLM 暴露到 `localhost` 或受信任 LAN 之外時，請使用內建的 Caddy HTTPS 疊加檔案，以加密傳輸中的密碼並將直接 HTTP 連接埠繫結到 localhost。請參閱下方 [面向網際網路的部署](#面向網際網路的部署)。
 
-**存取 LiteLLM 管理介面：**
+**存取 GatewayCrate 管理介面：**
 
-在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 LiteLLM 主密鑰作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
+在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 GatewayCrate 主密鑰作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama-chat/llama3.2:3b`）並開始對話 — 這是驗證本機大型語言模型端到端正常運作的一種快速方式。
 
 **將 goose 與此技術堆疊搭配使用：**
 
-在工作站上安裝 goose，並將其連接到此技術堆疊的 LiteLLM 端點，以執行受監督的代理和程式設計任務。[goose 設定指南（英文）](https://selfhostedaistack.com/goose)涵蓋本機安裝、受限 LiteLLM 金鑰、本機模型預期、權限、測試以及可選的 MCP Gateway 存取。
+在工作站上安裝 goose，並將其連接到此技術堆疊的 GatewayCrate 端點，以執行受監督的代理和程式設計任務。[goose 設定指南（英文）](https://selfhostedaistack.com/goose)涵蓋本機安裝、受限 GatewayCrate 金鑰、本機模型預期、權限、測試以及可選的 ToolUplink 存取。
 
 **停止技術堆疊：**
 
@@ -168,14 +168,14 @@ docker compose -f docker-compose.cuda.yml up -d
 
 | 技術堆疊 | 服務 | 記憶體 | 使用場景 |
 |---|---|---|---|
-| **[chat-ui](stacks/chat-ui/README-zh-Hant.md)** | Ollama + LiteLLM + AnythingLLM | ~5 GB | 基於 Web 的 ChatGPT 式聊天介面 |
-| **[voice-pipeline](stacks/voice-pipeline/README-zh-Hant.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate | ~6 GB | 語音轉文字 → LLM → 文字轉語音 |
-| **[voice-chat](stacks/voice-chat/README-zh-Hant.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate + AnythingLLM | ~6.5 GB | 帶語音輸入/輸出的聊天介面 |
-| **[rag-pipeline](stacks/rag-pipeline/README-zh-Hant.md)** | Ollama + LiteLLM + Embeddings | ~5 GB | 語意搜尋 + LLM 問答 |
-| **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh-Hant.md)** | Ollama + LiteLLM + Embeddings + ParseCrate | ~6 GB | 文件解析 + 語意搜尋 + LLM 問答 |
-| **[code-assistant](stacks/code-assistant/README-zh-Hant.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 GB | AI 程式設計，支援工具 + 語意程式碼搜尋 |
-| **[ai-tools](stacks/ai-tools/README-zh-Hant.md)** | Ollama + LiteLLM + MCP Gateway | ~5 GB | AI 程式設計助手，支援工具存取 |
-| **[chat-only](stacks/chat-only/README-zh-Hant.md)** | Ollama + LiteLLM | ~4.5 GB | 最小化本機 ChatGPT 替代方案 |
+| **[chat-ui](stacks/chat-ui/README-zh-Hant.md)** | InferCrate + GatewayCrate + AnythingLLM | ~5 GB | 基於 Web 的 ChatGPT 式聊天介面 |
+| **[voice-pipeline](stacks/voice-pipeline/README-zh-Hant.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate | ~6 GB | 語音轉文字 → LLM → 文字轉語音 |
+| **[voice-chat](stacks/voice-chat/README-zh-Hant.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 GB | 帶語音輸入/輸出的聊天介面 |
+| **[rag-pipeline](stacks/rag-pipeline/README-zh-Hant.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 GB | 語意搜尋 + LLM 問答 |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh-Hant.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 GB | 文件解析 + 語意搜尋 + LLM 問答 |
+| **[code-assistant](stacks/code-assistant/README-zh-Hant.md)** | InferCrate + GatewayCrate + ToolUplink + EmbedCrate | ~5 GB | AI 程式設計，支援工具 + 語意程式碼搜尋 |
+| **[ai-tools](stacks/ai-tools/README-zh-Hant.md)** | InferCrate + GatewayCrate + ToolUplink | ~5 GB | AI 程式設計助手，支援工具存取 |
+| **[chat-only](stacks/chat-only/README-zh-Hant.md)** | InferCrate + GatewayCrate | ~4.5 GB | 最小化本機 ChatGPT 替代方案 |
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -189,15 +189,15 @@ docker compose up -d
 graph LR
     A["🎤 音訊輸入"] -->|轉錄| W["ScribeCrate<br/>(語音轉文字)"]
     D["📄 文件"] -->|解析| DC["ParseCrate<br/>(文件 → 文字)"]
-    DC -->|嵌入| E["Embeddings<br/>(文字 → 向量)"]
+    DC -->|嵌入| E["EmbedCrate<br/>(文字 → 向量)"]
     E -->|儲存| VDB["pgvector<br/>(共享 Postgres 中)"]
     W -->|查詢| E
-    VDB -->|上下文| L["LiteLLM<br/>(AI 閘道)"]
+    VDB -->|上下文| L["GatewayCrate<br/>(AI 閘道)"]
     W -->|文字| L
-    L -->|路由至| O["Ollama<br/>(本機 LLM)"]
+    L -->|路由至| O["InferCrate<br/>(本機 LLM)"]
     L -->|回應| T["SpeakCrate TTS<br/>(文字轉語音)"]
     T --> B["🔊 音訊輸出"]
-    C["🤖 AI 用戶端<br/>(goose、Cline、Claude 等)"] -->|MCP 工具| M["MCP Gateway<br/>(MCP 端點)"]
+    C["🤖 AI 用戶端<br/>(goose、Cline、Claude 等)"] -->|MCP 工具| M["ToolUplink<br/>(MCP 端點)"]
     C -->|對話| L
     L -->|MCP 協定| M
     U["👤 使用者"] -->|對話| AN["AnythingLLM<br/>(聊天介面)"]
@@ -210,7 +210,7 @@ graph LR
 
 **注：**
 
-- Ollama 的連接埠（`11434`）和 MCP Gateway 的連接埠（`3000`）僅在 Docker 網路內部可用，預設不暴露給主機。請透過 LiteLLM 的連接埠 `4000` 存取您的 LLM。
+- InferCrate 的連接埠（`11434`）和 ToolUplink 的連接埠（`3000`）僅在 Docker 網路內部可用，預設不暴露給主機。請透過 GatewayCrate 的連接埠 `4000` 存取您的 LLM。
 - 為降低記憶體使用量，SpeakCrate（TTS）、ParseCrate（文件解析）和 ScribeCrate Live（即時語音轉文字）預設為停用狀態。如需啟用，請在 `docker-compose.yml` 中取消註解這些服務。
 
 ## 不使用 Docker Compose 執行
@@ -223,12 +223,12 @@ docker network create ai-stack
 
 然後產生 PostgreSQL 密碼，並在共享網路上啟動各服務：
 
-> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 Ollama 或 MCP），再啟動 LiteLLM；如果使用 AnythingLLM，請先等待 LiteLLM 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 LiteLLM 中重複使用。
+> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 InferCrate 或 MCP），再啟動 GatewayCrate；如果使用 AnythingLLM，請先等待 GatewayCrate 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 GatewayCrate 中重複使用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -237,21 +237,21 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# MCP Gateway
+# ToolUplink
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
     -v mcp-shared:/var/lib/mcp-shared \
     hwdsl2/mcp-gateway
 
-# LiteLLM (AI 閘道)
+# GatewayCrate (AI 閘道)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -264,7 +264,7 @@ docker run -d --name litellm --restart always \
     -v litellm-shared:/var/lib/litellm-shared \
     hwdsl2/litellm-server
 
-# Embeddings
+# EmbedCrate
 docker run -d --name embeddings --restart always \
     --network ai-stack \
     -p 127.0.0.1:8000:8000 \
@@ -319,7 +319,7 @@ docker run -d --name docling --restart always \
     hwdsl2/docling-server
 ```
 
-**注：** 共享網路允許服務透過容器名稱互相存取（例如 LiteLLM 透過 `http://ollama:11434` 連接 Ollama）。您可以只啟動需要的服務 — 不必全部執行。
+**注：** 共享網路允許服務透過容器名稱互相存取（例如 GatewayCrate 透過 `http://ollama:11434` 連接 InferCrate）。您可以只啟動需要的服務 — 不必全部執行。
 
 **拉取模型**（發出 LLM 請求前必須執行）：
 
@@ -392,23 +392,23 @@ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 
 **後續步驟：** 拉取模型並存取服務 — 請按照[快速開始](#快速開始)中「拉取模型」之後的說明操作。安裝 `podman-docker` 相容層後，所有指令無需修改即可使用。
 
-## 將 MCP Gateway 連接到 LiteLLM
+## 將 ToolUplink 連接到 GatewayCrate
 
-在本倉庫的 compose 檔案中，LiteLLM 和 MCP Gateway 已**自動接入**——無需手動設定金鑰。
+在本倉庫的 compose 檔案中，GatewayCrate 和 ToolUplink 已**自動接入**——無需手動設定金鑰。
 
 API 金鑰透過 Docker 共享卷在服務之間自動共享：
 
-- Ollama 在首次啟動時生成 API 金鑰，並將其複製到共享卷
-- MCP Gateway 執行相同操作
-- LiteLLM 在啟動時自動從共享卷讀取這兩個金鑰
+- InferCrate 在首次啟動時生成 API 金鑰，並將其複製到共享卷
+- ToolUplink 執行相同操作
+- GatewayCrate 在啟動時自動從共享卷讀取這兩個金鑰
 
 compose 檔案中已預設 `LITELLM_MCP_URL=http://mcp:3000/mcp` 和 `LITELLM_OLLAMA_BASE_URL=http://ollama:11434`，因此只需一條 `docker compose up -d` 命令即可自動連接所有服務。
 
-連線成功後，呼叫 LiteLLM 的 AI 用戶端即可透過 LiteLLM 代理直接使用 MCP 工具（檔案系統、網頁擷取、GitHub 等）。
+連線成功後，呼叫 GatewayCrate 的 AI 用戶端即可透過 GatewayCrate 代理直接使用 MCP 工具（檔案系統、網頁擷取、GitHub 等）。
 
 ## 語音管道範例
 
-轉錄語音問題，透過 Ollama 取得本機 LLM 回應，然後轉換為語音：
+轉錄語音問題，透過 InferCrate 取得本機 LLM 回應，然後轉換為語音：
 
 **注：** SpeakCrate（TTS）預設已停用。如需使用此範例，請先取消 `docker-compose.yml` 中 `kokoro` 服務的註解，然後執行 `docker compose up -d`。
 
@@ -429,7 +429,7 @@ TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
-# 第 2 步：透過 LiteLLM 將文字傳送至 Ollama 並取得回應
+# 第 2 步：透過 GatewayCrate 將文字傳送至 InferCrate 並取得回應
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
@@ -446,7 +446,7 @@ curl -s http://localhost:8880/v1/audio/speech \
 
 ## 向量資料庫
 
-本棧的 PostgreSQL 已內建 [pgvector](https://github.com/pgvector/pgvector) 擴充功能，因此您可以在 LiteLLM 使用的同一個資料庫中儲存與查詢嵌入向量 — 無需單獨的向量資料庫。
+本棧的 PostgreSQL 已內建 [pgvector](https://github.com/pgvector/pgvector) 擴充功能，因此您可以在 GatewayCrate 使用的同一個資料庫中儲存與查詢嵌入向量 — 無需單獨的向量資料庫。
 
 啟用擴充功能（只需執行一次，資料庫會持久保存）：
 
@@ -464,7 +464,7 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 
 ## RAG 管道範例
 
-嵌入文件用於語意搜尋，擷取上下文，然後使用本機 Ollama 模型回答問題：
+嵌入文件用於語意搜尋，擷取上下文，然後使用本機 InferCrate 模型回答問題：
 
 ```bash
 gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
@@ -479,7 +479,7 @@ curl -s http://localhost:8000/v1/embeddings \
 # → 將傳回的向量與來源文字一起儲存到 pgvector（已包含在本棧的 Postgres 中），或 Qdrant、Chroma 等其他向量資料庫。
 
 # 第 2 步：查詢時，嵌入問題，從向量資料庫中擷取最符合的片段，
-#          然後透過 LiteLLM 將問題和擷取到的上下文傳送至 Ollama。
+#          然後透過 GatewayCrate 將問題和擷取到的上下文傳送至 InferCrate。
 curl -s http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
@@ -495,9 +495,9 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 ## MCP 工具範例
 
-使用 MCP Gateway 為您的 AI 助手提供檔案、網路和 GitHub 存取：
+使用 ToolUplink 為您的 AI 助手提供檔案、網路和 GitHub 存取：
 
-預設情況下，MCP Gateway 僅在 Docker 網路內部可用。從主機上的 AI 用戶端或主機上的 `curl` 使用 `http://localhost:3000/mcp` 之前，請先在 `docker-compose.yml` 的 `mcp` 服務中取消註解 `3000:3000/tcp` 連接埠對應並重新啟動服務。
+預設情況下，ToolUplink 僅在 Docker 網路內部可用。從主機上的 AI 用戶端或主機上的 `curl` 使用 `http://localhost:3000/mcp` 之前，請先在 `docker-compose.yml` 的 `mcp` 服務中取消註解 `3000:3000/tcp` 連接埠對應並重新啟動服務。
 
 ```bash
 uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
@@ -531,18 +531,18 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 
 | 服務 | Env 檔案 | 儲存庫 |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md) |
-| Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-zh-Hant.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md) |
+| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-zh-Hant.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh-Hant.md) |
 | ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh-Hant.md) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh-Hant.md) |
-| MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh-Hant.md) |
+| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-zh-Hant.md) |
 | ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-zh-Hant.md) |
 
 AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您可以在 **Settings** 中變更 LLM 供應商、模型、嵌入引擎和其他設定。詳情請參閱 [AnythingLLM 文件](https://docs.useanything.com/)。
 
-**使用本技術堆疊的 Embeddings 服務（選用）。** 預設情況下，AnythingLLM 使用其內建的 MiniLM 模型進行行程內嵌入，並將向量儲存在自帶的 LanceDB 中。若要改用本技術堆疊的 [Embeddings](https://github.com/hwdsl2/docker-embeddings) 服務（BAAI/bge-small-en-v1.5）和/或本技術堆疊啟用了 pgvector 的 Postgres，請編輯 `docker-compose.yml` 中的 `anythingllm` 服務：註解掉 `EMBEDDING_ENGINE=native` 並取消註解下方的選用啟用程式碼區塊。同時取消註解 `depends_on` 備註，以便 embeddings/db 服務先啟動。
+**使用本技術堆疊的 EmbedCrate 服務（選用）。** 預設情況下，AnythingLLM 使用其內建的 MiniLM 模型進行行程內嵌入，並將向量儲存在自帶的 LanceDB 中。若要改用本技術堆疊的 [EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate) 服務（BAAI/bge-small-en-v1.5）和/或本技術堆疊啟用了 pgvector 的 Postgres，請編輯 `docker-compose.yml` 中的 `anythingllm` 服務：註解掉 `EMBEDDING_ENGINE=native` 並取消註解下方的選用啟用程式碼區塊。同時取消註解 `depends_on` 備註，以便 embeddings/db 服務先啟動。
 
 啟用 `VECTOR_DB=pgvector` 且未設定 `PGVECTOR_CONNECTION_STRING` 時，AnythingLLM 會自動使用 `ai-stack-shared` 中產生的 Postgres 密碼。AnythingLLM 首次使用時會自動建立 `vector` 擴充功能和 `anythingllm_vectors` 資料表。
 
@@ -553,7 +553,7 @@ AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您�
 
 ## 面向網際網路的部署
 
-預設情況下，所有服務透過純 HTTP 監聽。對於面向網際網路的部署，可以使用內建的 Caddy 疊加檔案新增自動 HTTPS。在代理模式下，Caddy 是唯一監聽公網 `80` 和 `443` 連接埠的服務；AnythingLLM 和 LiteLLM 的直接連接埠會重新繫結到 `127.0.0.1`。
+預設情況下，所有服務透過純 HTTP 監聽。對於面向網際網路的部署，可以使用內建的 Caddy 疊加檔案新增自動 HTTPS。在代理模式下，Caddy 是唯一監聽公網 `80` 和 `443` 連接埠的服務；AnythingLLM 和 GatewayCrate 的直接連接埠會重新繫結到 `127.0.0.1`。
 
 前提條件：
 
@@ -578,7 +578,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
 
 開啟 `https://chat.example.com`（替換為你的 `DOMAIN`）存取 AnythingLLM。在代理模式下，主機本機仍可存取 `http://127.0.0.1:3001` 和 `http://127.0.0.1:4000/ui`，但伺服器外部無法直接存取 `3001` 和 `4000` 連接埠。
 
-標準 compose 檔案會在 `4000` 連接埠發布 LiteLLM。代理疊加檔案會將該直接連接埠改為僅 localhost 可存取，且內建 Caddyfile 預設只路由 AnythingLLM。取消註解可選的 LiteLLM 主機名稱設定區塊會透過 Caddy 暴露 LiteLLM，請妥善保管 LiteLLM 主密鑰。
+標準 compose 檔案會在 `4000` 連接埠發布 GatewayCrate。代理疊加檔案會將該直接連接埠改為僅 localhost 可存取，且內建 Caddyfile 預設只路由 AnythingLLM。取消註解可選的 GatewayCrate 主機名稱設定區塊會透過 Caddy 暴露 GatewayCrate，請妥善保管 GatewayCrate 主密鑰。
 
 疑難排解：
 

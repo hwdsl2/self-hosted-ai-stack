@@ -4,7 +4,7 @@
 
 Локальный аналог ChatGPT — веб-интерфейс для чата на основе локальной LLM с OpenAI-совместимым API-шлюзом.
 
-**Сервисы:** Ollama (LLM) + LiteLLM (шлюз) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (чат-интерфейс)
+**Сервисы:** InferCrate (LLM) + GatewayCrate (шлюз) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (чат-интерфейс)
 
 **Память:** ~5 ГБ RAM (с моделью 3B)
 
@@ -17,16 +17,16 @@
 ```mermaid
 graph LR
     U["🌐 Браузер"] -->|чат| A["AnythingLLM<br/>(чат-интерфейс)"]
-    A -->|API| L["LiteLLM<br/>(AI-шлюз)"]
-    L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
+    A -->|API| L["GatewayCrate<br/>(AI-шлюз)"]
+    L -->|маршрутизация| O["InferCrate<br/>(локальная LLM)"]
 ```
 
 ## Сервисы
 
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизация запросов к Ollama и 100+ провайдерам | `4000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизация запросов к InferCrate и 100+ провайдерам | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Веб-интерфейс для чата с рабочими пространствами, RAG и агентами | `3001` |
 
 > [!IMPORTANT]
@@ -34,9 +34,9 @@ graph LR
 
 Доступ по умолчанию:
 
-- LiteLLM опубликован на порту хоста `4000`.
+- GatewayCrate опубликован на порту хоста `4000`.
 - AnythingLLM опубликован на порту хоста `3001`.
-- Ollama доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте LiteLLM.
+- InferCrate доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте GatewayCrate.
 
 ## Быстрый старт
 
@@ -70,21 +70,21 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **Совет:** При первом запуске сервисам может потребоваться несколько минут для инициализации. Если какие-либо проверки не пройдены, подождите и запустите `../../stack-check.sh` снова. Используйте `docker compose logs` для проверки прогресса.
 
-**Получите master key LiteLLM** (используется для входа в Admin UI и для прямых LLM API-запросов):
+**Получите master key GatewayCrate** (используется для входа в Admin UI и для прямых LLM API-запросов):
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**Откройте Admin UI LiteLLM:**
+**Откройте Admin UI GatewayCrate:**
 
-Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key LiteLLM в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
+Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key GatewayCrate в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
 
 > **Совет:** В Admin UI нажмите **Playground** в левом меню. Выберите локальную модель (например, `ollama-chat/llama3.2:3b`) из списка и начните чат — это быстрый способ проверить локальную LLM end-to-end.
 
 **Откройте чат-интерфейс:**
 
-AnythingLLM предварительно настроен для подключения к LiteLLM. API-ключ передаётся автоматически через Docker-том — ручная настройка не требуется. Провайдер LLM, базовый URL и модель уже предварительно настроены.
+AnythingLLM предварительно настроен для подключения к GatewayCrate. API-ключ передаётся автоматически через Docker-том — ручная настройка не требуется. Провайдер LLM, базовый URL и модель уже предварительно настроены.
 
 При первом запуске AnythingLLM может потребоваться несколько минут для готовности (проверяйте прогресс командой `docker logs anythingllm`).
 
@@ -140,12 +140,12 @@ docker network create ai-stack
 
 Затем запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и LiteLLM.
+> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например InferCrate или MCP, перед запуском GatewayCrate; если используется AnythingLLM, дождитесь готовности GatewayCrate перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -154,14 +154,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI-шлюз)
+# GatewayCrate (AI-шлюз)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -192,7 +192,7 @@ docker run -d --name anythingllm --restart always \
     /usr/local/bin/chat-ui-bootstrap.sh
 ```
 
-**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, AnythingLLM подключается к LiteLLM через `http://litellm:4000`).
+**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, AnythingLLM подключается к GatewayCrate через `http://litellm:4000`).
 
 **Загрузка модели** (необходимо перед отправкой запросов к LLM):
 
@@ -210,8 +210,8 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | Сервис | Env-файл | Репозиторий |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md) |
 
 AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
 
@@ -221,7 +221,7 @@ AnythingLLM настраивается через веб-интерфейс по
 
 ## Использование обратного прокси
 
-Для развёртываний с выходом в интернет используйте включённый Caddy overlay для автоматического HTTPS. Выполняйте эти команды из каталога `stacks/chat-ui`. Корневой overlay `../../docker-compose.proxy.yml` намеренно монтирует локальный для этого стека `caddy/Caddyfile`. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и LiteLLM заново привязываются к `127.0.0.1`.
+Для развёртываний с выходом в интернет используйте включённый Caddy overlay для автоматического HTTPS. Выполняйте эти команды из каталога `stacks/chat-ui`. Корневой overlay `../../docker-compose.proxy.yml` намеренно монтирует локальный для этого стека `caddy/Caddyfile`. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и GatewayCrate заново привязываются к `127.0.0.1`.
 
 Требования:
 
@@ -246,7 +246,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
 
 Откройте `https://chat.example.com` (замените на ваш `DOMAIN`) для доступа к AnythingLLM. В режиме прокси `http://127.0.0.1:3001` и `http://127.0.0.1:4000/ui` остаются доступны на самом хосте, но прямые порты `3001` и `4000` недоступны извне сервера.
 
-Стандартные compose-файлы публикуют LiteLLM на порту `4000`. Proxy overlay меняет этот прямой порт на доступный только через localhost, а включённый Caddyfile по умолчанию маршрутизирует только AnythingLLM. Если раскомментировать опциональный блок с отдельным hostname для LiteLLM, LiteLLM будет открыт через Caddy, поэтому храните мастер-ключ LiteLLM в секрете.
+Стандартные compose-файлы публикуют GatewayCrate на порту `4000`. Proxy overlay меняет этот прямой порт на доступный только через localhost, а включённый Caddyfile по умолчанию маршрутизирует только AnythingLLM. Если раскомментировать опциональный блок с отдельным hostname для GatewayCrate, GatewayCrate будет открыт через Caddy, поэтому храните мастер-ключ GatewayCrate в секрете.
 
 Диагностика:
 
@@ -333,7 +333,7 @@ AnythingLLM закреплен на стабильном теге релиза, 
 open http://localhost:3001
 ```
 
-Или используйте API LiteLLM напрямую:
+Или используйте API GatewayCrate напрямую:
 
 ```bash
 gateway_master_key="$(docker exec litellm litellm_manage --getkey)"

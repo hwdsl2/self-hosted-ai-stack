@@ -2,7 +2,7 @@
 
 [goose](https://github.com/aaif-goose/goose) is an AI agent for desktop and
 terminal workflows. This guide connects it to Self-Hosted AI Stack's
-authenticated LiteLLM endpoint and, when needed, MCP Gateway.
+authenticated GatewayCrate endpoint (powered by LiteLLM) and, when needed, ToolUplink.
 
 goose is not bundled with the stack. The recommended arrangement keeps your
 workspace and approval interface on your workstation while the stack provides
@@ -13,13 +13,13 @@ Workstation                              Self-Hosted AI Stack
 +----------------------+                 +---------------------------+
 | goose Desktop or CLI | -- LiteLLM --> | LiteLLM -> Ollama/model   |
 | local project files  |                 |                           |
-| approval prompts     | -- optional -->| MCP Gateway -> tools      |
+| approval prompts     | -- optional -->| ToolUplink -> tools       |
 +----------------------+                 +---------------------------+
 ```
 
 The model connection works with the full stack and every lightweight stack
-that includes LiteLLM. The optional MCP section requires a deployment that also
-includes MCP Gateway, such as the full stack, `ai-tools`, or `code-assistant`.
+that includes GatewayCrate. The optional MCP section requires a deployment that also
+includes ToolUplink, such as the full stack, `ai-tools`, or `code-assistant`.
 
 This guide reflects Self-Hosted AI Stack version `2026.09.1` and goose 1.52.0.
 goose changes frequently, so compare prompts and menu names with the
@@ -132,7 +132,7 @@ enable that hostname, and use its HTTPS URL as the goose LiteLLM host.
 
 The lightweight `ai-tools` and `code-assistant` stacks do not include their own
 Caddy service. Use the
-[docker-litellm reverse proxy guide](https://github.com/hwdsl2/docker-litellm#using-a-reverse-proxy)
+[GatewayCrate reverse proxy guide](https://github.com/hwdsl2/gatewaycrate#using-a-reverse-proxy)
 or an SSH tunnel.
 
 Never send a LiteLLM key over public, unencrypted HTTP.
@@ -408,15 +408,15 @@ model with stronger native tool calling. goose also has an
 requires a separate interpreter model, adds latency and memory use, and does not
 improve the main model's reasoning. It is not enabled in this baseline setup.
 
-## Optional: connect goose directly to MCP Gateway
+## Optional: connect goose directly to ToolUplink
 
 This section is unnecessary for ordinary local file editing because goose's
-Developer extension already operates on the workstation workspace. Add MCP
-Gateway only when goose needs a server-side tool supplied by the stack.
-This direct goose connection is separate from LiteLLM's internal MCP Gateway
+Developer extension already operates on the workstation workspace. Add ToolUplink
+only when goose needs a server-side tool supplied by the stack.
+This direct goose connection is separate from LiteLLM's internal ToolUplink
 registration.
 
-MCP Gateway is internal to the Docker network by default. A safe first setup
+ToolUplink is internal to the Docker network by default. A safe first setup
 publishes it only on the server's loopback interface and, when goose runs on a
 different machine, carries the connection through SSH.
 
@@ -428,7 +428,7 @@ ports:
   - "127.0.0.1:3000:3000/tcp"
 ```
 
-Recreate MCP Gateway and verify it on the server:
+Recreate ToolUplink and verify it on the server:
 
 ```bash
 docker compose up -d mcp
@@ -458,7 +458,7 @@ In `goose configure`, choose **Add Extension**, then **Remote Extension
 | Endpoint | `http://127.0.0.1:3000/mcp` |
 | Description | `Authenticated retrieval through Self-Hosted AI Stack` |
 | Custom header | `Authorization` |
-| Header value | `Bearer <MCP Gateway key>` |
+| Header value | `Bearer <ToolUplink key>` |
 
 Replace the placeholder with the actual key. Keep the fetch extension as the
 only enabled MCP capability for the first test, then ask goose to retrieve
@@ -571,9 +571,9 @@ User -> temporary goose container -> LiteLLM -> Ollama or hosted model
                     +-> goose home volume
 ```
 
-goose, LiteLLM, and MCP Gateway share the Compose network. goose reaches
-LiteLLM at `http://litellm:4000` and MCP Gateway at `http://mcp:3000/mcp`.
-MCP Gateway can remain internal, and no goose port is published.
+goose, LiteLLM, and ToolUplink share the Compose network. goose reaches
+LiteLLM at `http://litellm:4000` and ToolUplink at `http://mcp:3000/mcp`.
+ToolUplink can remain internal, and no goose port is published.
 
 A prompt can still cross external boundaries. If LiteLLM routes to Ollama, the
 model request remains on infrastructure you operate. If the selected alias
@@ -725,7 +725,7 @@ file. Docker can still expose a running container's environment to users with
 Docker administration access, so the virtual key should remain narrow and
 short-lived.
 
-MCP Gateway uses a separate generated key. Display its connection details only
+ToolUplink uses a separate generated key. Display its connection details only
 in a private terminal and avoid recording the output in screenshots or logs:
 
 ```sh
@@ -835,9 +835,9 @@ Use **Add Extension** to create one remote Streamable HTTP extension:
 |---|---|
 | Name | `self-hosted-fetch` |
 | Endpoint | `http://mcp:3000/mcp` |
-| Description | `Authenticated web retrieval through MCP Gateway` |
+| Description | `Authenticated web retrieval through ToolUplink` |
 | Custom header name | `Authorization` |
-| Custom header value | `Bearer <MCP Gateway key>` |
+| Custom header value | `Bearer <ToolUplink key>` |
 
 The angle-bracketed value is a placeholder. Enter the actual key after the word
 `Bearer`, without angle brackets. The extension configuration persists in the
@@ -849,7 +849,7 @@ the screen or terminal transcript while entering the credential.
 Do not run `goose info -v` or print the configuration after storing credentials
 or custom headers. Verbose configuration output can contain sensitive values.
 
-The default MCP Gateway configuration enables the fetch server. Verify that
+The default ToolUplink configuration enables the fetch server. Verify that
 assumption against the deployed gateway:
 
 ```sh
@@ -897,7 +897,7 @@ Check the attempted result at each boundary rather than assuming success:
    extension and URL.
 3. Confirm that no shell, host-file, delegation, scheduling,
    extension-management, or application tool is available.
-4. Confirm that LiteLLM and MCP Gateway record corresponding requests without
+4. Confirm that LiteLLM and ToolUplink record corresponding requests without
    exposing credential values.
 5. Confirm that the goose container is removed after the session exits.
 
@@ -1051,7 +1051,7 @@ To reverse the example:
 
 1. Exit the goose session and confirm that its temporary container was removed.
 2. Delete the LiteLLM virtual key using the Admin UI or the key-management
-   commands in the [LiteLLM guide](https://github.com/hwdsl2/docker-litellm#virtual-key-management).
+   commands in the [GatewayCrate guide](https://github.com/hwdsl2/gatewaycrate#virtual-key-management).
 3. Remove `docker-compose.goose.yml` from the stack directory.
 4. Review `ai-tools-goose-home` according to your backup and retention policy.
    If it may be deleted and no agent container is using it, remove it with
@@ -1075,8 +1075,8 @@ accounting for other clients that use it.
 - [AI Tools Compose definition](../stacks/ai-tools/docker-compose.yml)
 - [Stack HTTPS proxy overlay](../docker-compose.proxy.yml)
 - [Stack Caddy configuration](../caddy/Caddyfile)
-- [docker-litellm management commands](https://github.com/hwdsl2/docker-litellm/blob/main/manage.sh)
-- [docker-mcp-gateway management commands](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/manage.sh)
+- [docker-litellm management commands](https://github.com/hwdsl2/gatewaycrate/blob/main/manage.sh)
+- [docker-mcp-gateway management commands](https://github.com/hwdsl2/tooluplink/blob/main/manage.sh)
 - [goose 1.52.0 LiteLLM provider implementation](https://github.com/aaif-goose/goose/blob/v1.52.0/crates/goose/src/providers/litellm.rs)
 - [goose container image](https://github.com/aaif-goose/goose/pkgs/container/goose)
 - [goose Docker guide](https://github.com/aaif-goose/goose/blob/main/BUILDING_DOCKER.md)

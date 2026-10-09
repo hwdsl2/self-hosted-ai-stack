@@ -4,7 +4,7 @@
 
 本機 LLM 搭配 MCP 工具存取，適用於 AI 代理和程式設計助手（goose、Cline、Claude、Cursor 等）。
 
-**服務：** Ollama (LLM) + LiteLLM (閘道) + MCP Gateway
+**服務：** InferCrate (LLM) + GatewayCrate (閘道) + ToolUplink
 
 **記憶體：** ~5 GB RAM（使用 3B 模型）
 
@@ -17,9 +17,9 @@
 ```mermaid
 graph LR
     U["👤 使用者"] -->|使用| C["🤖 AI 用戶端<br/>(goose、Cline、Claude 等)"]
-    C -->|MCP 工具| M["MCP Gateway<br/>(MCP 端點)"]
-    C -->|聊天| L["LiteLLM<br/>(AI 閘道)"]
-    L -->|路由至| O["Ollama<br/>(本機 LLM)"]
+    C -->|MCP 工具| M["ToolUplink<br/>(MCP 端點)"]
+    C -->|聊天| L["GatewayCrate<br/>(AI 閘道)"]
+    L -->|路由至| O["InferCrate<br/>(本機 LLM)"]
     L -->|MCP 協定| M
 ```
 
@@ -27,18 +27,18 @@ graph LR
 
 | 服務 | 用途 | 預設連接埠 |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 Ollama 及 100+ 供應商 | `4000` |
-| **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、fetch、GitHub、搜尋、資料庫） | `3000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 InferCrate 及 100+ 供應商 | `4000` |
+| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、fetch、GitHub、搜尋、資料庫） | `3000` |
 
 > [!IMPORTANT]
 > 輕量級子堆疊預設共用容器名稱、連接埠和 Docker 卷名稱。使用預設 compose 檔案時，一次只執行一個子堆疊變體；切換到其他變體前，請先停止目前變體。
 
 預設存取方式：
 
-- LiteLLM 發布在主機連接埠 `4000`。
-- MCP Gateway 預設僅在內部存取；只有主機上的 MCP 用戶端需要直接存取時，才取消註解其連接埠映射。
-- Ollama 僅在 Docker 網路內部存取；主機或瀏覽器存取請使用 LiteLLM。
+- GatewayCrate 發布在主機連接埠 `4000`。
+- ToolUplink 預設僅在內部存取；只有主機上的 MCP 用戶端需要直接存取時，才取消註解其連接埠映射。
+- InferCrate 僅在 Docker 網路內部存取；主機或瀏覽器存取請使用 GatewayCrate。
 
 ## 快速開始
 
@@ -72,19 +72,19 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **提示：** 首次啟動時，服務可能需要幾分鐘完成初始化。如有檢查失敗，請稍等後再次執行 `../../stack-check.sh`。使用 `docker compose logs` 檢視進度。
 
-**取得 LiteLLM master key**（用於登入管理介面以及直接發起 LLM API 請求）：
+**取得 GatewayCrate master key**（用於登入管理介面以及直接發起 LLM API 請求）：
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**存取 LiteLLM 管理介面：**
+**存取 GatewayCrate 管理介面：**
 
-在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 LiteLLM master key 作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
+在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 GatewayCrate master key 作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama-chat/llama3.2:3b`）並開始對話，這是驗證本機 LLM 端到端正常運作的一種快速方式。
 
-**連接 goose：** 在工作站上安裝 goose，並依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)建立受限 LiteLLM 金鑰、設定 LiteLLM 端點和模型、測試本機模型行為，以及選擇性連接 MCP Gateway。
+**連接 goose：** 在工作站上安裝 goose，並依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)建立受限 GatewayCrate 金鑰、設定 GatewayCrate 端點和模型、測試本機模型行為，以及選擇性連接 ToolUplink。
 
 **停止子堆疊：**
 
@@ -121,12 +121,12 @@ docker network create ai-stack
 
 然後在共享網路上啟動各服務：
 
-> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 Ollama 或 MCP），再啟動 LiteLLM；如果使用 AnythingLLM，請先等待 LiteLLM 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 LiteLLM 中重複使用。
+> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 InferCrate 或 MCP），再啟動 GatewayCrate；如果使用 AnythingLLM，請先等待 GatewayCrate 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 GatewayCrate 中重複使用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -135,21 +135,21 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# MCP Gateway
+# ToolUplink
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
     -v mcp-shared:/var/lib/mcp-shared \
     hwdsl2/mcp-gateway
 
-# LiteLLM (AI 閘道)
+# GatewayCrate (AI 閘道)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -162,7 +162,7 @@ docker run -d --name litellm --restart always \
     hwdsl2/litellm-server
 ```
 
-**注：** 共享網路允許服務透過容器名稱互相存取（例如 LiteLLM 透過 `http://ollama:11434` 連接 Ollama）。
+**注：** 共享網路允許服務透過容器名稱互相存取（例如 GatewayCrate 透過 `http://ollama:11434` 連接 InferCrate）。
 
 **拉取模型**（發出 LLM 請求前必須執行）：
 
@@ -180,15 +180,15 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | 服務 | Env 檔案 | 儲存庫 |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md) |
-| MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-zh-Hant.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md) |
+| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-zh-Hant.md) |
 
 有關詳細設定選項、API 參考和模型管理，請參閱各服務儲存庫的文件。
 
 ## 面向網際網路的部署
 
-預設情況下，LiteLLM 會發布在主機連接埠 `4000`；各子堆疊的輔助 API 預設為僅 localhost 存取或僅內部存取，除非您修改其連接埠映射。對於面向網際網路的部署，請在技術堆疊前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理這些連接埠時，請將 `4000` 等直接 HTTP 連接埠繫結到 `127.0.0.1`。每個服務儲存庫都包含詳細的[反向代理指南](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md#使用反向代理)，含 Caddy 和 nginx 範例。
+預設情況下，GatewayCrate 會發布在主機連接埠 `4000`；各子堆疊的輔助 API 預設為僅 localhost 存取或僅內部存取，除非您修改其連接埠映射。對於面向網際網路的部署，請在技術堆疊前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理這些連接埠時，請將 `4000` 等直接 HTTP 連接埠繫結到 `127.0.0.1`。每個服務儲存庫都包含詳細的[反向代理指南](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md#使用反向代理)，含 Caddy 和 nginx 範例。
 
 ## 備份和恢復
 
@@ -211,20 +211,20 @@ docker compose up -d
 
 您的資料保存在 Docker 磁碟區中。 **升級前務必先[備份](../../docs/backup-restore-zh-Hant.md)。**
 
-## 將 MCP Gateway 連接到 LiteLLM
+## 將 ToolUplink 連接到 GatewayCrate
 
-使用 compose 檔案或上方的 `docker run` 命令時，LiteLLM 和 MCP Gateway 均**自動接入**——無需手動設定金鑰。
+使用 compose 檔案或上方的 `docker run` 命令時，GatewayCrate 和 ToolUplink 均**自動接入**——無需手動設定金鑰。
 
 API 金鑰透過 Docker 共享磁碟區在服務間自動共享：
 
-- MCP Gateway 在首次啟動時產生 API 金鑰，並將其複製到 `mcp-shared` 磁碟區
-- LiteLLM 在啟動時從共享磁碟區讀取 MCP 金鑰
+- ToolUplink 在首次啟動時產生 API 金鑰，並將其複製到 `mcp-shared` 磁碟區
+- GatewayCrate 在啟動時從共享磁碟區讀取 MCP 金鑰
 
 `LITELLM_MCP_URL=http://mcp:3000/mcp` 環境變數已預設，所有服務均自動連接。
 
 ## 使用方式
 
-LiteLLM 可在 Docker 內部自動連接 MCP Gateway。如需讓主機上的 AI 用戶端直接使用 `http://localhost:3000/mcp`，請先在 `docker-compose.yml` 的 `mcp` 服務中取消註解 `3000:3000/tcp` 連接埠對應並重新啟動服務。
+GatewayCrate 可在 Docker 內部自動連接 ToolUplink。如需讓主機上的 AI 用戶端直接使用 `http://localhost:3000/mcp`，請先在 `docker-compose.yml` 的 `mcp` 服務中取消註解 `3000:3000/tcp` 連接埠對應並重新啟動服務。
 
 ```bash
 # 取得 API 金鑰

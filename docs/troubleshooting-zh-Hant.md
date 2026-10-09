@@ -57,7 +57,7 @@ docker compose logs --tail=100 mcp
 docker compose logs --tail=100 anythingllm
 ```
 
-LiteLLM 依賴 Ollama、MCP Gateway 和 PostgreSQL。AnythingLLM 依賴 LiteLLM。如果依賴項仍在啟動，下游服務可能暫時尚未就緒。
+LiteLLM 依賴 Ollama、ToolUplink 和 PostgreSQL。AnythingLLM 依賴 LiteLLM。如果依賴項仍在啟動，下游服務可能暫時尚未就緒。
 
 ## Ollama 和本機模型問題
 
@@ -108,11 +108,11 @@ curl http://localhost:4000/health/liveliness
 
 compose 檔案會透過 Docker 磁碟區自動將 Ollama 和 MCP API 金鑰共享給 LiteLLM。除非已有備份，否則不要刪除 `ollama-data`、`mcp-data` 或 `litellm-data`。
 
-## MCP Gateway 問題
+## ToolUplink 問題
 
-MCP Gateway 在 Docker 網路內部的連接埠 `3000` 上執行。主 compose 檔案預設不向主機暴露該連接埠。
+ToolUplink 在 Docker 網路內部的連接埠 `3000` 上執行。主 compose 檔案預設不向主機暴露該連接埠。
 
-顯示 MCP Gateway API 金鑰：
+顯示 ToolUplink API 金鑰：
 
 ```bash
 docker exec mcp mcp_manage --showkey
@@ -169,13 +169,13 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 | 服務 | 儲存庫 |
 |---|---|
-| Ollama | https://github.com/hwdsl2/docker-ollama |
-| LiteLLM | https://github.com/hwdsl2/docker-litellm |
-| Embeddings | https://github.com/hwdsl2/docker-embeddings |
+| InferCrate | https://github.com/hwdsl2/infercrate |
+| GatewayCrate | https://github.com/hwdsl2/gatewaycrate |
+| EmbedCrate | https://github.com/hwdsl2/embedcrate |
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
 | ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
 | SpeakCrate | https://github.com/hwdsl2/speakcrate |
-| MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
+| ToolUplink | https://github.com/hwdsl2/tooluplink |
 | ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU 和 CUDA
@@ -235,7 +235,7 @@ API 金鑰、模型快取、聊天記錄、服務設定和 Caddy 憑證狀態儲
 
 - [備份與還原](backup-restore-zh-Hant.md)
 
-排查問題時，除非已有目前備份，否則不要刪除磁碟區。刪除磁碟區可能會移除 API 金鑰、模型快取、AnythingLLM 資料、LiteLLM 設定、MCP Gateway 設定、可選服務金鑰和 Caddy 憑證。
+排查問題時，除非已有目前備份，否則不要刪除磁碟區。刪除磁碟區可能會移除 API 金鑰、模型快取、AnythingLLM 資料、LiteLLM 設定、ToolUplink 設定、可選服務金鑰和 Caddy 憑證。
 
 更新映像檔後執行：
 

@@ -4,7 +4,7 @@
 
 本機 ChatGPT 般的體驗 — 基於本機 LLM 和 OpenAI 相容 API 閘道的 Web 聊天介面。
 
-**服務：** Ollama (LLM) + LiteLLM (閘道) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (聊天介面)
+**服務：** InferCrate (LLM) + GatewayCrate (閘道) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (聊天介面)
 
 **記憶體：** ~5 GB RAM（使用 3B 模型）
 
@@ -17,16 +17,16 @@
 ```mermaid
 graph LR
     U["🌐 瀏覽器"] -->|聊天| A["AnythingLLM<br/>(聊天介面)"]
-    A -->|API| L["LiteLLM<br/>(AI 閘道)"]
-    L -->|路由至| O["Ollama<br/>(本機 LLM)"]
+    A -->|API| L["GatewayCrate<br/>(AI 閘道)"]
+    L -->|路由至| O["InferCrate<br/>(本機 LLM)"]
 ```
 
 ## 服務
 
 | 服務 | 用途 | 預設埠 |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 Ollama 及 100+ 供應商 | `4000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 InferCrate 及 100+ 供應商 | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基於 Web 的聊天介面，支援工作區、RAG 和智慧代理 | `3001` |
 
 > [!IMPORTANT]
@@ -34,9 +34,9 @@ graph LR
 
 預設存取方式：
 
-- LiteLLM 發布在主機連接埠 `4000`。
+- GatewayCrate 發布在主機連接埠 `4000`。
 - AnythingLLM 發布在主機連接埠 `3001`。
-- Ollama 僅在 Docker 網路內部存取；主機或瀏覽器存取請使用 LiteLLM。
+- InferCrate 僅在 Docker 網路內部存取；主機或瀏覽器存取請使用 GatewayCrate。
 
 ## 快速開始
 
@@ -70,21 +70,21 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **提示：** 首次啟動時，服務可能需要幾分鐘完成初始化。如有檢查失敗，請稍等後再次執行 `../../stack-check.sh`。使用 `docker compose logs` 檢視進度。
 
-**取得 LiteLLM master key**（用於登入管理介面以及直接發起 LLM API 請求）：
+**取得 GatewayCrate master key**（用於登入管理介面以及直接發起 LLM API 請求）：
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**存取 LiteLLM 管理介面：**
+**存取 GatewayCrate 管理介面：**
 
-在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 LiteLLM master key 作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
+在瀏覽器中開啟 `http://<server-ip>:4000/ui`。使用使用者名稱 `admin` 和您的 GatewayCrate master key 作為密碼登入。管理介面提供虛擬金鑰管理、支出追蹤和模型設定功能。
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama-chat/llama3.2:3b`）並開始對話，這是驗證本機 LLM 端到端正常運作的一種快速方式。
 
 **開啟聊天介面：**
 
-AnythingLLM 已預先設定連線到 LiteLLM。API 金鑰透過 Docker 卷自動共享 — 無需手動設定。LLM 供應商、基礎 URL 和模型已預先設定。
+AnythingLLM 已預先設定連線到 GatewayCrate。API 金鑰透過 Docker 卷自動共享 — 無需手動設定。LLM 供應商、基礎 URL 和模型已預先設定。
 
 首次啟動時，AnythingLLM 可能需要幾分鐘才能就緒（使用 `docker logs anythingllm` 檢視進度）。
 
@@ -140,12 +140,12 @@ docker network create ai-stack
 
 然後在共享網路上啟動各服務：
 
-> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 Ollama 或 MCP），再啟動 LiteLLM；如果使用 AnythingLLM，請先等待 LiteLLM 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 LiteLLM 中重複使用。
+> **注意：** 手動使用 `docker run` 時，請先等待每個依賴項就緒，再啟動使用它的服務（例如先等待 PostgreSQL 和其他依賴項（如 InferCrate 或 MCP），再啟動 GatewayCrate；如果使用 AnythingLLM，請先等待 GatewayCrate 就緒再啟動它）。以下範例會產生一個 PostgreSQL 密碼變數，並在 Postgres 和 GatewayCrate 中重複使用。
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -154,14 +154,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI 閘道)
+# GatewayCrate (AI 閘道)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -192,7 +192,7 @@ docker run -d --name anythingllm --restart always \
     /usr/local/bin/chat-ui-bootstrap.sh
 ```
 
-**注：** 共享網路允許服務透過容器名稱互相存取（例如 AnythingLLM 透過 `http://litellm:4000` 連線 LiteLLM）。
+**注：** 共享網路允許服務透過容器名稱互相存取（例如 AnythingLLM 透過 `http://litellm:4000` 連線 GatewayCrate）。
 
 **拉取模型**（發出 LLM 請求前必須執行）：
 
@@ -210,8 +210,8 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | 服務 | Env 檔案 | 儲存庫 |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-zh-Hant.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-zh-Hant.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md) |
 
 AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您可以在 **Settings** 中變更 LLM 供應商、模型、嵌入引擎和其他設定。詳情請參閱 [AnythingLLM 文件](https://docs.useanything.com/)。
 
@@ -221,7 +221,7 @@ AnythingLLM 透過其 Web 介面 `http://<伺服器IP>:3001` 進行設定。您�
 
 ## 使用反向代理
 
-如需面向公網部署，請使用內建的 Caddy 疊加檔案新增自動 HTTPS。請從 `stacks/chat-ui` 目錄執行以下命令。根目錄的 `../../docker-compose.proxy.yml` 疊加檔案會有意掛載此技術棧本地的 `caddy/Caddyfile`。在代理模式下，Caddy 是唯一監聽公網 `80` 和 `443` 連接埠的服務；AnythingLLM 和 LiteLLM 的直接連接埠會重新繫結到 `127.0.0.1`。
+如需面向公網部署，請使用內建的 Caddy 疊加檔案新增自動 HTTPS。請從 `stacks/chat-ui` 目錄執行以下命令。根目錄的 `../../docker-compose.proxy.yml` 疊加檔案會有意掛載此技術棧本地的 `caddy/Caddyfile`。在代理模式下，Caddy 是唯一監聽公網 `80` 和 `443` 連接埠的服務；AnythingLLM 和 GatewayCrate 的直接連接埠會重新繫結到 `127.0.0.1`。
 
 前提條件：
 
@@ -246,7 +246,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
 
 開啟 `https://chat.example.com`（替換為你的 `DOMAIN`）存取 AnythingLLM。在代理模式下，主機本機仍可存取 `http://127.0.0.1:3001` 和 `http://127.0.0.1:4000/ui`，但伺服器外部無法直接存取 `3001` 和 `4000` 連接埠。
 
-標準 compose 檔案會在 `4000` 連接埠發布 LiteLLM。代理疊加檔案會將該直接連接埠改為僅 localhost 可存取，且內建 Caddyfile 預設只路由 AnythingLLM。取消註解可選的 LiteLLM 主機名稱設定區塊會透過 Caddy 暴露 LiteLLM，請妥善保管 LiteLLM 主密鑰。
+標準 compose 檔案會在 `4000` 連接埠發布 GatewayCrate。代理疊加檔案會將該直接連接埠改為僅 localhost 可存取，且內建 Caddyfile 預設只路由 AnythingLLM。取消註解可選的 GatewayCrate 主機名稱設定區塊會透過 Caddy 暴露 GatewayCrate，請妥善保管 GatewayCrate 主密鑰。
 
 疑難排解：
 
@@ -333,7 +333,7 @@ AnythingLLM 固定為穩定發布標籤，而不是 `latest`，因為上游 `lat
 open http://localhost:3001
 ```
 
-或直接使用 LiteLLM API：
+或直接使用 GatewayCrate API：
 
 ```bash
 gateway_master_key="$(docker exec litellm litellm_manage --getkey)"

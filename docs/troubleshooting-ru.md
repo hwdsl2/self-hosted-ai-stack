@@ -57,7 +57,7 @@ docker compose logs --tail=100 mcp
 docker compose logs --tail=100 anythingllm
 ```
 
-LiteLLM зависит от Ollama, MCP Gateway и PostgreSQL. AnythingLLM зависит от LiteLLM. Если зависимость еще запускается, нижестоящие сервисы могут быть временно не готовы.
+LiteLLM зависит от Ollama, ToolUplink и PostgreSQL. AnythingLLM зависит от LiteLLM. Если зависимость еще запускается, нижестоящие сервисы могут быть временно не готовы.
 
 ## Проблемы Ollama и локальных моделей
 
@@ -108,11 +108,11 @@ curl http://localhost:4000/health/liveliness
 
 Compose-файлы автоматически передают API-ключи Ollama и MCP в LiteLLM через Docker-тома. Не удаляйте `ollama-data`, `mcp-data` или `litellm-data`, если у вас нет резервной копии.
 
-## Проблемы MCP Gateway
+## Проблемы ToolUplink
 
-MCP Gateway работает внутри Docker-сети на порту `3000`. В основном compose-файле этот порт по умолчанию не публикуется на хост.
+ToolUplink работает внутри Docker-сети на порту `3000`. В основном compose-файле этот порт по умолчанию не публикуется на хост.
 
-Показать API-ключ MCP Gateway:
+Показать API-ключ ToolUplink:
 
 ```bash
 docker exec mcp mcp_manage --showkey
@@ -169,13 +169,13 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 | Сервис | Репозиторий |
 |---|---|
-| Ollama | https://github.com/hwdsl2/docker-ollama |
-| LiteLLM | https://github.com/hwdsl2/docker-litellm |
-| Embeddings | https://github.com/hwdsl2/docker-embeddings |
+| InferCrate | https://github.com/hwdsl2/infercrate |
+| GatewayCrate | https://github.com/hwdsl2/gatewaycrate |
+| EmbedCrate | https://github.com/hwdsl2/embedcrate |
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
 | ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
 | SpeakCrate | https://github.com/hwdsl2/speakcrate |
-| MCP Gateway | https://github.com/hwdsl2/docker-mcp-gateway |
+| ToolUplink | https://github.com/hwdsl2/tooluplink |
 | ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU и CUDA
@@ -235,7 +235,7 @@ API-ключи, кэши моделей, история чатов, конфиг
 
 - [Резервное копирование и восстановление](backup-restore-ru.md)
 
-Не удаляйте тома при диагностике, если у вас нет актуальной резервной копии. Удаление томов может удалить API-ключи, кэши моделей, данные AnythingLLM, конфигурацию LiteLLM, настройки MCP Gateway, ключи опциональных сервисов и сертификаты Caddy.
+Не удаляйте тома при диагностике, если у вас нет актуальной резервной копии. Удаление томов может удалить API-ключи, кэши моделей, данные AnythingLLM, конфигурацию LiteLLM, настройки ToolUplink, ключи опциональных сервисов и сертификаты Caddy.
 
 После обновления образов выполните:
 

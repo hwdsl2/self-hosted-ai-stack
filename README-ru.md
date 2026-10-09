@@ -10,7 +10,7 @@
        width="100%">
 </p>
 
-Включает Ollama, LiteLLM, AnythingLLM, ScribeCrate, MCP Gateway, Embeddings, ParseCrate и SpeakCrate — полностью сконфигурирован и готов к запуску с Docker Compose.
+Включает InferCrate, GatewayCrate, AnythingLLM, ScribeCrate, ToolUplink, EmbedCrate, ParseCrate и SpeakCrate — полностью сконфигурирован и готов к запуску с Docker Compose.
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon): практическое руководство по этому стеку, охватывающее развёртывание, безопасность, резервное копирование и обновления.
 
@@ -19,8 +19,8 @@
 - **Без настройки:** все сервисы автоматически конфигурируются при первом запуске
 - **Безопасность по умолчанию:** защита AnythingLLM паролем включена, а встроенные API-сервисы автоматически генерируют ключи
 - **Готовность к HTTPS:** опциональный Caddy overlay предоставляет автоматический TLS и привязывает прямые HTTP-порты к localhost
-- **Локальная работа по умолчанию:** по умолчанию работает локально с опциональной поддержкой внешних провайдеров через LiteLLM
-- **Поддержка AI-агента:** подключите установленный локально [goose](https://github.com/aaif-goose/goose) к LiteLLM по [руководству по настройке goose (на английском)](https://selfhostedaistack.com/goose)
+- **Локальная работа по умолчанию:** по умолчанию работает локально с опциональной поддержкой внешних провайдеров через GatewayCrate
+- **Поддержка AI-агента:** подключите установленный локально [goose](https://github.com/aaif-goose/goose) к GatewayCrate по [руководству по настройке goose (на английском)](https://selfhostedaistack.com/goose)
 - **Гибкая настройка:** модели, порты, провайдеры и API-ключи настраиваются через простые env-файлы
 - **[Облегчённые стеки](#облегчённые-стеки):** с меньшими требованиями к памяти (от ~4.5 ГБ)
 - **GPU-ускорение:** ускорение через NVIDIA CUDA
@@ -30,14 +30,14 @@
 
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Веб-чат — защита паролем включена по умолчанию | `3001` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз — маршрутизация запросов к Ollama, OpenAI, Anthropic и 100+ провайдерам | `4000` |
-| **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md)** | Преобразование текста в векторы для семантического поиска и RAG | `8000` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md)** | AI-шлюз — маршрутизация запросов к InferCrate, OpenAI, Anthropic и 100+ провайдерам | `4000` |
+| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-ru.md)** | Преобразование текста в векторы для семантического поиска и RAG | `8000` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибация речи в текст | `9000` |
 | **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
 | **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md)** | Преобразование текста в естественную речь | `8880` |
-| **[MCP Gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
+| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
 
 ## Быстрый старт
@@ -75,14 +75,14 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 Подробную диагностику см. в руководстве [Устранение неполадок](docs/troubleshooting-ru.md).
 
-**Получение мастер-ключа LiteLLM** (используется для входа в панель администратора и LLM-запросов):
+**Получение мастер-ключа GatewayCrate** (используется для входа в панель администратора и LLM-запросов):
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>Показать основные API-ключи (Ollama, LiteLLM, MCP Gateway)</summary>
+<summary>Показать основные API-ключи (InferCrate, GatewayCrate, ToolUplink)</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -94,7 +94,7 @@ docker exec mcp mcp_manage --showkey
 
 **Доступ к AnythingLLM (чат-интерфейс):**
 
-AnythingLLM предварительно настроен для подключения к локальной языковой модели через LiteLLM. При первом запуске может потребоваться несколько минут для готовности (проверяйте прогресс командой `docker logs anythingllm`).
+AnythingLLM предварительно настроен для подключения к локальной языковой модели через GatewayCrate. При первом запуске может потребоваться несколько минут для готовности (проверяйте прогресс командой `docker logs anythingllm`).
 
 **Защита паролем по умолчанию.** При первом запуске автоматически генерируется случайный пароль администратора, выводится один раз в `docker logs anythingllm` и сохраняется в `/app/server/storage/.initial_admin_password` внутри тома `anythingllm-data`. Сгенерированный пароль сохраняется при обновлении контейнера. Изменить его можно в любой момент через **Settings → Security**; после изменения `.initial_admin_password` может больше не совпадать с текущим паролем входа.
 
@@ -113,15 +113,15 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 > [!NOTE]
 > При предоставлении доступа к AnythingLLM за пределами `localhost` или доверенной локальной сети используйте включённый Caddy HTTPS overlay, чтобы пароль шифровался при передаче, а прямые HTTP-порты были привязаны к localhost. См. ниже [Развёртывание с доступом из интернета](#развёртывание-с-доступом-из-интернета).
 
-**Доступ к панели администратора LiteLLM:**
+**Доступ к панели администратора GatewayCrate:**
 
-Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и вашим мастер-ключом LiteLLM в качестве пароля. Панель администратора предоставляет управление виртуальными ключами, отслеживание расходов и настройку моделей.
+Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и вашим мастер-ключом GatewayCrate в качестве пароля. Панель администратора предоставляет управление виртуальными ключами, отслеживание расходов и настройку моделей.
 
 > **Совет:** В панели администратора нажмите **Playground** в левом меню. Выберите локальную модель (например, `ollama-chat/llama3.2:3b`) из выпадающего списка и начните общаться — это быстрый способ убедиться, что локальная языковая модель работает сквозным образом.
 
 **Использование стека с goose:**
 
-Установите goose на рабочей станции и подключите его к эндпоинту LiteLLM для контролируемых агентских задач и программирования. [Руководство по настройке goose (на английском)](https://selfhostedaistack.com/goose) описывает нативную установку, ключ LiteLLM с ограниченными правами, ожидания от локальных моделей, разрешения, тестирование и опциональный доступ к MCP Gateway.
+Установите goose на рабочей станции и подключите его к эндпоинту GatewayCrate для контролируемых агентских задач и программирования. [Руководство по настройке goose (на английском)](https://selfhostedaistack.com/goose) описывает нативную установку, ключ GatewayCrate с ограниченными правами, ожидания от локальных моделей, разрешения, тестирование и опциональный доступ к ToolUplink.
 
 **Остановка стека:**
 
@@ -168,14 +168,14 @@ docker compose -f docker-compose.cuda.yml up -d
 
 | Стек | Сервисы | Память | Сценарий использования |
 |---|---|---|---|
-| **[chat-ui](stacks/chat-ui/README-ru.md)** | Ollama + LiteLLM + AnythingLLM | ~5 ГБ | Веб-интерфейс для чата в стиле ChatGPT |
-| **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate | ~6 ГБ | Речь в текст → LLM → текст в речь |
-| **[voice-chat](stacks/voice-chat/README-ru.md)** | ScribeCrate + Ollama + LiteLLM + SpeakCrate + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
-| **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | Ollama + LiteLLM + Embeddings | ~5 ГБ | Семантический поиск + LLM Q&A |
-| **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | Ollama + LiteLLM + Embeddings + ParseCrate | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
-| **[code-assistant](stacks/code-assistant/README-ru.md)** | Ollama + LiteLLM + MCP Gateway + Embeddings | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
-| **[ai-tools](stacks/ai-tools/README-ru.md)** | Ollama + LiteLLM + MCP Gateway | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
-| **[chat-only](stacks/chat-only/README-ru.md)** | Ollama + LiteLLM | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
+| **[chat-ui](stacks/chat-ui/README-ru.md)** | InferCrate + GatewayCrate + AnythingLLM | ~5 ГБ | Веб-интерфейс для чата в стиле ChatGPT |
+| **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate | ~6 ГБ | Речь в текст → LLM → текст в речь |
+| **[voice-chat](stacks/voice-chat/README-ru.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
+| **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 ГБ | Семантический поиск + LLM Q&A |
+| **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
+| **[code-assistant](stacks/code-assistant/README-ru.md)** | InferCrate + GatewayCrate + ToolUplink + EmbedCrate | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
+| **[ai-tools](stacks/ai-tools/README-ru.md)** | InferCrate + GatewayCrate + ToolUplink | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
+| **[chat-only](stacks/chat-only/README-ru.md)** | InferCrate + GatewayCrate | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -189,15 +189,15 @@ docker compose up -d
 graph LR
     A["🎤 Аудиовход"] -->|транскрибация| W["ScribeCrate<br/>(речь в текст)"]
     D["📄 Документы"] -->|разбор| DC["ParseCrate<br/>(документ → текст)"]
-    DC -->|эмбеддинг| E["Embeddings<br/>(текст → векторы)"]
+    DC -->|эмбеддинг| E["EmbedCrate<br/>(текст → векторы)"]
     E -->|хранение| VDB["pgvector<br/>(в общем Postgres)"]
     W -->|запрос| E
-    VDB -->|контекст| L["LiteLLM<br/>(AI-шлюз)"]
+    VDB -->|контекст| L["GatewayCrate<br/>(AI-шлюз)"]
     W -->|текст| L
-    L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
+    L -->|маршрутизация| O["InferCrate<br/>(локальная LLM)"]
     L -->|ответ| T["SpeakCrate TTS<br/>(текст в речь)"]
     T --> B["🔊 Аудиовыход"]
-    C["🤖 AI-клиент<br/>(goose, Cline, Claude и др.)"] -->|MCP-инструменты| M["MCP Gateway<br/>(MCP-эндпоинт)"]
+    C["🤖 AI-клиент<br/>(goose, Cline, Claude и др.)"] -->|MCP-инструменты| M["ToolUplink<br/>(MCP-эндпоинт)"]
     C -->|чат| L
     L -->|MCP-протокол| M
     U["👤 Пользователь"] -->|чат| AN["AnythingLLM<br/>(чат-интерфейс)"]
@@ -210,7 +210,7 @@ graph LR
 
 **Примечания:**
 
-- Порт Ollama (`11434`) и порт MCP Gateway (`3000`) доступны только внутри сети Docker и не открыты на хосте по умолчанию. Доступ к LLM осуществляется через LiteLLM на порту `4000`.
+- Порт InferCrate (`11434`) и порт ToolUplink (`3000`) доступны только внутри сети Docker и не открыты на хосте по умолчанию. Доступ к LLM осуществляется через GatewayCrate на порту `4000`.
 - Для снижения потребления памяти сервисы SpeakCrate (TTS), ParseCrate (парсинг документов) и ScribeCrate Live (распознавание речи в реальном времени) по умолчанию отключены. Чтобы включить их, раскомментируйте соответствующие сервисы в `docker-compose.yml`.
 
 ## Запуск без Docker Compose
@@ -223,12 +223,12 @@ docker network create ai-stack
 
 Затем сгенерируйте пароль PostgreSQL и запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и LiteLLM.
+> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например InferCrate или MCP, перед запуском GatewayCrate; если используется AnythingLLM, дождитесь готовности GatewayCrate перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -237,21 +237,21 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# MCP Gateway
+# ToolUplink
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
     -v mcp-shared:/var/lib/mcp-shared \
     hwdsl2/mcp-gateway
 
-# LiteLLM (AI-шлюз)
+# GatewayCrate (AI-шлюз)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -264,7 +264,7 @@ docker run -d --name litellm --restart always \
     -v litellm-shared:/var/lib/litellm-shared \
     hwdsl2/litellm-server
 
-# Embeddings
+# EmbedCrate
 docker run -d --name embeddings --restart always \
     --network ai-stack \
     -p 127.0.0.1:8000:8000 \
@@ -319,7 +319,7 @@ docker run -d --name docling --restart always \
     hwdsl2/docling-server
 ```
 
-**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, LiteLLM подключается к Ollama через `http://ollama:11434`). Вы можете запускать только нужные сервисы — не обязательно запускать все.
+**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, GatewayCrate подключается к InferCrate через `http://ollama:11434`). Вы можете запускать только нужные сервисы — не обязательно запускать все.
 
 **Загрузка модели** (обязательно перед отправкой LLM-запросов):
 
@@ -392,23 +392,23 @@ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 
 **Дальнейшие шаги:** Загрузите модель и подключитесь к сервисам — следуйте инструкциям в разделе [Быстрый старт](#быстрый-старт), начиная с «Загрузка модели». При установленном пакете `podman-docker` все команды работают без изменений.
 
-## Подключение MCP Gateway к LiteLLM
+## Подключение ToolUplink к GatewayCrate
 
-В compose-файлах этого репозитория LiteLLM и MCP Gateway **подключаются автоматически** — ручная настройка ключей не требуется.
+В compose-файлах этого репозитория GatewayCrate и ToolUplink **подключаются автоматически** — ручная настройка ключей не требуется.
 
 API-ключи автоматически передаются между сервисами через общие Docker-тома:
 
-- Ollama генерирует API-ключ при первом запуске и копирует его в общий том
-- MCP Gateway делает то же самое
-- LiteLLM считывает оба ключа из общих томов при запуске
+- InferCrate генерирует API-ключ при первом запуске и копирует его в общий том
+- ToolUplink делает то же самое
+- GatewayCrate считывает оба ключа из общих томов при запуске
 
 Переменные `LITELLM_MCP_URL=http://mcp:3000/mcp` и `LITELLM_OLLAMA_BASE_URL=http://ollama:11434` уже заданы в compose-файлах, поэтому все сервисы подключаются автоматически одной командой `docker compose up -d`.
 
-После подключения AI-клиенты, обращающиеся к LiteLLM, смогут использовать MCP-инструменты (файловая система, web-fetch, GitHub и др.) напрямую через прокси LiteLLM.
+После подключения AI-клиенты, обращающиеся к GatewayCrate, смогут использовать MCP-инструменты (файловая система, web-fetch, GitHub и др.) напрямую через прокси GatewayCrate.
 
 ## Пример голосового конвейера
 
-Транскрибируйте голосовой вопрос, получите ответ от локальной LLM через Ollama и преобразуйте его в речь:
+Транскрибируйте голосовой вопрос, получите ответ от локальной LLM через InferCrate и преобразуйте его в речь:
 
 **Примечание:** SpeakCrate (TTS) отключён по умолчанию. Чтобы использовать этот пример, сначала раскомментируйте сервис `kokoro` в файле `docker-compose.yml`, затем выполните `docker compose up -d`.
 
@@ -429,7 +429,7 @@ TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
-# Шаг 2: Отправка текста в Ollama через LiteLLM и получение ответа
+# Шаг 2: Отправка текста в InferCrate через GatewayCrate и получение ответа
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
@@ -446,7 +446,7 @@ curl -s http://localhost:8880/v1/audio/speech \
 
 ## Векторная база данных
 
-PostgreSQL в этом стеке поставляется с расширением [pgvector](https://github.com/pgvector/pgvector), поэтому вы можете хранить и запрашивать эмбеддинги в той же базе данных, которую использует LiteLLM — отдельная векторная база данных не требуется.
+PostgreSQL в этом стеке поставляется с расширением [pgvector](https://github.com/pgvector/pgvector), поэтому вы можете хранить и запрашивать эмбеддинги в той же базе данных, которую использует GatewayCrate — отдельная векторная база данных не требуется.
 
 Включите расширение один раз (база данных сохраняется, поэтому это нужно сделать только однажды):
 
@@ -464,7 +464,7 @@ docker exec litellm-db psql -U litellm -d litellm -c "SELECT extname, extversion
 
 ## Пример RAG-конвейера
 
-Создание эмбеддингов документов для семантического поиска, извлечение контекста и ответы на вопросы с помощью локальной модели Ollama:
+Создание эмбеддингов документов для семантического поиска, извлечение контекста и ответы на вопросы с помощью локальной модели InferCrate:
 
 ```bash
 gateway_master_key="$(docker exec litellm litellm_manage --getkey)"
@@ -479,7 +479,7 @@ curl -s http://localhost:8000/v1/embeddings \
 # → Сохраните возвращённый вектор вместе с исходным текстом в pgvector (входит в Postgres этого стека) или в другую векторную БД, например Qdrant или Chroma.
 
 # Шаг 2: При запросе создайте эмбеддинг вопроса, извлеките наиболее релевантные фрагменты
-#          из векторной БД, затем отправьте вопрос и контекст в Ollama через LiteLLM.
+#          из векторной БД, затем отправьте вопрос и контекст в InferCrate через GatewayCrate.
 curl -s http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \
@@ -495,9 +495,9 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 ## Пример MCP-инструментов
 
-Используйте MCP Gateway для предоставления AI-ассистенту доступа к файлам, вебу и GitHub:
+Используйте ToolUplink для предоставления AI-ассистенту доступа к файлам, вебу и GitHub:
 
-По умолчанию MCP Gateway доступен только внутри Docker-сети. Перед использованием `http://localhost:3000/mcp` из AI-клиента на хосте или через `curl` на хосте раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
+По умолчанию ToolUplink доступен только внутри Docker-сети. Перед использованием `http://localhost:3000/mcp` из AI-клиента на хосте или через `curl` на хосте раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
 
 ```bash
 uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
@@ -531,18 +531,18 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 
 | Сервис | Env-файл | Репозиторий |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
-| Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md) |
+| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-ru.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
 | ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md) |
-| MCP Gateway | `mcp.env` | [docker-mcp-gateway](https://github.com/hwdsl2/docker-mcp-gateway/blob/main/README-ru.md) |
+| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-ru.md) |
 | ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md) |
 
 AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
 
-**Использование сервиса Embeddings из стека (опционально).** По умолчанию AnythingLLM выполняет эмбеддинги внутри своего процесса с помощью встроенной модели MiniLM и сохраняет векторы в собственной LanceDB. Чтобы вместо этого использовать сервис [Embeddings](https://github.com/hwdsl2/docker-embeddings) из стека (BAAI/bge-small-en-v1.5) и/или Postgres с включённым pgvector, отредактируйте сервис `anythingllm` в `docker-compose.yml`: закомментируйте `EMBEDDING_ENGINE=native` и раскомментируйте опциональный блок под ним. Также раскомментируйте примечание `depends_on`, чтобы сервисы embeddings/db запускались первыми.
+**Использование сервиса EmbedCrate из стека (опционально).** По умолчанию AnythingLLM выполняет эмбеддинги внутри своего процесса с помощью встроенной модели MiniLM и сохраняет векторы в собственной LanceDB. Чтобы вместо этого использовать сервис [EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate) из стека (BAAI/bge-small-en-v1.5) и/или Postgres с включённым pgvector, отредактируйте сервис `anythingllm` в `docker-compose.yml`: закомментируйте `EMBEDDING_ENGINE=native` и раскомментируйте опциональный блок под ним. Также раскомментируйте примечание `depends_on`, чтобы сервисы embeddings/db запускались первыми.
 
 Когда включён `VECTOR_DB=pgvector` и `PGVECTOR_CONNECTION_STRING` не задан, AnythingLLM автоматически использует сгенерированный пароль Postgres из `ai-stack-shared`. AnythingLLM автоматически создаёт расширение `vector` и таблицу `anythingllm_vectors` при первом использовании.
 
@@ -553,7 +553,7 @@ AnythingLLM настраивается через веб-интерфейс по
 
 ## Развёртывание с доступом из интернета
 
-По умолчанию все сервисы слушают по незашифрованному HTTP. Для развёртываний с доступом из интернета можно использовать включённый Caddy overlay для автоматического HTTPS. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и LiteLLM заново привязываются к `127.0.0.1`.
+По умолчанию все сервисы слушают по незашифрованному HTTP. Для развёртываний с доступом из интернета можно использовать включённый Caddy overlay для автоматического HTTPS. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и GatewayCrate заново привязываются к `127.0.0.1`.
 
 Требования:
 
@@ -578,7 +578,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
 
 Откройте `https://chat.example.com` (замените на ваш `DOMAIN`) для доступа к AnythingLLM. В режиме прокси `http://127.0.0.1:3001` и `http://127.0.0.1:4000/ui` остаются доступны на самом хосте, но прямые порты `3001` и `4000` недоступны извне сервера.
 
-Стандартные compose-файлы публикуют LiteLLM на порту `4000`. Proxy overlay меняет этот прямой порт на доступный только через localhost, а включённый Caddyfile по умолчанию маршрутизирует только AnythingLLM. Если раскомментировать опциональный блок с отдельным hostname для LiteLLM, LiteLLM будет открыт через Caddy, поэтому храните мастер-ключ LiteLLM в секрете.
+Стандартные compose-файлы публикуют GatewayCrate на порту `4000`. Proxy overlay меняет этот прямой порт на доступный только через localhost, а включённый Caddyfile по умолчанию маршрутизирует только AnythingLLM. Если раскомментировать опциональный блок с отдельным hostname для GatewayCrate, GatewayCrate будет открыт через Caddy, поэтому храните мастер-ключ GatewayCrate в секрете.
 
 Диагностика:
 

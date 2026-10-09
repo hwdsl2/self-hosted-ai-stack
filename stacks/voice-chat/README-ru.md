@@ -4,7 +4,7 @@
 
 Веб-интерфейс чата с голосовым вводом (речь в текст) и голосовым выводом (текст в речь) — полноценный локальный AI-ассистент.
 
-**Сервисы:** Ollama (LLM) + LiteLLM (шлюз) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (чат-интерфейс) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
+**Сервисы:** InferCrate (LLM) + GatewayCrate (шлюз) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (чат-интерфейс) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
 
 **Память:** ~6.5 ГБ RAM (с моделью 3B)
 
@@ -18,8 +18,8 @@
 graph LR
     U["👤 Пользователь"] -->|чат| A["AnythingLLM<br/>(чат-интерфейс)"]
     U -->|говорит| W["ScribeCrate<br/>(речь в текст)"]
-    A -->|API| L["LiteLLM<br/>(AI-шлюз)"]
-    L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
+    A -->|API| L["GatewayCrate<br/>(AI-шлюз)"]
+    L -->|маршрутизация| O["InferCrate<br/>(локальная LLM)"]
     L -->|ответ| K["SpeakCrate<br/>(текст в речь)"]
     K --> S["🔊 Аудиовыход"]
     W -->|текст| L
@@ -29,8 +29,8 @@ graph LR
 
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к InferCrate и 100+ провайдерам | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Веб-интерфейс чата с рабочими пространствами, RAG и поддержкой агентов | `3001` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибирует аудио в текст | `9000` |
 | **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md)** | Преобразует текст в естественную речь | `8880` |
@@ -40,11 +40,11 @@ graph LR
 
 Доступ по умолчанию:
 
-- LiteLLM опубликован на порту хоста `4000`.
+- GatewayCrate опубликован на порту хоста `4000`.
 - AnythingLLM опубликован на порту хоста `3001`.
 - ScribeCrate по умолчанию привязан к `127.0.0.1:9000`.
 - SpeakCrate по умолчанию привязан к `127.0.0.1:8880`.
-- Ollama доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте LiteLLM.
+- InferCrate доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте GatewayCrate.
 
 ## Быстрый старт
 
@@ -78,21 +78,21 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **Совет:** При первом запуске сервисам может потребоваться несколько минут для инициализации. Если какие-либо проверки не пройдены, подождите и запустите `../../stack-check.sh` снова. Используйте `docker compose logs` для проверки прогресса.
 
-**Получите master key LiteLLM** (используется для входа в Admin UI и для прямых LLM API-запросов):
+**Получите master key GatewayCrate** (используется для входа в Admin UI и для прямых LLM API-запросов):
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**Откройте Admin UI LiteLLM:**
+**Откройте Admin UI GatewayCrate:**
 
-Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key LiteLLM в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
+Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key GatewayCrate в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
 
 > **Совет:** В Admin UI нажмите **Playground** в левом меню. Выберите локальную модель (например, `ollama-chat/llama3.2:3b`) из списка и начните чат — это быстрый способ проверить локальную LLM end-to-end.
 
 **Откройте чат-интерфейс:**
 
-AnythingLLM предварительно настроен для подключения к LiteLLM. API-ключ автоматически передаётся через общий том Docker — ручная настройка не требуется. Провайдер LLM, базовый URL и модель уже настроены.
+AnythingLLM предварительно настроен для подключения к GatewayCrate. API-ключ автоматически передаётся через общий том Docker — ручная настройка не требуется. Провайдер LLM, базовый URL и модель уже настроены.
 
 При первом запуске AnythingLLM может потребоваться несколько минут для готовности (проверяйте прогресс командой `docker logs anythingllm`).
 
@@ -148,12 +148,12 @@ docker network create ai-stack
 
 Затем запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и LiteLLM.
+> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например InferCrate или MCP, перед запуском GatewayCrate; если используется AnythingLLM, дождитесь готовности GatewayCrate перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -162,14 +162,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI-шлюз)
+# GatewayCrate (AI-шлюз)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -214,7 +214,7 @@ docker run -d --name kokoro --restart always \
     hwdsl2/kokoro-server
 ```
 
-**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, AnythingLLM подключается к LiteLLM через `http://litellm:4000`).
+**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, AnythingLLM подключается к GatewayCrate через `http://litellm:4000`).
 
 **Загрузка модели** (обязательно перед отправкой LLM-запросов):
 
@@ -232,8 +232,8 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | Сервис | Env-файл | Репозиторий |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md) |
 
@@ -243,7 +243,7 @@ AnythingLLM настраивается через веб-интерфейс `htt
 
 ## Использование обратного прокси
 
-Для развёртываний с выходом в интернет используйте включённый Caddy overlay для автоматического HTTPS. Выполняйте эти команды из каталога `stacks/voice-chat`. Корневой overlay `../../docker-compose.proxy.yml` намеренно монтирует локальный для этого стека `caddy/Caddyfile`. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и LiteLLM заново привязываются к `127.0.0.1`. По умолчанию прокси открывает только AnythingLLM; ScribeCrate и SpeakCrate остаются привязанными согласно compose-файлу этого подстека.
+Для развёртываний с выходом в интернет используйте включённый Caddy overlay для автоматического HTTPS. Выполняйте эти команды из каталога `stacks/voice-chat`. Корневой overlay `../../docker-compose.proxy.yml` намеренно монтирует локальный для этого стека `caddy/Caddyfile`. В режиме прокси Caddy является единственным публичным слушателем на портах `80` и `443`; прямые порты AnythingLLM и GatewayCrate заново привязываются к `127.0.0.1`. По умолчанию прокси открывает только AnythingLLM; ScribeCrate и SpeakCrate остаются привязанными согласно compose-файлу этого подстека.
 
 Требования:
 
@@ -268,7 +268,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
 
 Откройте `https://chat.example.com` (замените на ваш `DOMAIN`) для доступа к AnythingLLM. В режиме прокси `http://127.0.0.1:3001` и `http://127.0.0.1:4000/ui` остаются доступны на самом хосте, но прямые порты `3001` и `4000` недоступны извне сервера.
 
-Стандартные compose-файлы публикуют LiteLLM на порту `4000`. Proxy overlay меняет этот прямой порт на доступный только через localhost, а включённый Caddyfile по умолчанию маршрутизирует только AnythingLLM. Если раскомментировать опциональный блок с отдельным hostname для LiteLLM, LiteLLM будет открыт через Caddy, поэтому храните мастер-ключ LiteLLM в секрете.
+Стандартные compose-файлы публикуют GatewayCrate на порту `4000`. Proxy overlay меняет этот прямой порт на доступный только через localhost, а включённый Caddyfile по умолчанию маршрутизирует только AnythingLLM. Если раскомментировать опциональный блок с отдельным hostname для GatewayCrate, GatewayCrate будет открыт через Caddy, поэтому храните мастер-ключ GatewayCrate в секрете.
 
 Диагностика:
 
@@ -369,7 +369,7 @@ TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
-# Шаг 2: Отправить текст в Ollama через LiteLLM и получить ответ
+# Шаг 2: Отправить текст в InferCrate через GatewayCrate и получить ответ
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \

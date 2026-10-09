@@ -16,7 +16,7 @@ assignees: ''
 使用清楚简明的语言描述这个问题。
 
 **受影响的服务**
-示例：Ollama、LiteLLM、AnythingLLM、Whisper、ScribeCrate Live、SpeakCrate、Embeddings、MCP Gateway、ParseCrate、PostgreSQL/pgvector、Caddy、Docker Compose、不确定。
+示例：InferCrate、GatewayCrate、AnythingLLM、Whisper、ScribeCrate Live、SpeakCrate、Embeddings、ToolUplink、ParseCrate、PostgreSQL/pgvector、Caddy、Docker Compose、不确定。
 
 **使用的技术栈**
 - [ ] 完整技术栈

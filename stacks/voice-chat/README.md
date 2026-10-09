@@ -4,7 +4,7 @@
 
 Web-based chat UI with voice input (speech-to-text) and voice output (text-to-speech) — a complete local AI personal assistant.
 
-**Services:** Ollama (LLM) + LiteLLM (gateway) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (chat UI) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
+**Services:** InferCrate (LLM) + GatewayCrate (gateway) + [AnythingLLM](https://github.com/mintplex-labs/anything-llm) (chat UI) + ScribeCrate (Whisper STT) + SpeakCrate (TTS)
 
 **Memory:** ~6.5 GB RAM (with a 3B model)
 
@@ -18,8 +18,8 @@ Web-based chat UI with voice input (speech-to-text) and voice output (text-to-sp
 graph LR
     U["👤 User"] -->|chat| A["AnythingLLM<br/>(chat UI)"]
     U -->|speak| W["ScribeCrate<br/>(speech-to-text)"]
-    A -->|API| L["LiteLLM<br/>(AI gateway)"]
-    L -->|routes to| O["Ollama<br/>(local LLM)"]
+    A -->|API| L["GatewayCrate<br/>(AI gateway)"]
+    L -->|routes to| O["InferCrate<br/>(local LLM)"]
     L -->|response| K["SpeakCrate<br/>(text-to-speech)"]
     K --> S["🔊 Audio output"]
     W -->|text| L
@@ -29,8 +29,8 @@ graph LR
 
 | Service | Role | Default port |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm)** | AI gateway with Admin UI — routes requests to Ollama and 100+ providers | `4000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate)** | AI gateway with Admin UI — routes requests to InferCrate and 100+ providers | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Web-based chat UI with workspaces, RAG, and agent support | `3001` |
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate)** | Transcribes spoken audio to text | `9000` |
 | **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate)** | Converts text to natural-sounding speech | `8880` |
@@ -40,11 +40,11 @@ graph LR
 
 Default access:
 
-- LiteLLM is published on host port `4000`.
+- GatewayCrate is published on host port `4000`.
 - AnythingLLM is published on host port `3001`.
 - ScribeCrate is bound to `127.0.0.1:9000` by default.
 - SpeakCrate is bound to `127.0.0.1:8880` by default.
-- Ollama is internal to the Docker network; use LiteLLM for host or browser access.
+- InferCrate is internal to the Docker network; use GatewayCrate for host or browser access.
 
 ## Quick start
 
@@ -78,21 +78,21 @@ Run the health check to verify the services are working:
 
 > **Tip:** On first start, services may take a few minutes to initialize. If any checks fail, wait and run `../../stack-check.sh` again. Use `docker compose logs` to check progress.
 
-**Get the LiteLLM master key** (used to log into the Admin UI and for direct LLM API requests):
+**Get the GatewayCrate master key** (used to log into the Admin UI and for direct LLM API requests):
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**Access the LiteLLM Admin UI:**
+**Access the GatewayCrate Admin UI:**
 
-Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your LiteLLM master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
+Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` and your GatewayCrate master key as the password. The UI provides virtual key management, spend tracking, and model configuration.
 
 > **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
 
 **Open the chat UI:**
 
-AnythingLLM is pre-configured to connect to LiteLLM. The API key is shared automatically via a Docker volume — no manual setup needed. The LLM provider, base URL, and model are pre-configured.
+AnythingLLM is pre-configured to connect to GatewayCrate. The API key is shared automatically via a Docker volume — no manual setup needed. The LLM provider, base URL, and model are pre-configured.
 
 On first start, AnythingLLM may take a few minutes to become available (check progress with `docker logs anythingllm`).
 
@@ -148,12 +148,12 @@ docker network create ai-stack
 
 Then start each service on the shared network:
 
-> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as Ollama or MCP, before LiteLLM; if using AnythingLLM, wait for LiteLLM before starting it). The examples below generate one PostgreSQL password variable and reuse it for Postgres and LiteLLM.
+> **Note:** With manual `docker run`, wait for each dependency to become ready before starting services that use it (for example, wait for PostgreSQL and any other dependencies, such as InferCrate or MCP, before GatewayCrate; if using AnythingLLM, wait for GatewayCrate before starting it). The examples below generate one PostgreSQL password variable and reuse it for Postgres and GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -162,14 +162,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI gateway)
+# GatewayCrate (AI gateway)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -214,7 +214,7 @@ docker run -d --name kokoro --restart always \
     hwdsl2/kokoro-server
 ```
 
-**Note:** The shared network allows services to reach each other by container name (e.g., AnythingLLM connects to LiteLLM via `http://litellm:4000`).
+**Note:** The shared network allows services to reach each other by container name (e.g., AnythingLLM connects to GatewayCrate via `http://litellm:4000`).
 
 **Pull a model** (required before making LLM requests):
 
@@ -232,8 +232,8 @@ Each service can be configured with an optional env file. Copy the example env f
 
 | Service | Env file | Repository |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate) |
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate) |
 
@@ -243,7 +243,7 @@ For detailed configuration options, API reference, and model management, see the
 
 ## Using a reverse proxy
 
-For internet-facing deployments, use the included Caddy overlay to add automatic HTTPS. Run these commands from the `stacks/voice-chat` directory. The root `../../docker-compose.proxy.yml` overlay intentionally mounts this stack's local `caddy/Caddyfile`. In proxy mode, Caddy is the only public listener on ports `80` and `443`; the direct AnythingLLM and LiteLLM ports are rebound to `127.0.0.1`. The proxy exposes only AnythingLLM by default; ScribeCrate and SpeakCrate remain bound according to the sub-stack compose file.
+For internet-facing deployments, use the included Caddy overlay to add automatic HTTPS. Run these commands from the `stacks/voice-chat` directory. The root `../../docker-compose.proxy.yml` overlay intentionally mounts this stack's local `caddy/Caddyfile`. In proxy mode, Caddy is the only public listener on ports `80` and `443`; the direct AnythingLLM and GatewayCrate ports are rebound to `127.0.0.1`. The proxy exposes only AnythingLLM by default; ScribeCrate and SpeakCrate remain bound according to the sub-stack compose file.
 
 Prerequisites:
 
@@ -268,7 +268,7 @@ DOMAIN=chat.example.com ACME_EMAIL=you@example.com \
 
 Open `https://chat.example.com` (replace with your `DOMAIN`) to access AnythingLLM. In proxy mode, `http://127.0.0.1:3001` and `http://127.0.0.1:4000/ui` remain available on the host, but the direct `3001` and `4000` ports are not reachable from outside the server.
 
-The standard compose files publish LiteLLM on port `4000`. The proxy overlay changes that direct port to localhost-only, and the included Caddyfile routes only AnythingLLM by default. Uncommenting the optional LiteLLM hostname block exposes LiteLLM through Caddy, so keep the LiteLLM master key secret.
+The standard compose files publish GatewayCrate on port `4000`. The proxy overlay changes that direct port to localhost-only, and the included Caddyfile routes only AnythingLLM by default. Uncommenting the optional GatewayCrate hostname block exposes GatewayCrate through Caddy, so keep the GatewayCrate master key secret.
 
 Troubleshooting:
 
@@ -369,7 +369,7 @@ TEXT=$(curl -s http://localhost:9000/v1/audio/transcriptions \
     -H "Authorization: Bearer $scribe_api_key" \
     -F file=@sample_speech.wav -F model=whisper-1 | jq -r .text)
 
-# Step 2: Send text to Ollama via LiteLLM and get a response
+# Step 2: Send text to InferCrate via GatewayCrate and get a response
 RESPONSE=$(curl -s http://localhost:4000/v1/chat/completions \
     -H "Authorization: Bearer $gateway_master_key" \
     -H "Content-Type: application/json" \

@@ -4,7 +4,7 @@
 
 Создание эмбеддингов документов для семантического поиска и ответы на вопросы с помощью локальной LLM.
 
-**Сервисы:** Ollama (LLM) + LiteLLM (шлюз) + Embeddings
+**Сервисы:** InferCrate (LLM) + GatewayCrate (шлюз) + EmbedCrate
 
 **Память:** ~5 ГБ RAM (с моделью 3B)
 
@@ -16,28 +16,28 @@
 
 ```mermaid
 graph LR
-    D["📄 Документы"] -->|эмбеддинг| E["Embeddings<br/>(текст → векторы)"]
+    D["📄 Документы"] -->|эмбеддинг| E["EmbedCrate<br/>(текст → векторы)"]
     E -->|сохранение| VDB["pgvector<br/>(в общем Postgres)"]
-    VDB -->|контекст| L["LiteLLM<br/>(AI-шлюз)"]
-    L -->|маршрутизация| O["Ollama<br/>(локальная LLM)"]
+    VDB -->|контекст| L["GatewayCrate<br/>(AI-шлюз)"]
+    L -->|маршрутизация| O["InferCrate<br/>(локальная LLM)"]
 ```
 
 ## Сервисы
 
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
-| **[Ollama (LLM)](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
-| **[LiteLLM](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к Ollama и 100+ провайдерам | `4000` |
-| **[Embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md)** | Преобразует текст в векторы для семантического поиска и RAG | `8000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к InferCrate и 100+ провайдерам | `4000` |
+| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-ru.md)** | Преобразует текст в векторы для семантического поиска и RAG | `8000` |
 
 > [!IMPORTANT]
 > Лёгкие подстеки используют общие стандартные имена контейнеров, порты и имена Docker volumes. С compose-файлами по умолчанию запускайте только один вариант подстека за раз; перед переключением на другой вариант остановите текущий.
 
 Доступ по умолчанию:
 
-- LiteLLM опубликован на порту хоста `4000`.
-- Embeddings по умолчанию привязан к `127.0.0.1:8000`.
-- Ollama доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте LiteLLM.
+- GatewayCrate опубликован на порту хоста `4000`.
+- EmbedCrate по умолчанию привязан к `127.0.0.1:8000`.
+- InferCrate доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте GatewayCrate.
 
 ## Быстрый старт
 
@@ -71,15 +71,15 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **Совет:** При первом запуске сервисам может потребоваться несколько минут для инициализации. Если какие-либо проверки не пройдены, подождите и запустите `../../stack-check.sh` снова. Используйте `docker compose logs` для проверки прогресса.
 
-**Получите master key LiteLLM** (используется для входа в Admin UI и для прямых LLM API-запросов):
+**Получите master key GatewayCrate** (используется для входа в Admin UI и для прямых LLM API-запросов):
 
 ```bash
 docker exec litellm litellm_manage --showkey
 ```
 
-**Откройте Admin UI LiteLLM:**
+**Откройте Admin UI GatewayCrate:**
 
-Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key LiteLLM в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
+Откройте `http://<server-ip>:4000/ui` в браузере. Войдите с именем пользователя `admin` и master key GatewayCrate в качестве пароля. UI предоставляет управление виртуальными ключами, учёт расходов и настройку моделей.
 
 > **Совет:** В Admin UI нажмите **Playground** в левом меню. Выберите локальную модель (например, `ollama-chat/llama3.2:3b`) из списка и начните чат — это быстрый способ проверить локальную LLM end-to-end.
 
@@ -118,12 +118,12 @@ docker network create ai-stack
 
 Затем запустите каждый сервис в общей сети:
 
-> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например Ollama или MCP, перед запуском LiteLLM; если используется AnythingLLM, дождитесь готовности LiteLLM перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и LiteLLM.
+> **Примечание:** При ручном использовании `docker run` дождитесь готовности каждой зависимости перед запуском сервисов, которые её используют (например, дождитесь PostgreSQL и других зависимостей, например InferCrate или MCP, перед запуском GatewayCrate; если используется AnythingLLM, дождитесь готовности GatewayCrate перед его запуском). В примерах ниже создаётся одна переменная пароля PostgreSQL и повторно используется для Postgres и GatewayCrate.
 
 ```bash
 LITELLM_POSTGRES_PASSWORD=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)
 
-# PostgreSQL with pgvector (required by LiteLLM; pgvector enables vector storage for RAG)
+# PostgreSQL with pgvector (required by GatewayCrate; pgvector enables vector storage for RAG)
 docker run -d --name litellm-db --restart always \
     --network ai-stack \
     -e POSTGRES_USER=litellm \
@@ -132,14 +132,14 @@ docker run -d --name litellm-db --restart always \
     -v litellm-db:/var/lib/postgresql \
     pgvector/pgvector:pg18-trixie
 
-# Ollama (LLM)
+# InferCrate (LLM)
 docker run -d --name ollama --restart always \
     --network ai-stack \
     -v ollama-data:/var/lib/ollama \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# LiteLLM (AI-шлюз)
+# GatewayCrate (AI-шлюз)
 docker run -d --name litellm --restart always \
     --network ai-stack \
     -p 4000:4000 \
@@ -149,7 +149,7 @@ docker run -d --name litellm --restart always \
     -v ollama-shared:/var/lib/ollama-shared:ro \
     hwdsl2/litellm-server
 
-# Embeddings
+# EmbedCrate
 docker run -d --name embeddings --restart always \
     --network ai-stack \
     -p 127.0.0.1:8000:8000 \
@@ -157,7 +157,7 @@ docker run -d --name embeddings --restart always \
     hwdsl2/embeddings-server
 ```
 
-**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, LiteLLM подключается к Ollama через `http://ollama:11434`).
+**Примечание:** Общая сеть позволяет сервисам обращаться друг к другу по имени контейнера (например, GatewayCrate подключается к InferCrate через `http://ollama:11434`).
 
 **Загрузка модели** (обязательно перед отправкой LLM-запросов):
 
@@ -175,15 +175,15 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | Сервис | Env-файл | Репозиторий |
 |---|---|---|
-| Ollama | `ollama.env` | [docker-ollama](https://github.com/hwdsl2/docker-ollama/blob/main/README-ru.md) |
-| LiteLLM | `litellm.env` | [docker-litellm](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md) |
-| Embeddings | `embed.env` | [docker-embeddings](https://github.com/hwdsl2/docker-embeddings/blob/main/README-ru.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md) |
+| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-ru.md) |
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 
 ## Развёртывание с доступом из интернета
 
-По умолчанию все сервисы слушают по незашифрованному HTTP. Для развёртываний с доступом из интернета установите обратный прокси (например, [Caddy](https://caddyserver.com/), Nginx или Traefik) перед стеком для обеспечения HTTPS. Каждый репозиторий сервиса содержит подробное [руководство по обратному прокси](https://github.com/hwdsl2/docker-litellm/blob/main/README-ru.md#использование-обратного-прокси) с примерами для Caddy и nginx.
+По умолчанию все сервисы слушают по незашифрованному HTTP. Для развёртываний с доступом из интернета установите обратный прокси (например, [Caddy](https://caddyserver.com/), Nginx или Traefik) перед стеком для обеспечения HTTPS. Каждый репозиторий сервиса содержит подробное [руководство по обратному прокси](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md#использование-обратного-прокси) с примерами для Caddy и nginx.
 
 ## Резервное копирование и восстановление
 
@@ -208,7 +208,7 @@ docker compose up -d
 
 ## Векторная база данных
 
-PostgreSQL в этом стеке поставляется с расширением [pgvector](https://github.com/pgvector/pgvector), поэтому вы можете хранить и запрашивать эмбеддинги в той же базе данных, которую использует LiteLLM — отдельная векторная база данных не требуется.
+PostgreSQL в этом стеке поставляется с расширением [pgvector](https://github.com/pgvector/pgvector), поэтому вы можете хранить и запрашивать эмбеддинги в той же базе данных, которую использует GatewayCrate — отдельная векторная база данных не требуется.
 
 Включите расширение один раз (база данных сохраняется, поэтому это нужно сделать только однажды):
 
