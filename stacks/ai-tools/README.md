@@ -4,7 +4,7 @@
 
 Local LLM with MCP tool access for AI agents and coding assistants (goose, Cline, Claude, Cursor, etc.).
 
-**Services:** InferCrate (LLM) + GatewayCrate (gateway) + ToolUplink (MCP tools)
+**Services:** InferCrate (LLM) + GatewayCrate (gateway) + UplinkCrate (MCP tools)
 
 **Memory:** ~5 GB RAM (with a 3B model)
 
@@ -17,7 +17,7 @@ Local LLM with MCP tool access for AI agents and coding assistants (goose, Cline
 ```mermaid
 graph LR
     U["👤 User"] -->|use| C["🤖 AI client<br/>(goose, Cline, Claude, etc.)"]
-    C -->|MCP tools| M["ToolUplink<br/>(MCP endpoint)"]
+    C -->|MCP tools| M["UplinkCrate<br/>(MCP endpoint)"]
     C -->|chat| L["GatewayCrate<br/>(AI gateway)"]
     L -->|routes to| O["InferCrate<br/>(local LLM)"]
     L -->|MCP protocol| M
@@ -29,7 +29,7 @@ graph LR
 |---|---|---|
 | **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate)** | Runs local LLM models (llama3, qwen, mistral, etc.) | `11434` |
 | **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate)** | AI gateway with Admin UI — routes requests to InferCrate and 100+ providers | `4000` |
-| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
 
 > [!IMPORTANT]
 > The lightweight stacks use shared default container names, ports, and Docker volume names. Run one stack variant at a time with the default compose files; stop the current variant before switching to another.
@@ -37,7 +37,7 @@ graph LR
 Default access:
 
 - GatewayCrate is published on host port `4000`.
-- ToolUplink is internal by default; uncomment its port mapping only when a host-side MCP client needs direct access.
+- UplinkCrate is internal by default; uncomment its port mapping only when a host-side MCP client needs direct access.
 - InferCrate is internal to the Docker network; use GatewayCrate for host or browser access.
 
 ## Quick start
@@ -84,7 +84,7 @@ Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` 
 
 > **Tip:** In the Admin UI, click **Playground** in the left menu. Select a local model (e.g., `ollama-chat/llama3.2:3b`) from the dropdown and start chatting — a quick way to verify your local LLM is working end-to-end.
 
-**Connect goose:** Install goose on your workstation and follow the [goose setup guide](https://selfhostedaistack.com/goose) to create a restricted GatewayCrate key, configure the GatewayCrate endpoint and model, test local-model behavior, and optionally connect ToolUplink.
+**Connect goose:** Install goose on your workstation and follow the [goose setup guide](https://selfhostedaistack.com/goose) to create a restricted GatewayCrate key, configure the GatewayCrate endpoint and model, test local-model behavior, and optionally connect UplinkCrate.
 
 **Stop the stack:**
 
@@ -142,7 +142,7 @@ docker run -d --name ollama --restart always \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# ToolUplink
+# UplinkCrate
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
@@ -182,7 +182,7 @@ Each service can be configured with an optional env file. Copy the example env f
 |---|---|---|
 | InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate) |
 | GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate) |
-| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate) |
 
 For detailed configuration options, API reference, and model management, see the documentation in each service's repository.
 
@@ -211,20 +211,20 @@ After the sub-stack restarts, run `../../stack-check.sh` to confirm the services
 
 Your data is preserved in the Docker volumes. **Always [back up](../../docs/backup-restore.md) before upgrading.**
 
-## Connect ToolUplink to GatewayCrate
+## Connect UplinkCrate to GatewayCrate
 
-GatewayCrate and ToolUplink are **automatically wired** when using the compose file or the `docker run` commands above — no manual key setup is needed.
+GatewayCrate and UplinkCrate are **automatically wired** when using the compose file or the `docker run` commands above — no manual key setup is needed.
 
 API keys are shared automatically between services via Docker shared volumes:
 
-- ToolUplink generates an API key on first start and copies it to the `mcp-shared` volume
+- UplinkCrate generates an API key on first start and copies it to the `mcp-shared` volume
 - GatewayCrate reads the MCP key from the shared volume on startup
 
 The `LITELLM_MCP_URL=http://mcp:3000/mcp` environment variable is pre-configured, so all services are connected automatically.
 
 ## Usage
 
-GatewayCrate can reach ToolUplink inside Docker automatically. For a host-side AI client to use `http://localhost:3000/mcp` directly, uncomment the `3000:3000/tcp` port mapping for the `mcp` service in `docker-compose.yml` and restart it.
+GatewayCrate can reach UplinkCrate inside Docker automatically. For a host-side AI client to use `http://localhost:3000/mcp` directly, uncomment the `3000:3000/tcp` port mapping for the `mcp` service in `docker-compose.yml` and restart it.
 
 ```bash
 # Get API keys

@@ -4,7 +4,7 @@
 
 本地 LLM 搭配 MCP 工具访问和语义代码搜索，适用于 AI 智能体和编程助手（goose、Cline、Claude、Cursor 等）。
 
-**服务：** InferCrate (LLM) + GatewayCrate (网关) + ToolUplink (MCP 工具) + EmbedCrate (文本嵌入)
+**服务：** InferCrate (LLM) + GatewayCrate (网关) + UplinkCrate (MCP 工具) + EmbedCrate (文本嵌入)
 
 **内存：** ~5 GB RAM（使用 3B 模型）
 
@@ -17,7 +17,7 @@
 ```mermaid
 graph LR
     U["👤 用户"] -->|使用| C["🤖 AI 客户端<br/>(goose、Cline、Claude 等)"]
-    C -->|MCP 工具| M["ToolUplink<br/>(MCP 端点)"]
+    C -->|MCP 工具| M["UplinkCrate<br/>(MCP 端点)"]
     C -->|聊天| L["GatewayCrate<br/>(AI 网关)"]
     L -->|路由至| O["InferCrate<br/>(本地 LLM)"]
     L -->|MCP 协议| M
@@ -30,7 +30,7 @@ graph LR
 |---|---|---|
 | **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
 | **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 InferCrate 及 100+ 供应商 | `4000` |
-| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、fetch、GitHub、搜索、数据库） | `3000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、fetch、GitHub、搜索、数据库） | `3000` |
 | **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
 
 > [!IMPORTANT]
@@ -40,7 +40,7 @@ graph LR
 
 - GatewayCrate 发布在宿主机端口 `4000`。
 - EmbedCrate 默认绑定到 `127.0.0.1:8000`。
-- ToolUplink 默认仅在内部访问；只有宿主机上的 MCP 客户端需要直接访问时，才取消注释其端口映射。
+- UplinkCrate 默认仅在内部访问；只有宿主机上的 MCP 客户端需要直接访问时，才取消注释其端口映射。
 - InferCrate 仅在 Docker 网络内部访问；宿主机或浏览器访问请使用 GatewayCrate。
 
 ## 快速开始
@@ -87,7 +87,7 @@ docker exec litellm litellm_manage --showkey
 
 > **提示：** 在管理界面中，点击左侧菜单的 **Playground**。从下拉列表中选择本地模型（例如 `ollama-chat/llama3.2:3b`）并开始对话，这是验证本地 LLM 端到端正常工作的一种快速方式。
 
-**连接 goose：** 在工作站上安装 goose，并按照 [goose 设置指南（英文）](https://selfhostedaistack.com/goose)创建受限 GatewayCrate 密钥、配置 GatewayCrate 端点和模型、测试本地模型行为，以及选择性连接 ToolUplink。
+**连接 goose：** 在工作站上安装 goose，并按照 [goose 设置指南（英文）](https://selfhostedaistack.com/goose)创建受限 GatewayCrate 密钥、配置 GatewayCrate 端点和模型、测试本地模型行为，以及选择性连接 UplinkCrate。
 
 **停止子栈：**
 
@@ -145,7 +145,7 @@ docker run -d --name ollama --restart always \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# ToolUplink
+# UplinkCrate
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
@@ -192,7 +192,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 |---|---|---|
 | InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md) |
 | GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md) |
-| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-zh.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md) |
 | EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-zh.md) |
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
@@ -222,13 +222,13 @@ docker compose up -d
 
 您的数据保存在 Docker 卷中。 **升级前务必先[备份](../../docs/backup-restore-zh.md)。**
 
-## 将 ToolUplink 连接到 GatewayCrate
+## 将 UplinkCrate 连接到 GatewayCrate
 
-使用 compose 文件或上方的 `docker run` 命令时，GatewayCrate 和 ToolUplink 均**自动接入**——无需手动设置密钥。
+使用 compose 文件或上方的 `docker run` 命令时，GatewayCrate 和 UplinkCrate 均**自动接入**——无需手动设置密钥。
 
 API 密钥通过 Docker 共享卷在服务间自动共享：
 
-- ToolUplink 在首次启动时生成 API 密钥，并将其复制到 `mcp-shared` 卷
+- UplinkCrate 在首次启动时生成 API 密钥，并将其复制到 `mcp-shared` 卷
 - GatewayCrate 在启动时从共享卷读取 MCP 密钥
 
 `LITELLM_MCP_URL=http://mcp:3000/mcp` 环境变量已预配置，所有服务均自动连接。
@@ -237,7 +237,7 @@ API 密钥通过 Docker 共享卷在服务间自动共享：
 
 > **注意：** 下面的示例使用 `jq` 格式化 JSON 响应。如尚未安装，请先安装。
 
-GatewayCrate 可在 Docker 内部自动连接 ToolUplink。如需让主机上的 AI 客户端直接使用 `http://localhost:3000/mcp`，请先在 `docker-compose.yml` 的 `mcp` 服务中取消注释 `3000:3000/tcp` 端口映射并重启服务。
+GatewayCrate 可在 Docker 内部自动连接 UplinkCrate。如需让主机上的 AI 客户端直接使用 `http://localhost:3000/mcp`，请先在 `docker-compose.yml` 的 `mcp` 服务中取消注释 `3000:3000/tcp` 端口映射并重启服务。
 
 ```bash
 # 获取 API 密钥

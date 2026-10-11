@@ -20,7 +20,7 @@ Each service stores its data in a named Docker volume:
 | `whisper-data` | ScribeCrate | Whisper model cache, generated API key |
 | `whisper-live-data` | ScribeCrate Live | Real-time STT model cache, generated API key |
 | `kokoro-data` | SpeakCrate | TTS model/voice cache, generated API key |
-| `mcp-data` | ToolUplink | API key, tool configuration |
+| `mcp-data` | UplinkCrate | API key, tool configuration |
 | `docling-data` | ParseCrate | Document conversion model cache, generated API key |
 | `anythingllm-data` | AnythingLLM | Chat history, workspaces, settings, uploaded documents, **admin password** (`server/.env` with `AUTH_TOKEN`/`JWT_SECRET`, plus the first-run `.initial_admin_password` copy) |
 | `caddy-data` | Caddy | TLS certificates, private keys, OCSP staples, ACME account state |
@@ -42,7 +42,7 @@ Before any maintenance, save your current API keys:
 echo "=== API Keys ===" > ai-stack-keys.txt
 echo "InferCrate:       $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "GatewayCrate:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "ToolUplink:       $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "UplinkCrate:      $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "ScribeCrate:      $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "ScribeCrate Live: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "SpeakCrate:       $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt

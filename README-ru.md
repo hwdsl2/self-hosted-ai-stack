@@ -37,7 +37,7 @@
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибация речи в текст | `9000` |
 | **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
 | **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md)** | Преобразование текста в естественную речь | `8880` |
-| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
 
 ## Быстрый старт
@@ -82,7 +82,7 @@ docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>Показать основные API-ключи (InferCrate, GatewayCrate, ToolUplink)</summary>
+<summary>Показать основные API-ключи (InferCrate, GatewayCrate, UplinkCrate)</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -121,7 +121,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 **Использование стека с goose:**
 
-Установите goose на рабочей станции и подключите его к эндпоинту GatewayCrate для контролируемых агентских задач и программирования. [Руководство по настройке goose (на английском)](https://selfhostedaistack.com/goose) описывает нативную установку, ключ GatewayCrate с ограниченными правами, ожидания от локальных моделей, разрешения, тестирование и опциональный доступ к ToolUplink.
+Установите goose на рабочей станции и подключите его к эндпоинту GatewayCrate для контролируемых агентских задач и программирования. [Руководство по настройке goose (на английском)](https://selfhostedaistack.com/goose) описывает нативную установку, ключ GatewayCrate с ограниченными правами, ожидания от локальных моделей, разрешения, тестирование и опциональный доступ к UplinkCrate.
 
 **Остановка стека:**
 
@@ -173,8 +173,8 @@ docker compose -f docker-compose.cuda.yml up -d
 | **[voice-chat](stacks/voice-chat/README-ru.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
 | **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 ГБ | Семантический поиск + LLM Q&A |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
-| **[code-assistant](stacks/code-assistant/README-ru.md)** | InferCrate + GatewayCrate + ToolUplink + EmbedCrate | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
-| **[ai-tools](stacks/ai-tools/README-ru.md)** | InferCrate + GatewayCrate + ToolUplink | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
+| **[code-assistant](stacks/code-assistant/README-ru.md)** | InferCrate + GatewayCrate + UplinkCrate + EmbedCrate | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
+| **[ai-tools](stacks/ai-tools/README-ru.md)** | InferCrate + GatewayCrate + UplinkCrate | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
 | **[chat-only](stacks/chat-only/README-ru.md)** | InferCrate + GatewayCrate | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
 
 ```bash
@@ -197,7 +197,7 @@ graph LR
     L -->|маршрутизация| O["InferCrate<br/>(локальная LLM)"]
     L -->|ответ| T["SpeakCrate TTS<br/>(текст в речь)"]
     T --> B["🔊 Аудиовыход"]
-    C["🤖 AI-клиент<br/>(goose, Cline, Claude и др.)"] -->|MCP-инструменты| M["ToolUplink<br/>(MCP-эндпоинт)"]
+    C["🤖 AI-клиент<br/>(goose, Cline, Claude и др.)"] -->|MCP-инструменты| M["UplinkCrate<br/>(MCP-эндпоинт)"]
     C -->|чат| L
     L -->|MCP-протокол| M
     U["👤 Пользователь"] -->|чат| AN["AnythingLLM<br/>(чат-интерфейс)"]
@@ -210,7 +210,7 @@ graph LR
 
 **Примечания:**
 
-- Порт InferCrate (`11434`) и порт ToolUplink (`3000`) доступны только внутри сети Docker и не открыты на хосте по умолчанию. Доступ к LLM осуществляется через GatewayCrate на порту `4000`.
+- Порт InferCrate (`11434`) и порт UplinkCrate (`3000`) доступны только внутри сети Docker и не открыты на хосте по умолчанию. Доступ к LLM осуществляется через GatewayCrate на порту `4000`.
 - Для снижения потребления памяти сервисы SpeakCrate (TTS), ParseCrate (парсинг документов) и ScribeCrate Live (распознавание речи в реальном времени) по умолчанию отключены. Чтобы включить их, раскомментируйте соответствующие сервисы в `docker-compose.yml`.
 
 ## Запуск без Docker Compose
@@ -244,7 +244,7 @@ docker run -d --name ollama --restart always \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# ToolUplink
+# UplinkCrate
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
@@ -392,14 +392,14 @@ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 
 **Дальнейшие шаги:** Загрузите модель и подключитесь к сервисам — следуйте инструкциям в разделе [Быстрый старт](#быстрый-старт), начиная с «Загрузка модели». При установленном пакете `podman-docker` все команды работают без изменений.
 
-## Подключение ToolUplink к GatewayCrate
+## Подключение UplinkCrate к GatewayCrate
 
-В compose-файлах этого репозитория GatewayCrate и ToolUplink **подключаются автоматически** — ручная настройка ключей не требуется.
+В compose-файлах этого репозитория GatewayCrate и UplinkCrate **подключаются автоматически** — ручная настройка ключей не требуется.
 
 API-ключи автоматически передаются между сервисами через общие Docker-тома:
 
 - InferCrate генерирует API-ключ при первом запуске и копирует его в общий том
-- ToolUplink делает то же самое
+- UplinkCrate делает то же самое
 - GatewayCrate считывает оба ключа из общих томов при запуске
 
 Переменные `LITELLM_MCP_URL=http://mcp:3000/mcp` и `LITELLM_OLLAMA_BASE_URL=http://ollama:11434` уже заданы в compose-файлах, поэтому все сервисы подключаются автоматически одной командой `docker compose up -d`.
@@ -495,9 +495,9 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 ## Пример MCP-инструментов
 
-Используйте ToolUplink для предоставления AI-ассистенту доступа к файлам, вебу и GitHub:
+Используйте UplinkCrate для предоставления AI-ассистенту доступа к файлам, вебу и GitHub:
 
-По умолчанию ToolUplink доступен только внутри Docker-сети. Перед использованием `http://localhost:3000/mcp` из AI-клиента на хосте или через `curl` на хосте раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
+По умолчанию UplinkCrate доступен только внутри Docker-сети. Перед использованием `http://localhost:3000/mcp` из AI-клиента на хосте или через `curl` на хосте раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
 
 ```bash
 uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
@@ -537,7 +537,7 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
 | ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md) |
-| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-ru.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-ru.md) |
 | ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md) |
 
 AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).

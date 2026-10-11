@@ -37,7 +37,7 @@ Run local AI models, chat with your documents, transcribe audio, and connect MCP
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate)** | Transcribes spoken audio to text | `9000` |
 | **[ScribeCrate Live (real-time STT)](https://github.com/hwdsl2/scribecrate-live)** | Real-time speech-to-text transcription over WebSocket | `9090` |
 | **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate)** | Converts text to natural-sounding speech | `8880` |
-| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
 
 ## Quick start
@@ -82,7 +82,7 @@ docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>Show core API keys (InferCrate, GatewayCrate, ToolUplink)</summary>
+<summary>Show core API keys (InferCrate, GatewayCrate, UplinkCrate)</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -121,7 +121,7 @@ Open `http://<server-ip>:4000/ui` in your browser. Log in with username `admin` 
 
 **Use the stack with goose:**
 
-Install goose on your workstation and connect it to the stack's GatewayCrate endpoint for supervised agent and coding tasks. The [goose setup guide](https://selfhostedaistack.com/goose) covers native installation, a restricted GatewayCrate key, local-model expectations, permissions, testing, and optional ToolUplink access.
+Install goose on your workstation and connect it to the stack's GatewayCrate endpoint for supervised agent and coding tasks. The [goose setup guide](https://selfhostedaistack.com/goose) covers native installation, a restricted GatewayCrate key, local-model expectations, permissions, testing, and optional UplinkCrate access.
 
 **Stop the stack:**
 
@@ -173,8 +173,8 @@ Don't need the full stack? Use a pre-configured subset from the `stacks/` folder
 | **[voice-chat](stacks/voice-chat/)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 GB | Chat UI with voice input/output |
 | **[rag-pipeline](stacks/rag-pipeline/)** | InferCrate + GatewayCrate + EmbedCrate | ~5 GB | Semantic search + LLM Q&A |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 GB | Document parsing + semantic search + LLM Q&A |
-| **[code-assistant](stacks/code-assistant/)** | InferCrate + GatewayCrate + ToolUplink + EmbedCrate | ~5 GB | AI coding with tools + semantic code search |
-| **[ai-tools](stacks/ai-tools/)** | InferCrate + GatewayCrate + ToolUplink | ~5 GB | AI coding assistant with tool access |
+| **[code-assistant](stacks/code-assistant/)** | InferCrate + GatewayCrate + UplinkCrate + EmbedCrate | ~5 GB | AI coding with tools + semantic code search |
+| **[ai-tools](stacks/ai-tools/)** | InferCrate + GatewayCrate + UplinkCrate | ~5 GB | AI coding assistant with tool access |
 | **[chat-only](stacks/chat-only/)** | InferCrate + GatewayCrate | ~4.5 GB | Minimal local ChatGPT replacement |
 
 ```bash
@@ -197,7 +197,7 @@ graph LR
     L -->|routes to| O["InferCrate<br/>(local LLM)"]
     L -->|response| T["SpeakCrate TTS<br/>(text-to-speech)"]
     T --> B["🔊 Audio output"]
-    C["🤖 AI client<br/>(goose, Cline, Claude, etc.)"] -->|MCP tools| M["ToolUplink<br/>(MCP endpoint)"]
+    C["🤖 AI client<br/>(goose, Cline, Claude, etc.)"] -->|MCP tools| M["UplinkCrate<br/>(MCP endpoint)"]
     C -->|chat| L
     L -->|MCP protocol| M
     U["👤 User"] -->|chat| AN["AnythingLLM<br/>(chat UI)"]
@@ -210,7 +210,7 @@ graph LR
 
 **Notes:**
 
-- InferCrate's port (`11434`) and ToolUplink's port (`3000`) are internal to the Docker network and not exposed to the host by default. Access your LLM through GatewayCrate on port `4000`.
+- InferCrate's port (`11434`) and UplinkCrate's port (`3000`) are internal to the Docker network and not exposed to the host by default. Access your LLM through GatewayCrate on port `4000`.
 - SpeakCrate (TTS), ParseCrate (document parsing), and ScribeCrate Live (real-time STT) are disabled by default to reduce memory usage. Uncomment these services in `docker-compose.yml` to enable them.
 
 ## Running without Docker Compose
@@ -244,7 +244,7 @@ docker run -d --name ollama --restart always \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# ToolUplink
+# UplinkCrate
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
@@ -392,14 +392,14 @@ Named volumes do not need relabeling.
 
 **Next steps:** Pull a model and access the services — follow the instructions in [Quick start](#quick-start) starting from "Pull a model." With the `podman-docker` shim installed, all commands work unchanged.
 
-## Connect ToolUplink to GatewayCrate
+## Connect UplinkCrate to GatewayCrate
 
-GatewayCrate and ToolUplink are **automatically wired** when using the compose files in this repository — no manual key setup is needed.
+GatewayCrate and UplinkCrate are **automatically wired** when using the compose files in this repository — no manual key setup is needed.
 
 API keys are shared automatically between services via Docker shared volumes:
 
 - InferCrate generates an API key on first start and copies it to a shared volume
-- ToolUplink does the same
+- UplinkCrate does the same
 - GatewayCrate reads both keys from the shared volumes on startup
 
 The `LITELLM_MCP_URL=http://mcp:3000/mcp` and `LITELLM_OLLAMA_BASE_URL=http://ollama:11434` environment variables are pre-configured in the compose files, so all services are connected automatically with a single `docker compose up -d`.
@@ -495,9 +495,9 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 ## MCP tools example
 
-Use ToolUplink to give your AI assistant access to files, web, and GitHub:
+Use UplinkCrate to give your AI assistant access to files, web, and GitHub:
 
-ToolUplink is internal to the Docker network by default. Before using `http://localhost:3000/mcp` from a host-side AI client or host-side `curl`, uncomment the `3000:3000/tcp` port mapping for the `mcp` service in `docker-compose.yml` and restart it.
+UplinkCrate is internal to the Docker network by default. Before using `http://localhost:3000/mcp` from a host-side AI client or host-side `curl`, uncomment the `3000:3000/tcp` port mapping for the `mcp` service in `docker-compose.yml` and restart it.
 
 ```bash
 uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
@@ -537,7 +537,7 @@ Each service can be configured with an optional env file. Copy the example env f
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate) |
 | ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate) |
-| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate) |
 | ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate) |
 
 AnythingLLM is configured through its web UI at `http://<server-ip>:3001`. You can change the LLM provider, model, embedding engine, and other settings in **Settings**. See [AnythingLLM docs](https://docs.useanything.com/) for more details.

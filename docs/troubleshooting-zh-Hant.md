@@ -57,7 +57,7 @@ docker compose logs --tail=100 mcp
 docker compose logs --tail=100 anythingllm
 ```
 
-GatewayCrate 依賴 InferCrate、ToolUplink 和 PostgreSQL。AnythingLLM 依賴 GatewayCrate。如果依賴項仍在啟動，下游服務可能暫時尚未就緒。
+GatewayCrate 依賴 InferCrate、UplinkCrate 和 PostgreSQL。AnythingLLM 依賴 GatewayCrate。如果依賴項仍在啟動，下游服務可能暫時尚未就緒。
 
 ## Ollama 和本機模型問題
 
@@ -106,13 +106,13 @@ curl http://localhost:4000/health/liveliness
 - 查看 `docker compose logs --tail=100 litellm`。
 - 執行 `./stack-check.sh` 並查看 GatewayCrate 路由檢查。
 
-compose 檔案會透過 Docker 磁碟區自動將 InferCrate 和 ToolUplink API 金鑰共享給 GatewayCrate。除非已有備份，否則不要刪除 `ollama-data`、`mcp-data` 或 `litellm-data`。
+compose 檔案會透過 Docker 磁碟區自動將 InferCrate 和 UplinkCrate API 金鑰共享給 GatewayCrate。除非已有備份，否則不要刪除 `ollama-data`、`mcp-data` 或 `litellm-data`。
 
-## ToolUplink 問題
+## UplinkCrate 問題
 
-ToolUplink 在 Docker 網路內部的連接埠 `3000` 上執行。主 compose 檔案預設不向主機暴露該連接埠。
+UplinkCrate 在 Docker 網路內部的連接埠 `3000` 上執行。主 compose 檔案預設不向主機暴露該連接埠。
 
-顯示 ToolUplink API 金鑰：
+顯示 UplinkCrate API 金鑰：
 
 ```bash
 docker exec mcp mcp_manage --showkey
@@ -175,7 +175,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
 | ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
 | SpeakCrate | https://github.com/hwdsl2/speakcrate |
-| ToolUplink | https://github.com/hwdsl2/tooluplink |
+| UplinkCrate | https://github.com/hwdsl2/uplinkcrate |
 | ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU 和 CUDA
@@ -235,7 +235,7 @@ API 金鑰、模型快取、聊天記錄、服務設定和 Caddy 憑證狀態儲
 
 - [備份與還原](backup-restore-zh-Hant.md)
 
-排查問題時，除非已有目前備份，否則不要刪除磁碟區。刪除磁碟區可能會移除 API 金鑰、模型快取、AnythingLLM 資料、GatewayCrate 設定、ToolUplink 設定、可選服務金鑰和 Caddy 憑證。
+排查問題時，除非已有目前備份，否則不要刪除磁碟區。刪除磁碟區可能會移除 API 金鑰、模型快取、AnythingLLM 資料、GatewayCrate 設定、UplinkCrate 設定、可選服務金鑰和 Caddy 憑證。
 
 更新映像檔後執行：
 

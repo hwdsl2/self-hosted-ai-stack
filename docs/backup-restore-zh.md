@@ -20,7 +20,7 @@
 | `whisper-data` | ScribeCrate | Whisper 模型缓存、已生成的 API 密钥 |
 | `whisper-live-data` | ScribeCrate Live | 实时语音转文本模型缓存、已生成的 API 密钥 |
 | `kokoro-data` | SpeakCrate | TTS 模型/语音缓存、已生成的 API 密钥 |
-| `mcp-data` | ToolUplink | API 密钥、工具配置 |
+| `mcp-data` | UplinkCrate | API 密钥、工具配置 |
 | `docling-data` | ParseCrate | 文档转换模型缓存、已生成的 API 密钥 |
 | `anythingllm-data` | AnythingLLM | 聊天记录、工作区、设置、上传的文档、**管理员密码**（`server/.env` 中的 `AUTH_TOKEN`/`JWT_SECRET`，以及首次运行时生成的 `.initial_admin_password` 副本） |
 | `caddy-data` | Caddy | TLS 证书、私钥、OCSP staple、ACME 账户状态 |
@@ -42,7 +42,7 @@
 echo "=== API Keys ===" > ai-stack-keys.txt
 echo "InferCrate:       $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "GatewayCrate:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "ToolUplink:       $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "UplinkCrate:      $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "ScribeCrate:      $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "ScribeCrate Live: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "SpeakCrate:       $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt

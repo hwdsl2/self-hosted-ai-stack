@@ -37,7 +37,7 @@
 | **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音转录为文本 | `9000` |
 | **[ScribeCrate Live（实时语音转文本）](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
 | **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md)** | 将文本转换为自然语音 | `8880` |
-| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
 
 ## 快速开始
@@ -82,7 +82,7 @@ docker exec litellm litellm_manage --showkey
 ```
 
 <details>
-<summary>显示核心 API 密钥（InferCrate、GatewayCrate、ToolUplink）</summary>
+<summary>显示核心 API 密钥（InferCrate、GatewayCrate、UplinkCrate）</summary>
 
 ```bash
 docker exec ollama ollama_manage --showkey
@@ -121,7 +121,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 
 **将 goose 与此技术栈配合使用：**
 
-在工作站上安装 goose，并将其连接到此技术栈的 GatewayCrate 端点，以执行受监督的智能体和编程任务。[goose 设置指南（英文）](https://selfhostedaistack.com/goose)涵盖本机安装、受限 GatewayCrate 密钥、本地模型预期、权限、测试以及可选的 ToolUplink 访问。
+在工作站上安装 goose，并将其连接到此技术栈的 GatewayCrate 端点，以执行受监督的智能体和编程任务。[goose 设置指南（英文）](https://selfhostedaistack.com/goose)涵盖本机安装、受限 GatewayCrate 密钥、本地模型预期、权限、测试以及可选的 UplinkCrate 访问。
 
 **停止技术栈：**
 
@@ -173,8 +173,8 @@ docker compose -f docker-compose.cuda.yml up -d
 | **[voice-chat](stacks/voice-chat/README-zh.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
 | **[rag-pipeline](stacks/rag-pipeline/README-zh.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 GB | 语义搜索 + LLM 问答 |
 | **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 GB | 文档解析 + 语义搜索 + LLM 问答 |
-| **[code-assistant](stacks/code-assistant/README-zh.md)** | InferCrate + GatewayCrate + ToolUplink + EmbedCrate | ~5 GB | AI 编程，支持工具 + 语义代码搜索 |
-| **[ai-tools](stacks/ai-tools/README-zh.md)** | InferCrate + GatewayCrate + ToolUplink | ~5 GB | AI 编程助手，支持工具访问 |
+| **[code-assistant](stacks/code-assistant/README-zh.md)** | InferCrate + GatewayCrate + UplinkCrate + EmbedCrate | ~5 GB | AI 编程，支持工具 + 语义代码搜索 |
+| **[ai-tools](stacks/ai-tools/README-zh.md)** | InferCrate + GatewayCrate + UplinkCrate | ~5 GB | AI 编程助手，支持工具访问 |
 | **[chat-only](stacks/chat-only/README-zh.md)** | InferCrate + GatewayCrate | ~4.5 GB | 最小化本地 ChatGPT 替代方案 |
 
 ```bash
@@ -197,7 +197,7 @@ graph LR
     L -->|路由至| O["InferCrate<br/>(本地 LLM)"]
     L -->|响应| T["SpeakCrate TTS<br/>(文本转语音)"]
     T --> B["🔊 音频输出"]
-    C["🤖 AI 客户端<br/>(goose、Cline、Claude 等)"] -->|MCP 工具| M["ToolUplink<br/>(MCP 端点)"]
+    C["🤖 AI 客户端<br/>(goose、Cline、Claude 等)"] -->|MCP 工具| M["UplinkCrate<br/>(MCP 端点)"]
     C -->|对话| L
     L -->|MCP 协议| M
     U["👤 用户"] -->|对话| AN["AnythingLLM<br/>(聊天界面)"]
@@ -210,7 +210,7 @@ graph LR
 
 **注：**
 
-- InferCrate 的端口（`11434`）和 ToolUplink 的端口（`3000`）仅在 Docker 网络内部可用，默认不暴露给主机。请通过 GatewayCrate 的端口 `4000` 访问您的 LLM。
+- InferCrate 的端口（`11434`）和 UplinkCrate 的端口（`3000`）仅在 Docker 网络内部可用，默认不暴露给主机。请通过 GatewayCrate 的端口 `4000` 访问您的 LLM。
 - 为减少内存占用，SpeakCrate（TTS）、ParseCrate（文档解析）和 ScribeCrate Live（实时语音转文本）默认处于禁用状态。如需启用，请在 `docker-compose.yml` 中取消注释这些服务。
 
 ## 不使用 Docker Compose 运行
@@ -244,7 +244,7 @@ docker run -d --name ollama --restart always \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# ToolUplink
+# UplinkCrate
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
@@ -392,14 +392,14 @@ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 
 **后续步骤：** 拉取模型并访问服务 — 请按照[快速开始](#快速开始)中"拉取模型"之后的说明操作。安装 `podman-docker` 兼容层后，所有命令无需修改即可使用。
 
-## 将 ToolUplink 连接到 GatewayCrate
+## 将 UplinkCrate 连接到 GatewayCrate
 
-在本仓库的 compose 文件中，GatewayCrate 和 ToolUplink 已**自动接入**——无需手动设置密钥。
+在本仓库的 compose 文件中，GatewayCrate 和 UplinkCrate 已**自动接入**——无需手动设置密钥。
 
 API 密钥通过 Docker 共享卷在服务之间自动共享：
 
 - InferCrate 在首次启动时生成 API 密钥，并将其复制到共享卷
-- ToolUplink 执行相同操作
+- UplinkCrate 执行相同操作
 - GatewayCrate 在启动时自动从共享卷读取这两个密钥
 
 compose 文件中已预配置 `LITELLM_MCP_URL=http://mcp:3000/mcp` 和 `LITELLM_OLLAMA_BASE_URL=http://ollama:11434`，因此只需一条 `docker compose up -d` 命令即可自动连接所有服务。
@@ -495,9 +495,9 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 ## MCP 工具示例
 
-使用 ToolUplink 为您的 AI 助手提供文件、网络和 GitHub 访问：
+使用 UplinkCrate 为您的 AI 助手提供文件、网络和 GitHub 访问：
 
-默认情况下，ToolUplink 仅在 Docker 网络内部可用。从主机上的 AI 客户端或主机上的 `curl` 使用 `http://localhost:3000/mcp` 之前，请先在 `docker-compose.yml` 的 `mcp` 服务中取消注释 `3000:3000/tcp` 端口映射并重启服务。
+默认情况下，UplinkCrate 仅在 Docker 网络内部可用。从主机上的 AI 客户端或主机上的 `curl` 使用 `http://localhost:3000/mcp` 之前，请先在 `docker-compose.yml` 的 `mcp` 服务中取消注释 `3000:3000/tcp` 端口映射并重启服务。
 
 ```bash
 uplink_api_key="$(docker exec mcp mcp_manage --getkey)"
@@ -537,7 +537,7 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 | ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
 | ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md) |
 | SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md) |
-| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-zh.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md) |
 | ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md) |
 
 AnythingLLM 通过其 Web 界面 `http://<服务器IP>:3001` 进行配置。您可以在 **Settings** 中更改 LLM 供应商、模型、嵌入引擎和其他设置。详情请参阅 [AnythingLLM 文档](https://docs.useanything.com/)。

@@ -4,7 +4,7 @@
 
 本機 LLM 搭配 MCP 工具存取和語意程式碼搜尋，適用於 AI 代理和程式設計助手（goose、Cline、Claude、Cursor 等）。
 
-**服務：** InferCrate (LLM) + GatewayCrate (閘道) + ToolUplink (MCP 工具) + EmbedCrate (文字嵌入)
+**服務：** InferCrate (LLM) + GatewayCrate (閘道) + UplinkCrate (MCP 工具) + EmbedCrate (文字嵌入)
 
 **記憶體：** ~5 GB RAM（使用 3B 模型）
 
@@ -17,7 +17,7 @@
 ```mermaid
 graph LR
     U["👤 使用者"] -->|使用| C["🤖 AI 用戶端<br/>(goose、Cline、Claude 等)"]
-    C -->|MCP 工具| M["ToolUplink<br/>(MCP 端點)"]
+    C -->|MCP 工具| M["UplinkCrate<br/>(MCP 端點)"]
     C -->|聊天| L["GatewayCrate<br/>(AI 閘道)"]
     L -->|路由至| O["InferCrate<br/>(本機 LLM)"]
     L -->|MCP 協定| M
@@ -30,7 +30,7 @@ graph LR
 |---|---|---|
 | **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
 | **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 InferCrate 及 100+ 供應商 | `4000` |
-| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、fetch、GitHub、搜尋、資料庫） | `3000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、fetch、GitHub、搜尋、資料庫） | `3000` |
 | **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-zh-Hant.md)** | 將文字轉換為向量，用於語意搜尋和 RAG | `8000` |
 
 > [!IMPORTANT]
@@ -40,7 +40,7 @@ graph LR
 
 - GatewayCrate 發布在主機連接埠 `4000`。
 - EmbedCrate 預設繫結到 `127.0.0.1:8000`。
-- ToolUplink 預設僅在內部存取；只有主機上的 MCP 用戶端需要直接存取時，才取消註解其連接埠映射。
+- UplinkCrate 預設僅在內部存取；只有主機上的 MCP 用戶端需要直接存取時，才取消註解其連接埠映射。
 - InferCrate 僅在 Docker 網路內部存取；主機或瀏覽器存取請使用 GatewayCrate。
 
 ## 快速開始
@@ -87,7 +87,7 @@ docker exec litellm litellm_manage --showkey
 
 > **提示：** 在管理介面中，點選左側選單的 **Playground**。從下拉清單中選擇本機模型（例如 `ollama-chat/llama3.2:3b`）並開始對話，這是驗證本機 LLM 端到端正常運作的一種快速方式。
 
-**連接 goose：** 在工作站上安裝 goose，並依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)建立受限 GatewayCrate 金鑰、設定 GatewayCrate 端點和模型、測試本機模型行為，以及選擇性連接 ToolUplink。
+**連接 goose：** 在工作站上安裝 goose，並依照 [goose 設定指南（英文）](https://selfhostedaistack.com/goose)建立受限 GatewayCrate 金鑰、設定 GatewayCrate 端點和模型、測試本機模型行為，以及選擇性連接 UplinkCrate。
 
 **停止子堆疊：**
 
@@ -145,7 +145,7 @@ docker run -d --name ollama --restart always \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# ToolUplink
+# UplinkCrate
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
@@ -192,7 +192,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 |---|---|---|
 | InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md) |
 | GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md) |
-| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-zh-Hant.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh-Hant.md) |
 | EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-zh-Hant.md) |
 
 有關詳細設定選項、API 參考和模型管理，請參閱各服務儲存庫的文件。
@@ -222,20 +222,20 @@ docker compose up -d
 
 您的資料保存在 Docker 磁碟區中。 **升級前務必先[備份](../../docs/backup-restore-zh-Hant.md)。**
 
-## 將 ToolUplink 連接到 GatewayCrate
+## 將 UplinkCrate 連接到 GatewayCrate
 
-使用 compose 檔案或上方的 `docker run` 命令時，GatewayCrate 和 ToolUplink 均**自動接入**——無需手動設定金鑰。
+使用 compose 檔案或上方的 `docker run` 命令時，GatewayCrate 和 UplinkCrate 均**自動接入**——無需手動設定金鑰。
 
 API 金鑰透過 Docker 共享磁碟區在服務間自動共享：
 
-- ToolUplink 在首次啟動時產生 API 金鑰，並將其複製到 `mcp-shared` 磁碟區
+- UplinkCrate 在首次啟動時產生 API 金鑰，並將其複製到 `mcp-shared` 磁碟區
 - GatewayCrate 在啟動時從共享磁碟區讀取 MCP 金鑰
 
 `LITELLM_MCP_URL=http://mcp:3000/mcp` 環境變數已預設，所有服務均自動連接。
 
 ## 使用方式
 
-GatewayCrate 可在 Docker 內部自動連接 ToolUplink。如需讓主機上的 AI 用戶端直接使用 `http://localhost:3000/mcp`，請先在 `docker-compose.yml` 的 `mcp` 服務中取消註解 `3000:3000/tcp` 連接埠對應並重新啟動服務。
+GatewayCrate 可在 Docker 內部自動連接 UplinkCrate。如需讓主機上的 AI 用戶端直接使用 `http://localhost:3000/mcp`，請先在 `docker-compose.yml` 的 `mcp` 服務中取消註解 `3000:3000/tcp` 連接埠對應並重新啟動服務。
 
 ```bash
 # 取得 API 金鑰

@@ -57,7 +57,7 @@ docker compose logs --tail=100 mcp
 docker compose logs --tail=100 anythingllm
 ```
 
-GatewayCrate зависит от InferCrate, ToolUplink и PostgreSQL. AnythingLLM зависит от GatewayCrate. Если зависимость еще запускается, нижестоящие сервисы могут быть временно не готовы.
+GatewayCrate зависит от InferCrate, UplinkCrate и PostgreSQL. AnythingLLM зависит от GatewayCrate. Если зависимость еще запускается, нижестоящие сервисы могут быть временно не готовы.
 
 ## Проблемы Ollama и локальных моделей
 
@@ -106,13 +106,13 @@ curl http://localhost:4000/health/liveliness
 - Проверьте `docker compose logs --tail=100 litellm`.
 - Запустите `./stack-check.sh` и проверьте тест маршрутизации GatewayCrate.
 
-Compose-файлы автоматически передают API-ключи InferCrate и ToolUplink в GatewayCrate через Docker-тома. Не удаляйте `ollama-data`, `mcp-data` или `litellm-data`, если у вас нет резервной копии.
+Compose-файлы автоматически передают API-ключи InferCrate и UplinkCrate в GatewayCrate через Docker-тома. Не удаляйте `ollama-data`, `mcp-data` или `litellm-data`, если у вас нет резервной копии.
 
-## Проблемы ToolUplink
+## Проблемы UplinkCrate
 
-ToolUplink работает внутри Docker-сети на порту `3000`. В основном compose-файле этот порт по умолчанию не публикуется на хост.
+UplinkCrate работает внутри Docker-сети на порту `3000`. В основном compose-файле этот порт по умолчанию не публикуется на хост.
 
-Показать API-ключ ToolUplink:
+Показать API-ключ UplinkCrate:
 
 ```bash
 docker exec mcp mcp_manage --showkey
@@ -175,7 +175,7 @@ docker compose logs anythingllm | grep -A4 "FIRST RUN"
 | ScribeCrate | https://github.com/hwdsl2/scribecrate |
 | ScribeCrate Live | https://github.com/hwdsl2/scribecrate-live |
 | SpeakCrate | https://github.com/hwdsl2/speakcrate |
-| ToolUplink | https://github.com/hwdsl2/tooluplink |
+| UplinkCrate | https://github.com/hwdsl2/uplinkcrate |
 | ParseCrate | https://github.com/hwdsl2/parsecrate |
 
 ## GPU и CUDA
@@ -235,7 +235,7 @@ API-ключи, кэши моделей, история чатов, конфиг
 
 - [Резервное копирование и восстановление](backup-restore-ru.md)
 
-Не удаляйте тома при диагностике, если у вас нет актуальной резервной копии. Удаление томов может удалить API-ключи, кэши моделей, данные AnythingLLM, конфигурацию GatewayCrate, настройки ToolUplink, ключи опциональных сервисов и сертификаты Caddy.
+Не удаляйте тома при диагностике, если у вас нет актуальной резервной копии. Удаление томов может удалить API-ключи, кэши моделей, данные AnythingLLM, конфигурацию GatewayCrate, настройки UplinkCrate, ключи опциональных сервисов и сертификаты Caddy.
 
 После обновления образов выполните:
 

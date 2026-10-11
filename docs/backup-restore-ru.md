@@ -20,7 +20,7 @@
 | `whisper-data` | ScribeCrate | Кэш модели Whisper, сгенерированный API-ключ |
 | `whisper-live-data` | ScribeCrate Live | Кэш модели STT в реальном времени, сгенерированный API-ключ |
 | `kokoro-data` | SpeakCrate | Кэш модели/голосов TTS, сгенерированный API-ключ |
-| `mcp-data` | ToolUplink | API-ключ, конфигурация инструментов |
+| `mcp-data` | UplinkCrate | API-ключ, конфигурация инструментов |
 | `docling-data` | ParseCrate | Кэш моделей конвертации документов, сгенерированный API-ключ |
 | `anythingllm-data` | AnythingLLM | История чатов, рабочие пространства, настройки, загруженные документы, **пароль администратора** (`server/.env` с `AUTH_TOKEN`/`JWT_SECRET`, а также первая копия `.initial_admin_password`) |
 | `caddy-data` | Caddy | TLS-сертификаты, приватные ключи, OCSP staples, состояние ACME-аккаунта |
@@ -42,7 +42,7 @@
 echo "=== API Keys ===" > ai-stack-keys.txt
 echo "InferCrate:       $(docker exec ollama ollama_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "GatewayCrate:     $(docker exec litellm litellm_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
-echo "ToolUplink:       $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
+echo "UplinkCrate:      $(docker exec mcp mcp_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "ScribeCrate:      $(docker exec whisper whisper_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "ScribeCrate Live: $(docker exec whisper-live whisper_live_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt
 echo "SpeakCrate:       $(docker exec kokoro kokoro_manage --getkey 2>/dev/null)" >> ai-stack-keys.txt

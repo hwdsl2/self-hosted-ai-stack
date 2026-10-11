@@ -4,7 +4,7 @@
 
 Локальная LLM с доступом к MCP-инструментам для AI-агентов и ассистентов разработки (goose, Cline, Claude, Cursor и др.).
 
-**Сервисы:** InferCrate (LLM) + GatewayCrate (шлюз) + ToolUplink (MCP-инструменты)
+**Сервисы:** InferCrate (LLM) + GatewayCrate (шлюз) + UplinkCrate (MCP-инструменты)
 
 **Память:** ~5 ГБ RAM (с моделью 3B)
 
@@ -17,7 +17,7 @@
 ```mermaid
 graph LR
     U["👤 Пользователь"] -->|использует| C["🤖 AI-клиент<br/>(goose, Cline, Claude и др.)"]
-    C -->|MCP-инструменты| M["ToolUplink<br/>(MCP-эндпоинт)"]
+    C -->|MCP-инструменты| M["UplinkCrate<br/>(MCP-эндпоинт)"]
     C -->|чат| L["GatewayCrate<br/>(AI-шлюз)"]
     L -->|маршрутизация| O["InferCrate<br/>(локальная LLM)"]
     L -->|MCP-протокол| M
@@ -29,7 +29,7 @@ graph LR
 |---|---|---|
 | **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
 | **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к InferCrate и 100+ провайдерам | `4000` |
-| **[ToolUplink (MCPHub)](https://github.com/hwdsl2/tooluplink/blob/main/README-ru.md)** | Предоставляет MCP-инструменты (файловая система, fetch, GitHub, поиск, БД) AI-клиентам | `3000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-ru.md)** | Предоставляет MCP-инструменты (файловая система, fetch, GitHub, поиск, БД) AI-клиентам | `3000` |
 
 > [!IMPORTANT]
 > Лёгкие подстеки используют общие стандартные имена контейнеров, порты и имена Docker volumes. С compose-файлами по умолчанию запускайте только один вариант подстека за раз; перед переключением на другой вариант остановите текущий.
@@ -37,7 +37,7 @@ graph LR
 Доступ по умолчанию:
 
 - GatewayCrate опубликован на порту хоста `4000`.
-- ToolUplink по умолчанию внутренний; раскомментируйте его port mapping только если MCP-клиенту на хосте нужен прямой доступ.
+- UplinkCrate по умолчанию внутренний; раскомментируйте его port mapping только если MCP-клиенту на хосте нужен прямой доступ.
 - InferCrate доступен только внутри Docker-сети; для доступа с хоста или из браузера используйте GatewayCrate.
 
 ## Быстрый старт
@@ -84,7 +84,7 @@ docker exec litellm litellm_manage --showkey
 
 > **Совет:** В Admin UI нажмите **Playground** в левом меню. Выберите локальную модель (например, `ollama-chat/llama3.2:3b`) из списка и начните чат — это быстрый способ проверить локальную LLM end-to-end.
 
-**Подключение goose:** Установите goose на рабочей станции и следуйте [руководству по настройке goose (на английском)](https://selfhostedaistack.com/goose), чтобы создать ключ GatewayCrate с ограниченными правами, настроить эндпоинт GatewayCrate и модель, проверить поведение локальной модели и при необходимости подключить ToolUplink.
+**Подключение goose:** Установите goose на рабочей станции и следуйте [руководству по настройке goose (на английском)](https://selfhostedaistack.com/goose), чтобы создать ключ GatewayCrate с ограниченными правами, настроить эндпоинт GatewayCrate и модель, проверить поведение локальной модели и при необходимости подключить UplinkCrate.
 
 **Остановить подстек:**
 
@@ -142,7 +142,7 @@ docker run -d --name ollama --restart always \
     -v ollama-shared:/var/lib/ollama-shared \
     hwdsl2/ollama-server
 
-# ToolUplink
+# UplinkCrate
 docker run -d --name mcp --restart always \
     --network ai-stack \
     -v mcp-data:/var/lib/mcp \
@@ -182,7 +182,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 |---|---|---|
 | InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md) |
 | GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md) |
-| ToolUplink | `mcp.env` | [tooluplink](https://github.com/hwdsl2/tooluplink/blob/main/README-ru.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-ru.md) |
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 
@@ -211,20 +211,20 @@ docker compose up -d
 
 Ваши данные сохраняются в Docker-томах. **Всегда делайте [резервную копию](../../docs/backup-restore-ru.md) перед обновлением.**
 
-## Подключение ToolUplink к GatewayCrate
+## Подключение UplinkCrate к GatewayCrate
 
-GatewayCrate и ToolUplink **автоматически подключены** при использовании compose-файла или команд `docker run` выше — ручная настройка ключей не требуется.
+GatewayCrate и UplinkCrate **автоматически подключены** при использовании compose-файла или команд `docker run` выше — ручная настройка ключей не требуется.
 
 API-ключи автоматически передаются между сервисами через общие тома Docker:
 
-- ToolUplink генерирует API-ключ при первом запуске и копирует его в том `mcp-shared`
+- UplinkCrate генерирует API-ключ при первом запуске и копирует его в том `mcp-shared`
 - GatewayCrate читает ключ MCP из общего тома при запуске
 
 Переменная окружения `LITELLM_MCP_URL=http://mcp:3000/mcp` уже задана, все сервисы подключаются автоматически.
 
 ## Использование
 
-GatewayCrate автоматически подключается к ToolUplink внутри Docker. Чтобы AI-клиент на хосте напрямую использовал `http://localhost:3000/mcp`, раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
+GatewayCrate автоматически подключается к UplinkCrate внутри Docker. Чтобы AI-клиент на хосте напрямую использовал `http://localhost:3000/mcp`, раскомментируйте проброс порта `3000:3000/tcp` для сервиса `mcp` в `docker-compose.yml` и перезапустите сервис.
 
 ```bash
 # Получение API-ключей
