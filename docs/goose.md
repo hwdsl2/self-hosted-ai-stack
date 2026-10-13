@@ -21,7 +21,7 @@ The model connection works with the full stack and every lightweight stack
 that includes GatewayCrate. The optional MCP section requires a deployment that also
 includes UplinkCrate, such as the full stack, `ai-tools`, or `code-assistant`.
 
-This guide reflects Self-Hosted AI Stack version `2026.09.1` and goose 1.52.0.
+This guide reflects Self-Hosted AI Stack version `2026.10.1` and goose 1.54.0.
 goose changes frequently, so compare prompts and menu names with the
 [current installation](https://goose-docs.ai/docs/getting-started/installation/)
 and [provider](https://goose-docs.ai/docs/getting-started/providers/)
@@ -270,6 +270,9 @@ system keyring where supported, or in a local `secrets.yaml` file if the keyring
 is disabled or unavailable. Protect that fallback file with appropriate account
 and filesystem permissions.
 
+On first-time setup, goose 1.54 asks for an approval mode unless one is already
+configured. Choose **Approve Mode** or **Smart Approve Mode**.
+
 For a temporary configuration or a diagnostic session, use environment
 variables instead:
 
@@ -298,11 +301,19 @@ Do not place the virtual key in a tracked project file or shell-history command.
 
 ## 7. Set permissions before using project files
 
-Upstream goose currently defaults to Autonomous mode. Change it to **Manual
-Approval** or **Smart Approval** before the first workspace task, and set the
-maximum turns to a small value such as 8 for initial testing. Avoid Autonomous
-mode until you have tested the exact model, tools, and task. In goose settings,
-review the Developer extension and configure its tools along these lines:
+Autonomous mode remains the upstream default. Before the first workspace task,
+choose **Manual Approval** or **Smart Approval**:
+
+- **Desktop:** Open **Settings → Chat → Default Mode** and choose the approval
+  mode. Start a new session afterward; existing sessions keep their current mode.
+- **CLI:** Run `goose configure`, then select **goose settings → goose mode**
+  and choose **Approve Mode** or **Smart Approve Mode**. In an existing CLI
+  session, use `/mode approve` or `/mode smart_approve`.
+
+Set the maximum turns to a small value such as 8 for initial testing. Avoid
+Autonomous mode until you have tested the exact model, tools, and task. In goose
+settings, review the Developer extension and configure its tools along these
+lines:
 
 - File and directory reads: **Always Allow** only after starting goose in a
   dedicated project and accepting that it still has the permissions of your
@@ -397,7 +408,7 @@ After sending a request, inspect the allocated context and processor placement:
 docker exec ollama ollama ps
 ```
 
-goose 1.52 obtains advertised model context metadata from LiteLLM's
+goose 1.54 obtains advertised model context metadata from LiteLLM's
 `/model/info` endpoint. Ollama controls the context allocated to the running
 model. Verify the runtime value instead of assuming those two values are
 identical.
@@ -516,6 +527,8 @@ MCP port directly to the internet.
 - Confirm the loopback port mapping and SSH tunnel.
 - Test `docker exec mcp mcp_manage --test fetch` on the server.
 - Confirm the endpoint ends in `/mcp`.
+- Use the final endpoint URL directly; goose 1.54 does not follow HTTP redirects
+  for MCP connections.
 - Confirm the custom header is `Authorization` with value
   `Bearer <actual-key>`.
 
@@ -750,7 +763,7 @@ docker compose \
   --profile agent run --rm goose --version
 ```
 
-The goose 1.52.0 source snapshot reviewed for this guide defines `configure`,
+The goose 1.54.0 source snapshot reviewed for this guide defines `configure`,
 `info`, and `session`, with `--max-turns` and `--max-tool-repetitions` on
 interactive sessions. Confirm that the image exposes the same interfaces before
 relying on the remaining commands:
@@ -801,7 +814,7 @@ These checks confirm CLI and Compose compatibility for the selected image.
 
 ### Try configuring one authenticated MCP extension
 
-The menu labels below reflect the goose 1.52.0 source snapshot reviewed for
+The menu labels below reflect the goose 1.54.0 source snapshot reviewed for
 this guide. If the pulled version presents different choices, use its official
 extension documentation to locate the equivalent settings. Run the
 configuration utility inside a temporary container:
@@ -1077,7 +1090,9 @@ accounting for other clients that use it.
 - [Stack Caddy configuration](../caddy/Caddyfile)
 - [GatewayCrate management commands](https://github.com/hwdsl2/gatewaycrate/blob/main/manage.sh)
 - [UplinkCrate management commands](https://github.com/hwdsl2/uplinkcrate/blob/main/manage.sh)
-- [goose 1.52.0 LiteLLM provider implementation](https://github.com/aaif-goose/goose/blob/v1.52.0/crates/goose/src/providers/litellm.rs)
+- [goose 1.54.0 release notes](https://github.com/aaif-goose/goose/releases/tag/v1.54.0)
+- [goose 1.54.0 LiteLLM provider implementation](https://github.com/aaif-goose/goose/blob/v1.54.0/crates/goose/src/providers/litellm.rs)
+- [goose permission modes](https://goose-docs.ai/docs/guides/managing-tools/goose-permissions/)
 - [goose container image](https://github.com/aaif-goose/goose/pkgs/container/goose)
 - [goose Docker guide](https://github.com/aaif-goose/goose/blob/main/BUILDING_DOCKER.md)
 - [goose installation](https://goose-docs.ai/docs/getting-started/installation/)

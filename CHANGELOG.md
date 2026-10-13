@@ -2,7 +2,33 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-10-12
+
+Release: `2026.10.1`
+
+### Changed
+
+- Updated component names and repository links to InferCrate, GatewayCrate,
+  EmbedCrate, ScribeCrate, ScribeCrate Live, SpeakCrate, ParseCrate, and
+  UplinkCrate.
+- Refined the main and lightweight stack READMEs across English, Simplified
+  Chinese, Traditional Chinese, and Russian.
+- Standardized temporary API-key variable names in examples and updated
+  backup/restore and troubleshooting documentation.
+- Updated the goose integration guide for goose `1.54.0`, including first-time
+  approval-mode selection, Desktop default-mode settings, and MCP redirect
+  behavior.
+
+### Compatibility
+
+- Existing Docker image references, Compose service names, ports, volumes,
+  environment files, configuration variables, and management commands remain
+  unchanged. No deployment migration is required for the component rebranding.
+- Compose files and scripts are unchanged from `v2026.09.1`.
+
 ## 2026-09-30
+
+Release: `2026.09.1`
 
 ### Added
 
