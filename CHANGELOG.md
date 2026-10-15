@@ -2,6 +2,14 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-10-15
+
+### Changed
+
+- Updated health-check headings and startup messages to match current component
+  names, retaining underlying technology names for clarity.
+- Clarified optional GatewayCrate reverse-proxy comments.
+
 ## 2026-10-12
 
 Release: `2026.10.1`
