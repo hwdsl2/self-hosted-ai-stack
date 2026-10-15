@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Bootstrap script for AnythingLLM in self-hosted-ai-stack
-# Reads the LiteLLM API key from the shared volume and starts AnythingLLM
+# Reads the GatewayCrate master key (LiteLLM) from the shared volume and starts AnythingLLM
 #
 # This file is part of Self-Hosted AI Stack, available at:
 # https://github.com/hwdsl2/self-hosted-ai-stack
@@ -84,7 +84,7 @@ wait_for_litellm_model() {
         elif [ $((SECONDS - start_time)) -ge "$LITELLM_MODEL_API_WAIT_SECONDS" ]; then
           return 2
         elif [ "$waiting_logged" = 0 ]; then
-          echo "Waiting for LiteLLM model API..."
+          echo "Waiting for GatewayCrate model API (LiteLLM)..."
           waiting_logged=1
         fi
         ;;
@@ -103,14 +103,14 @@ configure_model_pref() {
 
     if [ "$model_status" = 0 ]; then
       export GENERIC_OPEN_AI_MODEL_PREF="$PREFERRED_OLLAMA_CHAT_MODEL"
-      echo "Using LiteLLM Ollama chat model alias: $GENERIC_OPEN_AI_MODEL_PREF"
+      echo "Using GatewayCrate's Ollama chat model alias: $GENERIC_OPEN_AI_MODEL_PREF"
     elif [ -z "$current_model_pref" ]; then
       export GENERIC_OPEN_AI_MODEL_PREF="$DEFAULT_OLLAMA_MODEL"
-      echo "Using default LiteLLM Ollama model alias: $GENERIC_OPEN_AI_MODEL_PREF"
+      echo "Using default Ollama model alias in GatewayCrate: $GENERIC_OPEN_AI_MODEL_PREF"
     elif [ "$model_status" = 2 ]; then
-      echo "LiteLLM model API not available; keeping $GENERIC_OPEN_AI_MODEL_PREF"
+      echo "GatewayCrate model API (LiteLLM) not available; keeping $GENERIC_OPEN_AI_MODEL_PREF"
     else
-      echo "LiteLLM Ollama chat model alias not found; keeping $GENERIC_OPEN_AI_MODEL_PREF"
+      echo "Ollama chat model alias not found in GatewayCrate; keeping $GENERIC_OPEN_AI_MODEL_PREF"
     fi
   else
     echo "Preserving custom AnythingLLM model preference: $GENERIC_OPEN_AI_MODEL_PREF"
@@ -224,16 +224,16 @@ NODE
   chmod 600 "$migration_marker" 2>/dev/null || true
 }
 
-# Read LiteLLM API key from shared volume (wait for it to be available)
+# Read GatewayCrate master key from shared volume (wait for it to be available)
 if [ -d /var/lib/litellm-shared ]; then
-  echo "Waiting for LiteLLM API key..."
+  echo "Waiting for GatewayCrate master key..."
   for _ in $(seq 1 300); do
     if [ -r /var/lib/litellm-shared/.api_key ]; then
       KEY=$(cat /var/lib/litellm-shared/.api_key)
       case "$KEY" in
         sk-*)
           export GENERIC_OPEN_AI_API_KEY="$KEY"
-          echo "LiteLLM API key loaded."
+          echo "GatewayCrate master key loaded."
           break
           ;;
       esac
@@ -241,7 +241,7 @@ if [ -d /var/lib/litellm-shared ]; then
     sleep 2
   done
   if [ -z "$GENERIC_OPEN_AI_API_KEY" ]; then
-    echo "Warning: LiteLLM API key not found or invalid after waiting. Proceeding without it."
+    echo "Warning: GatewayCrate master key not found or invalid after waiting. Proceeding without it."
   fi
 fi
 

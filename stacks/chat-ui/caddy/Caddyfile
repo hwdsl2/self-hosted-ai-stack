@@ -12,9 +12,9 @@
 	reverse_proxy anythingllm:3001
 }
 
-# Optional: expose LiteLLM Admin/API through Caddy on a separate hostname.
-# In proxy mode, LiteLLM's direct port is localhost-only; enabling this block
-# makes it internet-facing again, so keep the LiteLLM master key secret.
+# Optional: expose GatewayCrate's LiteLLM Admin/API through Caddy on a separate hostname.
+# In proxy mode, GatewayCrate's direct port is localhost-only; enabling this block
+# makes it internet-facing again, so keep the GatewayCrate master key secret.
 #
 # admin.example.com {
 # 	reverse_proxy litellm:4000

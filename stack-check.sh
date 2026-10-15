@@ -129,12 +129,12 @@ echo "Self-Hosted AI Stack — Health Check"
 echo "==============================="
 echo ""
 
-# ── Ollama ──────────────────────────────────────────────
+# ── InferCrate (Ollama) ──────────────────────────────────
 OLLAMA=$(find_service "ollama" "hwdsl2/ollama-server")
 if [ -n "$OLLAMA" ]; then
-  info "Ollama ($OLLAMA)"
+  info "InferCrate (Ollama, container: $OLLAMA)"
 
-  # Check if Ollama container is running
+  # Check if InferCrate container is running
   pass "Container running"
 
   # Check if at least one model is pulled
@@ -153,12 +153,12 @@ if [ -n "$OLLAMA" ]; then
     warn "API key file not found"
   fi
 else
-  info "Ollama — not running (skipped)"
+  info "InferCrate (Ollama): not running (skipped)"
 fi
 
 echo ""
 
-# ── PostgreSQL (LiteLLM DB) ─────────────────────────────
+# ── PostgreSQL (GatewayCrate / LiteLLM DB) ───────────────
 DB=$(find_service "litellm-db" "pgvector/pgvector")
 if [ -z "$DB" ]; then
   DB=$(find_service "litellm-db" "postgres")
@@ -194,10 +194,10 @@ fi
 
 echo ""
 
-# ── LiteLLM ─────────────────────────────────────────────
+# ── GatewayCrate (LiteLLM) ───────────────────────────────
 LITELLM=$(find_service "litellm" "hwdsl2/litellm-server")
 if [ -n "$LITELLM" ]; then
-  info "LiteLLM ($LITELLM)"
+  info "GatewayCrate (LiteLLM, container: $LITELLM)"
 
   pass "Container running"
 
@@ -222,7 +222,7 @@ if [ -n "$LITELLM" ]; then
     warn "Database integration marker not found — run 'docker compose pull litellm && docker compose up -d litellm' if you recently updated the stack"
   fi
 
-  # If Ollama is running and has models, test a routing check
+  # If InferCrate is running and has models, test a routing check
   if [ -n "$OLLAMA" ] && [ "$MODEL_COUNT" -gt 0 ]; then
     LITELLM_KEY=$("$ENGINE" exec "$LITELLM" litellm_manage --showkey 2>/dev/null | sed 's/^ //' | grep '^sk-' | head -1) || LITELLM_KEY=""
     if [ -n "$LITELLM_KEY" ]; then
@@ -237,19 +237,19 @@ if [ -n "$LITELLM" ]; then
         fail "LLM routing failed for ollama/$FIRST_MODEL"
       fi
     else
-      warn "Could not retrieve LiteLLM API key — skipping routing test"
+      warn "Could not retrieve GatewayCrate master key. Skipping routing test"
     fi
   fi
 else
-  info "LiteLLM — not running (skipped)"
+  info "GatewayCrate (LiteLLM): not running (skipped)"
 fi
 
 echo ""
 
-# ── Embeddings ──────────────────────────────────────────
+# ── EmbedCrate (Hugging Face TEI) ────────────────────────
 EMBEDDINGS=$(find_service "embeddings" "hwdsl2/embeddings-server")
 if [ -n "$EMBEDDINGS" ]; then
-  info "Embeddings ($EMBEDDINGS)"
+  info "EmbedCrate (Hugging Face TEI, container: $EMBEDDINGS)"
 
   pass "Container running"
 
@@ -271,15 +271,15 @@ if [ -n "$EMBEDDINGS" ]; then
     fail "Embedding endpoint not responding at http://localhost:8000/v1/embeddings"
   fi
 else
-  info "Embeddings — not running (skipped)"
+  info "EmbedCrate (Hugging Face TEI): not running (skipped)"
 fi
 
 echo ""
 
-# ── Whisper (STT) ───────────────────────────────────────
+# ── ScribeCrate (Whisper STT) ────────────────────────────
 WHISPER=$(find_service "whisper" "hwdsl2/whisper-server")
 if [ -n "$WHISPER" ]; then
-  info "Whisper STT ($WHISPER)"
+  info "ScribeCrate (Whisper STT, container: $WHISPER)"
 
   pass "Container running"
 
@@ -305,15 +305,15 @@ if [ -n "$WHISPER" ]; then
     fail "Models endpoint not responding at http://localhost:9000/v1/models"
   fi
 else
-  info "Whisper STT — not running (skipped)"
+  info "ScribeCrate (Whisper STT): not running (skipped)"
 fi
 
 echo ""
 
-# ── Kokoro (TTS) ────────────────────────────────────────
+# ── SpeakCrate (Kokoro TTS) ──────────────────────────────
 KOKORO=$(find_service "kokoro" "hwdsl2/kokoro-server")
 if [ -n "$KOKORO" ]; then
-  info "Kokoro TTS ($KOKORO)"
+  info "SpeakCrate (Kokoro TTS, container: $KOKORO)"
 
   pass "Container running"
 
@@ -335,15 +335,15 @@ if [ -n "$KOKORO" ]; then
     fail "TTS endpoint not responding at http://localhost:8880/v1/audio/speech"
   fi
 else
-  info "Kokoro TTS — not running (skipped)"
+  info "SpeakCrate (Kokoro TTS): not running (skipped)"
 fi
 
 echo ""
 
-# ── MCP Gateway ─────────────────────────────────────────
+# ── UplinkCrate (MCPHub) ─────────────────────────────────
 MCP=$(find_service "mcp" "hwdsl2/mcp-gateway")
 if [ -n "$MCP" ]; then
-  info "MCP Gateway ($MCP)"
+  info "UplinkCrate (MCPHub, container: $MCP)"
 
   pass "Container running"
 
@@ -365,18 +365,18 @@ if [ -n "$MCP" ]; then
       fail "MCP initialize handshake failed"
     fi
   else
-    warn "Could not retrieve MCP API key — skipping handshake test"
+    warn "Could not retrieve UplinkCrate API key. Skipping handshake test"
   fi
 else
-  info "MCP Gateway — not running (skipped)"
+  info "UplinkCrate (MCPHub): not running (skipped)"
 fi
 
 echo ""
 
-# ── WhisperLive (STT) ───────────────────────────────────
+# ── ScribeCrate Live (WhisperLive) ────────────────────────
 WHISPERLIVE=$(find_service "whisper-live" "hwdsl2/whisper-live-server")
 if [ -n "$WHISPERLIVE" ]; then
-  info "WhisperLive STT ($WHISPERLIVE)"
+  info "ScribeCrate Live (WhisperLive, container: $WHISPERLIVE)"
 
   pass "Container running"
 
@@ -397,15 +397,15 @@ if [ -n "$WHISPERLIVE" ]; then
   fi
 
 else
-  info "WhisperLive STT — not running (skipped)"
+  info "ScribeCrate Live (WhisperLive): not running (skipped)"
 fi
 
 echo ""
 
-# ── Docling ──────────────────────────────────────────────
+# ── ParseCrate (Docling) ─────────────────────────────────
 DOCLING=$(find_service "docling" "hwdsl2/docling-server")
 if [ -n "$DOCLING" ]; then
-  info "Docling ($DOCLING)"
+  info "ParseCrate (Docling, container: $DOCLING)"
 
   pass "Container running"
 
@@ -430,7 +430,7 @@ if [ -n "$DOCLING" ]; then
     warn "Service not ready yet (models may still be loading)"
   fi
 else
-  info "Docling — not running (skipped)"
+  info "ParseCrate (Docling): not running (skipped)"
 fi
 
 echo ""
