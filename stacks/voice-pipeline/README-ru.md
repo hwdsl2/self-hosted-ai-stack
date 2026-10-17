@@ -27,11 +27,11 @@ graph LR
 
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
-| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибирует речь в текст | `9000` |
-| **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
-| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
-| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к InferCrate и 100+ провайдерам | `4000` |
-| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md)** | Преобразует текст в естественную речь | `8880` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-ru.md)** | Транскрибирует речь в текст | `9000` |
+| **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/docs/README-ru.md)** | Запускает локальные LLM-модели (llama3, qwen, mistral и др.) | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-ru.md)** | AI-шлюз с панелью администратора — маршрутизирует запросы к InferCrate и 100+ провайдерам | `4000` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-ru.md)** | Преобразует текст в естественную речь | `8880` |
 
 **Примечание:** ScribeCrate Live (STT в реальном времени) закомментирован по умолчанию в `docker-compose.yml`. Раскомментируйте его для включения транскрипции в реальном времени через WebSocket.
 
@@ -188,7 +188,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## Счётчики использования
 
-Этот стек участвует в анонимном агрегированном подсчёте загрузок GitHub release assets проекта. Запустите с `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d`, чтобы отключить их; подробнее см. [Счётчики использования](../../README-ru.md#счётчики-использования).
+Этот стек участвует в анонимном агрегированном подсчёте загрузок GitHub release assets проекта. Запустите с `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d`, чтобы отключить их; подробнее см. [Счётчики использования](../../docs/README-ru.md#счётчики-использования).
 
 ## Настройка
 
@@ -196,17 +196,17 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | Сервис | Env-файл | Репозиторий |
 |---|---|---|
-| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md) |
-| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md) |
-| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
-| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md) |
-| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-ru.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-ru.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-ru.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-ru.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-ru.md) |
 
 Подробные параметры настройки, справочник API и управление моделями описаны в документации каждого сервиса.
 
 ## Развёртывание с доступом из интернета
 
-По умолчанию все сервисы слушают по незашифрованному HTTP. Для развёртываний с доступом из интернета установите обратный прокси (например, [Caddy](https://caddyserver.com/), Nginx или Traefik) перед стеком для обеспечения HTTPS. Каждый репозиторий сервиса содержит подробное [руководство по обратному прокси](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md#использование-обратного-прокси) с примерами для Caddy и nginx.
+По умолчанию все сервисы слушают по незашифрованному HTTP. Для развёртываний с доступом из интернета установите обратный прокси (например, [Caddy](https://caddyserver.com/), Nginx или Traefik) перед стеком для обеспечения HTTPS. Каждый репозиторий сервиса содержит подробное [руководство по обратному прокси](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-ru.md#использование-обратного-прокси) с примерами для Caddy и nginx.
 
 ## Резервное копирование и восстановление
 

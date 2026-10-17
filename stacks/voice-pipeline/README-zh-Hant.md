@@ -27,11 +27,11 @@ graph LR
 
 | 服務 | 用途 | 預設連接埠 |
 |---|---|---|
-| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh-Hant.md)** | 將語音音訊轉錄為文字 | `9000` |
-| **[ScribeCrate Live（即時語音轉文字）](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh-Hant.md)** | 透過 WebSocket 即時語音轉文字 | `9090` |
-| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 InferCrate 及 100+ 供應商 | `4000` |
-| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh-Hant.md)** | 將文字轉換為自然語音 | `8880` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh-Hant.md)** | 將語音音訊轉錄為文字 | `9000` |
+| **[ScribeCrate Live（即時語音轉文字）](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-zh-Hant.md)** | 透過 WebSocket 即時語音轉文字 | `9090` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh-Hant.md)** | 執行本機 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh-Hant.md)** | 帶管理介面的 AI 閘道 — 將請求路由至 InferCrate 及 100+ 供應商 | `4000` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh-Hant.md)** | 將文字轉換為自然語音 | `8880` |
 
 **注：** ScribeCrate Live（即時 STT）在 `docker-compose.yml` 中預設被註解掉。取消註解即可啟用透過 WebSocket 的即時轉錄。
 
@@ -188,7 +188,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## 使用計數
 
-此技術堆疊參與專案的匿名、聚合的 GitHub release 資源下載計數。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 啟動可停用；詳情見[使用計數](../../README-zh-Hant.md#使用計數)。
+此技術堆疊參與專案的匿名、聚合的 GitHub release 資源下載計數。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 啟動可停用；詳情見[使用計數](../../docs/README-zh-Hant.md#使用計數)。
 
 ## 自訂設定
 
@@ -196,17 +196,17 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | 服務 | Env 檔案 | 儲存庫 |
 |---|---|---|
-| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md) |
-| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md) |
-| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh-Hant.md) |
-| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh-Hant.md) |
-| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh-Hant.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh-Hant.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh-Hant.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh-Hant.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh-Hant.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-zh-Hant.md) |
 
 有關詳細設定選項、API 參考和模型管理，請參閱各服務儲存庫的文件。
 
 ## 面向網際網路的部署
 
-預設情況下，GatewayCrate 會發布在主機連接埠 `4000`；各子堆疊的輔助 API 預設為僅 localhost 存取或僅內部存取，除非您修改其連接埠映射。對於面向網際網路的部署，請在技術堆疊前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理這些連接埠時，請將 `4000` 等直接 HTTP 連接埠繫結到 `127.0.0.1`。每個服務儲存庫都包含詳細的[反向代理指南](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md#使用反向代理)，含 Caddy 和 nginx 範例。
+預設情況下，GatewayCrate 會發布在主機連接埠 `4000`；各子堆疊的輔助 API 預設為僅 localhost 存取或僅內部存取，除非您修改其連接埠映射。對於面向網際網路的部署，請在技術堆疊前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理這些連接埠時，請將 `4000` 等直接 HTTP 連接埠繫結到 `127.0.0.1`。每個服務儲存庫都包含詳細的[反向代理指南](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh-Hant.md#使用反向代理)，含 Caddy 和 nginx 範例。
 
 ## 備份和恢復
 

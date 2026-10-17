@@ -28,10 +28,10 @@ graph LR
 
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
-| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 InferCrate 及 100+ 供应商 | `4000` |
-| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、fetch、GitHub、搜索、数据库） | `3000` |
-| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 InferCrate 及 100+ 供应商 | `4000` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、fetch、GitHub、搜索、数据库） | `3000` |
+| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/docs/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
 
 > [!IMPORTANT]
 > 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
@@ -182,7 +182,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## 使用计数
 
-此技术栈参与项目的匿名、聚合的 GitHub release 资源下载计数。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 启动可禁用；详情见[使用计数](../../README-zh.md#使用计数)。
+此技术栈参与项目的匿名、聚合的 GitHub release 资源下载计数。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 启动可禁用；详情见[使用计数](../../docs/README-zh.md#使用计数)。
 
 ## 自定义配置
 
@@ -190,16 +190,16 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | 服务 | Env 文件 | 仓库 |
 |---|---|---|
-| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md) |
-| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md) |
-| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md) |
-| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-zh.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh.md) |
+| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/docs/README-zh.md) |
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
 
 ## 面向互联网的部署
 
-默认情况下，GatewayCrate 会发布在宿主机端口 `4000`；各子栈的辅助 API 默认为仅 localhost 访问或仅内部访问，除非您修改其端口映射。对于面向互联网的部署，请在技术栈前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理这些端口时，请将 `4000` 等直接 HTTP 端口绑定到 `127.0.0.1`。每个服务仓库都包含详细的[反向代理指南](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md#使用反向代理)，含 Caddy 和 nginx 示例。
+默认情况下，GatewayCrate 会发布在宿主机端口 `4000`；各子栈的辅助 API 默认为仅 localhost 访问或仅内部访问，除非您修改其端口映射。对于面向互联网的部署，请在技术栈前面放置反向代理（例如 [Caddy](https://caddyserver.com/)、Nginx 或 Traefik）以提供 HTTPS；代理这些端口时，请将 `4000` 等直接 HTTP 端口绑定到 `127.0.0.1`。每个服务仓库都包含详细的[反向代理指南](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md#使用反向代理)，含 Caddy 和 nginx 示例。
 
 ## 备份和恢复
 

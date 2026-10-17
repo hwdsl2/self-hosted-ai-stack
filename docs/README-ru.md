@@ -1,11 +1,11 @@
-[English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
+[English](../README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
 
 # Self-Hosted AI Stack
 
-[![Powered by Docker Compose](docs/images/powered-by-docker-compose.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![Лицензия: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![Powered by Docker Compose](images/powered-by-docker-compose.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![Лицензия: MIT](images/license.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <img src="docs/images/self-hosted-ai-stack-overview.png"
+  <img src="images/self-hosted-ai-stack-overview.png"
        alt="Self-Hosted AI Stack: разверните полный self-hosted AI-стек одной командой"
        width="100%">
 </p>
@@ -30,15 +30,15 @@
 
 | Сервис | Назначение | Порт по умолчанию |
 |---|---|---|
-| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/docs/README-ru.md)** | Запуск локальных LLM-моделей (llama3, qwen, mistral и др.) | `11434` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | Веб-чат — защита паролем включена по умолчанию | `3001` |
-| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md)** | AI-шлюз — маршрутизация запросов к InferCrate, OpenAI, Anthropic и 100+ провайдерам | `4000` |
-| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-ru.md)** | Преобразование текста в векторы для семантического поиска и RAG | `8000` |
-| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md)** | Транскрибация речи в текст | `9000` |
-| **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
-| **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md)** | Преобразование текста в естественную речь | `8880` |
-| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
-| **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-ru.md)** | AI-шлюз — маршрутизация запросов к InferCrate, OpenAI, Anthropic и 100+ провайдерам | `4000` |
+| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/docs/README-ru.md)** | Преобразование текста в векторы для семантического поиска и RAG | `8000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-ru.md)** | Транскрибация речи в текст | `9000` |
+| **[ScribeCrate Live (STT в реальном времени)](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-ru.md)** | Транскрибация речи в реальном времени через WebSocket | `9090` |
+| **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-ru.md)** | Преобразование текста в естественную речь | `8880` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-ru.md)** | Предоставление MCP-инструментов (файловая система, веб, GitHub, поиск, базы данных) AI-клиентам | `3000` |
+| **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-ru.md)** | Конвертирует документы (PDF, DOCX и др.) в структурированный текст/Markdown | `5001` |
 
 ## Быстрый старт
 
@@ -73,7 +73,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **Совет:** При первом запуске сервисам может потребоваться несколько минут для инициализации. Если какие-либо проверки не пройдены, подождите и запустите `./stack-check.sh` снова. Используйте `docker compose logs` для проверки прогресса.
 
-Подробную диагностику см. в руководстве [Устранение неполадок](docs/troubleshooting-ru.md).
+Подробную диагностику см. в руководстве [Устранение неполадок](troubleshooting-ru.md).
 
 **Получение мастер-ключа GatewayCrate** (используется для входа в панель администратора и LLM-запросов):
 
@@ -168,14 +168,14 @@ docker compose -f docker-compose.cuda.yml up -d
 
 | Стек | Сервисы | Память | Сценарий использования |
 |---|---|---|---|
-| **[chat-ui](stacks/chat-ui/README-ru.md)** | InferCrate + GatewayCrate + AnythingLLM | ~5 ГБ | Веб-интерфейс для чата в стиле ChatGPT |
-| **[voice-pipeline](stacks/voice-pipeline/README-ru.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate | ~6 ГБ | Речь в текст → LLM → текст в речь |
-| **[voice-chat](stacks/voice-chat/README-ru.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
-| **[rag-pipeline](stacks/rag-pipeline/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 ГБ | Семантический поиск + LLM Q&A |
-| **[rag-pipeline-full](stacks/rag-pipeline-full/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
-| **[code-assistant](stacks/code-assistant/README-ru.md)** | InferCrate + GatewayCrate + UplinkCrate + EmbedCrate | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
-| **[ai-tools](stacks/ai-tools/README-ru.md)** | InferCrate + GatewayCrate + UplinkCrate | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
-| **[chat-only](stacks/chat-only/README-ru.md)** | InferCrate + GatewayCrate | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
+| **[chat-ui](../stacks/chat-ui/README-ru.md)** | InferCrate + GatewayCrate + AnythingLLM | ~5 ГБ | Веб-интерфейс для чата в стиле ChatGPT |
+| **[voice-pipeline](../stacks/voice-pipeline/README-ru.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate | ~6 ГБ | Речь в текст → LLM → текст в речь |
+| **[voice-chat](../stacks/voice-chat/README-ru.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 ГБ | Чат-интерфейс с голосовым вводом/выводом |
+| **[rag-pipeline](../stacks/rag-pipeline/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 ГБ | Семантический поиск + LLM Q&A |
+| **[rag-pipeline-full](../stacks/rag-pipeline-full/README-ru.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 ГБ | Разбор документов + семантический поиск + LLM Q&A |
+| **[code-assistant](../stacks/code-assistant/README-ru.md)** | InferCrate + GatewayCrate + UplinkCrate + EmbedCrate | ~5 ГБ | AI-разработка с инструментами + семантический поиск по коду |
+| **[ai-tools](../stacks/ai-tools/README-ru.md)** | InferCrate + GatewayCrate + UplinkCrate | ~5 ГБ | AI-ассистент для разработки с доступом к инструментам |
+| **[chat-only](../stacks/chat-only/README-ru.md)** | InferCrate + GatewayCrate | ~4.5 ГБ | Минимальная локальная замена ChatGPT |
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -531,14 +531,14 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 
 | Сервис | Env-файл | Репозиторий |
 |---|---|---|
-| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-ru.md) |
-| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-ru.md) |
-| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-ru.md) |
-| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-ru.md) |
-| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-ru.md) |
-| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-ru.md) |
-| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-ru.md) |
-| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-ru.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-ru.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-ru.md) |
+| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/docs/README-ru.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-ru.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-ru.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-ru.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-ru.md) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-ru.md) |
 
 AnythingLLM настраивается через веб-интерфейс по адресу `http://<IP-сервера>:3001`. Вы можете изменить провайдера LLM, модель, движок эмбеддингов и другие параметры в разделе **Settings**. Подробнее см. [документацию AnythingLLM](https://docs.useanything.com/).
 
@@ -590,7 +590,7 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 Если Caddy сообщает о неизвестной директиве `request_body`, загрузите текущий образ `caddy:2` и перезапустите overlay.
 
-Пользователи старых версий Docker Compose или Podman по-прежнему могут использовать обратный прокси на хосте: привяжите прямые HTTP-порты к localhost (например, `"127.0.0.1:3001:3001/tcp"` и `"127.0.0.1:4000:4000/tcp"`) и проксируйте на эти localhost-порты. Примеры Caddy и nginx для этого стека см. в разделе [ручного обратного прокси Chat UI](stacks/chat-ui/README-ru.md#ручной-обратный-прокси).
+Пользователи старых версий Docker Compose или Podman по-прежнему могут использовать обратный прокси на хосте: привяжите прямые HTTP-порты к localhost (например, `"127.0.0.1:3001:3001/tcp"` и `"127.0.0.1:4000:4000/tcp"`) и проксируйте на эти localhost-порты. Примеры Caddy и nginx для этого стека см. в разделе [ручного обратного прокси Chat UI](../stacks/chat-ui/README-ru.md#ручной-обратный-прокси).
 
 При открытии сервисов в интернет используйте сгенерированные API-ключи, если они есть. Для существующих развёртываний без ключей сначала задайте API-ключи через соответствующие env-файлы.
 
@@ -624,7 +624,7 @@ done
 > [!IMPORTANT]
 > Резервируйте `ai-stack-shared` вместе с `litellm-db`; новые установки хранят там сгенерированный пароль PostgreSQL. Тома `ollama-shared`, `mcp-shared` и `litellm-shared` являются временными томами для передачи ключей и не требуют резервного копирования.
 
-Инструкции по восстановлению, миграции на новый сервер и полный контрольный список перед обновлением см. в руководстве [Резервное копирование и восстановление](docs/backup-restore-ru.md).
+Инструкции по восстановлению, миграции на новый сервер и полный контрольный список перед обновлением см. в руководстве [Резервное копирование и восстановление](backup-restore-ru.md).
 
 ## Учётные данные PostgreSQL
 

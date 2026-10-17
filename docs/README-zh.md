@@ -1,11 +1,11 @@
-[English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
+[English](../README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
 
 # Self-Hosted AI Stack
 
-[![Powered by Docker Compose](docs/images/powered-by-docker-compose.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![授权协议: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![Powered by Docker Compose](images/powered-by-docker-compose.svg)](https://docs.docker.com/compose/) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-ai-stack.svg)](https://hub.docker.com/u/hwdsl2) &nbsp;[![授权协议: MIT](images/license.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <img src="docs/images/self-hosted-ai-stack-overview.png"
+  <img src="images/self-hosted-ai-stack-overview.png"
        alt="Self-Hosted AI Stack：一键部署完整的自托管 AI 技术栈"
        width="100%">
 </p>
@@ -30,15 +30,15 @@
 
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
-| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md)** | 运行本地大语言模型（llama3、qwen、mistral 等） | `11434` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md)** | 运行本地大语言模型（llama3、qwen、mistral 等） | `11434` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于 Web 的聊天界面 — 默认启用密码保护 | `3001` |
-| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md)** | AI 网关（含管理界面）— 将请求路由至 InferCrate 及 100+ 提供商 | `4000` |
-| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
-| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音转录为文本 | `9000` |
-| **[ScribeCrate Live（实时语音转文本）](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
-| **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md)** | 将文本转换为自然语音 | `8880` |
-| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
-| **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md)** | AI 网关（含管理界面）— 将请求路由至 InferCrate 及 100+ 提供商 | `4000` |
+| **[EmbedCrate (Hugging Face TEI)](https://github.com/hwdsl2/embedcrate/blob/main/docs/README-zh.md)** | 将文本转换为向量，用于语义搜索和 RAG | `8000` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh.md)** | 将语音转录为文本 | `9000` |
+| **[ScribeCrate Live（实时语音转文本）](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-zh.md)** | 通过 WebSocket 实时语音转文本 | `9090` |
+| **[SpeakCrate (Kokoro TTS)](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh.md)** | 将文本转换为自然语音 | `8880` |
+| **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
+| **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
 
 ## 快速开始
 
@@ -73,7 +73,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 > **提示：** 首次启动时，服务可能需要几分钟完成初始化。如有检查失败，请稍等后再次运行 `./stack-check.sh`。使用 `docker compose logs` 查看进度。
 
-有关详细故障排查，请参阅[故障排查](docs/troubleshooting-zh.md)指南。
+有关详细故障排查，请参阅[故障排查](troubleshooting-zh.md)指南。
 
 **获取 GatewayCrate 主密钥**（用于登录管理界面和 LLM 请求）：
 
@@ -168,14 +168,14 @@ docker compose -f docker-compose.cuda.yml up -d
 
 | 技术栈 | 服务 | 内存 | 使用场景 |
 |---|---|---|---|
-| **[chat-ui](stacks/chat-ui/README-zh.md)** | InferCrate + GatewayCrate + AnythingLLM | ~5 GB | 基于 Web 的 ChatGPT 式聊天界面 |
-| **[voice-pipeline](stacks/voice-pipeline/README-zh.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate | ~6 GB | 语音转文本 → LLM → 文本转语音 |
-| **[voice-chat](stacks/voice-chat/README-zh.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
-| **[rag-pipeline](stacks/rag-pipeline/README-zh.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 GB | 语义搜索 + LLM 问答 |
-| **[rag-pipeline-full](stacks/rag-pipeline-full/README-zh.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 GB | 文档解析 + 语义搜索 + LLM 问答 |
-| **[code-assistant](stacks/code-assistant/README-zh.md)** | InferCrate + GatewayCrate + UplinkCrate + EmbedCrate | ~5 GB | AI 编程，支持工具 + 语义代码搜索 |
-| **[ai-tools](stacks/ai-tools/README-zh.md)** | InferCrate + GatewayCrate + UplinkCrate | ~5 GB | AI 编程助手，支持工具访问 |
-| **[chat-only](stacks/chat-only/README-zh.md)** | InferCrate + GatewayCrate | ~4.5 GB | 最小化本地 ChatGPT 替代方案 |
+| **[chat-ui](../stacks/chat-ui/README-zh.md)** | InferCrate + GatewayCrate + AnythingLLM | ~5 GB | 基于 Web 的 ChatGPT 式聊天界面 |
+| **[voice-pipeline](../stacks/voice-pipeline/README-zh.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate | ~6 GB | 语音转文本 → LLM → 文本转语音 |
+| **[voice-chat](../stacks/voice-chat/README-zh.md)** | ScribeCrate + InferCrate + GatewayCrate + SpeakCrate + AnythingLLM | ~6.5 GB | 带语音输入/输出的聊天界面 |
+| **[rag-pipeline](../stacks/rag-pipeline/README-zh.md)** | InferCrate + GatewayCrate + EmbedCrate | ~5 GB | 语义搜索 + LLM 问答 |
+| **[rag-pipeline-full](../stacks/rag-pipeline-full/README-zh.md)** | InferCrate + GatewayCrate + EmbedCrate + ParseCrate | ~6 GB | 文档解析 + 语义搜索 + LLM 问答 |
+| **[code-assistant](../stacks/code-assistant/README-zh.md)** | InferCrate + GatewayCrate + UplinkCrate + EmbedCrate | ~5 GB | AI 编程，支持工具 + 语义代码搜索 |
+| **[ai-tools](../stacks/ai-tools/README-zh.md)** | InferCrate + GatewayCrate + UplinkCrate | ~5 GB | AI 编程助手，支持工具访问 |
+| **[chat-only](../stacks/chat-only/README-zh.md)** | InferCrate + GatewayCrate | ~4.5 GB | 最小化本地 ChatGPT 替代方案 |
 
 ```bash
 git clone https://github.com/hwdsl2/self-hosted-ai-stack
@@ -531,14 +531,14 @@ AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d
 
 | 服务 | Env 文件 | 仓库 |
 |---|---|---|
-| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md) |
-| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md) |
-| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/README-zh.md) |
-| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
-| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/README-zh.md) |
-| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md) |
-| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh.md) |
-| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-zh.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md) |
+| EmbedCrate | `embed.env` | [embedcrate](https://github.com/hwdsl2/embedcrate/blob/main/docs/README-zh.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh.md) |
+| ScribeCrate Live | `whisper-live.env` | [ScribeCrate Live](https://github.com/hwdsl2/scribecrate-live/blob/main/docs/README-zh.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh.md) |
+| UplinkCrate | `mcp.env` | [uplinkcrate](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh.md) |
+| ParseCrate | `docling.env` | [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-zh.md) |
 
 AnythingLLM 通过其 Web 界面 `http://<服务器IP>:3001` 进行配置。您可以在 **Settings** 中更改 LLM 供应商、模型、嵌入引擎和其他设置。详情请参阅 [AnythingLLM 文档](https://docs.useanything.com/)。
 
@@ -590,7 +590,7 @@ docker compose -f docker-compose.yml -f docker-compose.proxy.yml ps
 
 如果 Caddy 报告未知的 `request_body` 指令，请拉取当前的 `caddy:2` 镜像并重启叠加文件部署。
 
-旧版 Docker Compose 或 Podman 用户仍可使用主机上的反向代理：将直接 HTTP 端口绑定到 localhost（例如 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`），再反向代理到这些 localhost 端口。有关本技术栈的 Caddy 和 nginx 示例，请参阅 [Chat UI 手动反向代理](stacks/chat-ui/README-zh.md#手动反向代理)部分。
+旧版 Docker Compose 或 Podman 用户仍可使用主机上的反向代理：将直接 HTTP 端口绑定到 localhost（例如 `"127.0.0.1:3001:3001/tcp"` 和 `"127.0.0.1:4000:4000/tcp"`），再反向代理到这些 localhost 端口。有关本技术栈的 Caddy 和 nginx 示例，请参阅 [Chat UI 手动反向代理](../stacks/chat-ui/README-zh.md#手动反向代理)部分。
 
 将服务暴露到互联网时，请优先使用已生成的 API 密钥。对于已有且未设置密钥的部署，请先通过相应的 env 文件设置 API 密钥，再对外发布这些服务。
 
@@ -624,7 +624,7 @@ done
 > [!IMPORTANT]
 > 请将 `ai-stack-shared` 与 `litellm-db` 一起备份；全新安装会将生成的 PostgreSQL 密码存储在那里。`ollama-shared`、`mcp-shared` 和 `litellm-shared` 卷是临时密钥共享卷，无需备份。
 
-有关恢复说明、服务器迁移和完整的升级前检查清单，请参阅[备份与恢复](docs/backup-restore-zh.md)指南。
+有关恢复说明、服务器迁移和完整的升级前检查清单，请参阅[备份与恢复](backup-restore-zh.md)指南。
 
 ## PostgreSQL 凭据
 

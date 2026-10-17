@@ -8,7 +8,7 @@ assignees: ''
 ---
 **任务列表**
 
-- [ ] 我已阅读[自述文件](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README-zh.md)或相关 stack README
+- [ ] 我已阅读[自述文件](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/docs/README-zh.md)或相关 stack README
 - [ ] 我搜索了已有的 [Issues](https://github.com/hwdsl2/self-hosted-ai-stack/issues?q=is%3Aissue)
 - [ ] 这个问题是关于 self-hosted-ai-stack、技术栈集成，或者我不确定哪个服务受影响
 

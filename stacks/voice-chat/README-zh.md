@@ -29,11 +29,11 @@ graph LR
 
 | 服务 | 用途 | 默认端口 |
 |---|---|---|
-| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
-| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 InferCrate 及 100+ 供应商 | `4000` |
+| **[InferCrate (Ollama LLM)](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md)** | 运行本地 LLM 模型（llama3、qwen、mistral 等） | `11434` |
+| **[GatewayCrate (LiteLLM)](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md)** | 带管理界面的 AI 网关 — 将请求路由至 InferCrate 及 100+ 供应商 | `4000` |
 | **[AnythingLLM](https://github.com/mintplex-labs/anything-llm)** | 基于网页的聊天界面，支持工作区、RAG 和代理 | `3001` |
-| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md)** | 将语音音频转录为文字 | `9000` |
-| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md)** | 将文字转换为自然语音 | `8880` |
+| **[ScribeCrate (Whisper STT)](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh.md)** | 将语音音频转录为文字 | `9000` |
+| **[SpeakCrate (TTS)](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh.md)** | 将文字转换为自然语音 | `8880` |
 
 > [!IMPORTANT]
 > 轻量级子栈默认共用容器名称、端口和 Docker 卷名称。使用默认 compose 文件时，一次只运行一个子栈变体；切换到其他变体前，请先停止当前变体。
@@ -224,7 +224,7 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 ## 使用计数
 
-此技术栈参与项目的匿名、聚合的 GitHub release 资源下载计数。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 启动可禁用；详情见[使用计数](../../README-zh.md#使用计数)。
+此技术栈参与项目的匿名、聚合的 GitHub release 资源下载计数。使用 `AI_STACK_DISABLE_USAGE_COUNTS=1 docker compose up -d` 启动可禁用；详情见[使用计数](../../docs/README-zh.md#使用计数)。
 
 ## 自定义配置
 
@@ -232,10 +232,10 @@ docker exec ollama ollama_manage --pull llama3.2:3b
 
 | 服务 | Env 文件 | 仓库 |
 |---|---|---|
-| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh.md) |
-| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh.md) |
-| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh.md) |
-| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh.md) |
+| InferCrate | `ollama.env` | [infercrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md) |
+| GatewayCrate | `litellm.env` | [gatewaycrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md) |
+| ScribeCrate | `whisper.env` | [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh.md) |
+| SpeakCrate | `kokoro.env` | [SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh.md) |
 
 AnythingLLM 通过其网页界面 `http://<server-ip>:3001` 进行配置。您可以在 **Settings** 中更改 LLM 供应商、模型、嵌入引擎和其他设置。详情请参阅 [AnythingLLM 文档](https://docs.useanything.com/)。
 

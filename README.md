@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
+[English](README.md) | [简体中文](docs/README-zh.md) | [繁體中文](docs/README-zh-Hant.md) | [Русский](docs/README-ru.md)
 
 # Self-Hosted AI Stack
 
