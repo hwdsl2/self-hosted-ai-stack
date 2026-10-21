@@ -10,7 +10,7 @@ A local ChatGPT-like experience — web-based chat UI powered by a local LLM wit
 
 **Platforms:** `linux/amd64`, `linux/arm64`
 
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades. **Ebook: $0.99 for a limited time.**
 
 ## Architecture
 
