@@ -38,9 +38,29 @@ For Podman, `stack-check.sh` auto-detects the engine. You can also force it:
 CONTAINER_ENGINE=podman ./stack-check.sh
 ```
 
+The check fails if the container engine cannot be queried or no recognized services are running. Non-running service containers in the same Compose project as a recognized running service are failures; other non-running matches produce warnings. Absent optional services are skipped. Compose is not required to run the check.
+
 ## Startup and readiness
 
 On first start, services may take a few minutes to initialize. Model downloads, database startup, and AnythingLLM initialization can all delay readiness.
+
+A healthy container does not necessarily mean its model is loaded. The first inference request after startup or model unloading may take longer. `stack-check.sh` uses these request budgets, in seconds:
+
+| Environment variable | Default |
+| --- | --- |
+| `STACK_CHECK_LLM_TIMEOUT` | `120` |
+| `STACK_CHECK_EMBEDDINGS_TIMEOUT` | `60` |
+| `STACK_CHECK_TTS_TIMEOUT` | `60` |
+| `STACK_CHECK_HEALTH_TIMEOUT` | `10` |
+| `STACK_CHECK_CONNECT_TIMEOUT` | `5` |
+
+Overrides must be positive integers. For example, on a slower CPU:
+
+```bash
+STACK_CHECK_LLM_TIMEOUT=180 ./stack-check.sh
+```
+
+These settings affect only the checker, not application request timeouts. HTTP failures include the HTTP status, curl exit code, elapsed time, and request budget without printing keys or response bodies. Local probes bypass proxy settings.
 
 If `./stack-check.sh` fails immediately after startup:
 
@@ -74,6 +94,8 @@ docker exec ollama ollama_manage --listmodels
 ```
 
 If GatewayCrate or AnythingLLM reports model errors, first confirm that the model exists in InferCrate and that `./stack-check.sh` reports a successful GatewayCrate routing test.
+
+The routing check still uses the first downloaded model. It prefers that model's advertised `ollama-chat/<model>` alias in GatewayCrate and falls back to `ollama/<model>` for older images or when the chat alias is absent. Other models still need a matching GatewayCrate configuration.
 
 For image-specific issues, use the [InferCrate repository](https://github.com/hwdsl2/infercrate). For upstream Ollama behavior unrelated to this Docker image, use the upstream Ollama issue tracker.
 

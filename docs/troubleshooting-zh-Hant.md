@@ -38,9 +38,29 @@ docker compose -f docker-compose.cuda.yml -f docker-compose.proxy.yml logs --tai
 CONTAINER_ENGINE=podman ./stack-check.sh
 ```
 
+如果無法查詢容器引擎，或沒有正在執行的已識別服務，檢查會失敗。與已識別的執行中服務屬於同一 Compose 專案的未執行服務容器會被視為失敗；其他相符的未執行容器僅產生警告。不存在的可選服務會被略過。執行此檢查不需要安裝 Compose。
+
 ## 啟動和就緒狀態
 
 首次啟動時，服務可能需要幾分鐘完成初始化。模型下載、資料庫啟動和 AnythingLLM 初始化都會影響就緒時間。
+
+容器健康並不一定表示模型已經載入。啟動或模型卸載後的首次推論請求可能需要更長時間。`stack-check.sh` 使用以下請求逾時，單位為秒：
+
+| 環境變數 | 預設值 |
+| --- | --- |
+| `STACK_CHECK_LLM_TIMEOUT` | `120` |
+| `STACK_CHECK_EMBEDDINGS_TIMEOUT` | `60` |
+| `STACK_CHECK_TTS_TIMEOUT` | `60` |
+| `STACK_CHECK_HEALTH_TIMEOUT` | `10` |
+| `STACK_CHECK_CONNECT_TIMEOUT` | `5` |
+
+自訂值必須為正整數。例如，在較慢的 CPU 上：
+
+```bash
+STACK_CHECK_LLM_TIMEOUT=180 ./stack-check.sh
+```
+
+這些設定僅影響檢查指令碼，不會變更應用程式的請求逾時。HTTP 檢查失敗時會顯示 HTTP 狀態、curl 結束碼、耗時和請求逾時，但不會輸出金鑰或回應本文。本機探測會略過代理設定。
 
 如果 `./stack-check.sh` 在啟動後立即失敗：
 
@@ -74,6 +94,8 @@ docker exec ollama ollama_manage --listmodels
 ```
 
 如果 GatewayCrate 或 AnythingLLM 回報模型錯誤，請先確認該模型已存在於 InferCrate 中，並確認 `./stack-check.sh` 顯示 GatewayCrate 路由測試成功。
+
+路由檢查仍使用第一個已下載模型。如果 GatewayCrate 的模型清單中包含該模型的 `ollama-chat/<model>` 別名，檢查會優先使用它；對於舊映像或不存在聊天別名的情況，則回退至 `ollama/<model>`。其他模型仍需在 GatewayCrate 中設定相應的模型項目。
 
 對於映像檔相關問題，請使用 [InferCrate 儲存庫](https://github.com/hwdsl2/infercrate)。對於與此 Docker 映像檔無關的上游 Ollama 行為，請使用上游 Ollama issue tracker。
 
