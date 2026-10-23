@@ -2,6 +2,31 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-10-23
+
+Release: `2026.10.2`
+
+### Fixed
+
+- Increased the health check's cold-start inference budgets to 120 seconds for
+  LLM routing and 60 seconds for embeddings and TTS, with configurable request
+  and connection timeouts.
+- Prevented false health-check passes after failed HTTP transfers, inaccessible
+  container engines, or checks with no recognized running services. Report
+  non-running services in active Compose projects as failures while retaining
+  optional-service and standalone-container compatibility.
+- Bypassed proxies and curl configuration files for local health probes, and
+  added HTTP status and timing diagnostics without exposing keys or responses.
+
+### Changed
+
+- Updated the pinned AnythingLLM image from `1.16.2` to `1.18.0` in the root,
+  `chat-ui`, and `voice-chat` Compose variants.
+- Prefer the first downloaded model's `ollama-chat/<model>` alias for the routing
+  check when available, retaining the legacy `ollama/<model>` fallback.
+- Added focused offline health-check regression tests to the existing CI checks
+  and documented timeout settings in all troubleshooting translations.
+
 ## 2026-10-15
 
 ### Changed
