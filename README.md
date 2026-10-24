@@ -24,7 +24,7 @@ Run local AI models, chat with your documents, transcribe audio, and connect MCP
 - **GPU acceleration:** via NVIDIA CUDA.
 - **Multi-architecture support:** `linux/amd64`, `linux/arm64`.
 
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades. **Ebook: $0.99 for a limited time.**
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
 ## Included services
 

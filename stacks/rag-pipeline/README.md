@@ -10,7 +10,7 @@ Embed documents for semantic search and answer questions with a local LLM.
 
 **Platforms:** `linux/amd64`, `linux/arm64`
 
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades. **Ebook: $0.99 for a limited time.**
+> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
 ## Architecture
 
