@@ -10,7 +10,7 @@ Local LLM with MCP tool access and semantic code search for AI agents and coding
 
 **Platforms:** `linux/amd64`, `linux/arm64`
 
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
+> 📘 **The Self-Hosted AI Builder’s Guide** ([ebook](https://books2read.com/aiguide?store=amazon) · [paperback](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
 ## Architecture
 

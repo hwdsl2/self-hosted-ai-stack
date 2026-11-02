@@ -10,7 +10,7 @@
 
 **平台：** `linux/amd64`、`linux/arm64`
 
-> 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是此技术栈的实用配套指南，涵盖部署、安全、备份和升级。
+> 📘 **The Self-Hosted AI Builder’s Guide**（[电子书](https://books2read.com/aiguide?store=amazon) · [平装书](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)）是此技术栈的实用配套指南，涵盖部署、安全、备份和升级。
 
 ## 架构
 
