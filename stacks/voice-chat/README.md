@@ -10,7 +10,7 @@ Web-based chat UI with voice input (speech-to-text) and voice output (text-to-sp
 
 **Platforms:** `linux/amd64`, `linux/arm64`
 
-> 📘 **The Self-Hosted AI Builder’s Guide** ([ebook](https://books2read.com/aiguide?store=amazon) · [paperback](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
+> 📘 **The Self-Hosted AI Builder’s Guide** ([Kindle](https://books2read.com/aiguide?store=amazon) · [Google Play](https://books2read.com/aiguide?store=google) · [paperback](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)) is the hands-on companion to this stack, covering deployment, security, backups, and upgrades.
 
 ## Architecture
 
