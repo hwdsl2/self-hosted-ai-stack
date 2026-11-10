@@ -415,7 +415,7 @@ if service_running "$MCP"; then
 
   pass "Container running"
 
-  MCP_KEY=$("$ENGINE" exec "$MCP" mcp_manage --showkey 2>/dev/null | sed 's/^ //' | grep '^mcp-' | head -1) || MCP_KEY=""
+  MCP_KEY=$("$ENGINE" exec "$MCP" mcp_manage --getkey 2>/dev/null) || MCP_KEY=""
   if [ -n "$MCP_KEY" ]; then
     pass "API key generated"
 
