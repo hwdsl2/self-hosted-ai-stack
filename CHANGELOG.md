@@ -2,6 +2,13 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-11-10
+
+### Fixed
+
+- Use `mcp_manage --getkey` in `stack-check.sh` so custom MCP keys without
+  an `mcp-` prefix are checked correctly.
+
 ## 2026-10-23
 
 Release: `2026.10.2`
