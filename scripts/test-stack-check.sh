@@ -8,7 +8,7 @@ unset STACK_CHECK_LLM_TIMEOUT STACK_CHECK_EMBEDDINGS_TIMEOUT STACK_CHECK_TTS_TIM
 
 curl() {
   [ "$1" = -q ] || return 90
-  local url="" budget="" connect="" bypass="" payload="" output=""
+  local url="" budget="" connect="" bypass="" payload="" output="" authorization=""
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --max-time) budget="$2"; shift ;;
@@ -16,7 +16,8 @@ curl() {
       --noproxy) bypass="$2"; shift ;;
       -d) payload="$2"; shift ;;
       -o) output="$2"; shift ;;
-      -H|-w|-X|--max-filesize) shift ;;
+      -H) [[ "$2" != 'Authorization: '* ]] || authorization="$2"; shift ;;
+      -w|-X|--max-filesize) shift ;;
       http://*) url="$1" ;;
     esac
     shift
@@ -48,7 +49,12 @@ curl() {
         printf '{"data":[{"id":"ollama-chat/llama3.2:3b"}]}'
       fi
       ;;
-    */mcp) printf '{"jsonrpc":"2.0","id":1,"result":{"serverInfo":{}}}' ;;
+    */mcp)
+      local key=mcp-regression-secret
+      [ "$MOCK_CASE" != custom-mcp-key ] || key=custom-bootstrap-regression-secret
+      [ "$authorization" = "Authorization: Bearer $key" ] || return 96
+      printf '{"jsonrpc":"2.0","id":1,"result":{"serverInfo":{}}}'
+      ;;
   esac
   printf '\n200 0.001'
 }
@@ -90,7 +96,14 @@ mock_engine() {
           [ "$MOCK_CASE" != legacy ] || return 1
           printf '%s\n' 'sk-regression-secret'
           ;;
-        mcp_manage) printf '%s\n' 'mcp-regression-secret' ;;
+        mcp_manage)
+          [ "$2" = --getkey ] || return 97
+          if [ "$MOCK_CASE" = custom-mcp-key ]; then
+            printf '%s' 'custom-bootstrap-regression-secret'
+          else
+            printf '%s' 'mcp-regression-secret'
+          fi
+          ;;
         test) return 0 ;;
         pg_isready) return 0 ;;
         sh) printf '%s\n' 'litellm' ;;
@@ -113,7 +126,8 @@ run_check() {
   shift 2
   output=$(env "$@" CONTAINER_ENGINE=mock_engine bash "$ROOT_DIR/stack-check.sh" 2>&1) || status=$?
   if [ "$status" -ne "$expected" ] || [[ "$output" != *"$pattern"* ]] \
-    || [[ "$output" == *'sk-regression-secret'* || "$output" == *'mcp-regression-secret'* ]]; then
+    || [[ "$output" == *'sk-regression-secret'* || "$output" == *'mcp-regression-secret'* \
+      || "$output" == *'custom-bootstrap-regression-secret'* ]]; then
     printf 'FAIL: %s (exit %s, expected %s)\n%s\n' "$MOCK_CASE" "$status" "$expected" "$output" >&2
     exit 1
   fi
@@ -122,6 +136,8 @@ run_check() {
 
 export MOCK_CASE=normal
 run_check 0 'All checks passed.'
+MOCK_CASE=custom-mcp-key
+run_check 0 'MCP initialize handshake succeeded'
 MOCK_CASE=legacy
 run_check 0 'LLM routing works (ollama/llama3.2:3b)'
 MOCK_CASE=timeout
