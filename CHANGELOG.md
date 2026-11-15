@@ -2,6 +2,20 @@
 
 All notable changes to self-hosted-ai-stack are documented here.
 
+## 2026-11-15
+
+### Added
+
+- Prepare opt-in per-service secret-file overrides for compatible wrapper images across root and prebuilt CPU/CUDA/proxy stacks. Default generated/shared credentials remain unchanged.
+
+### Changed
+
+- Retrieve the GatewayCrate master key with machine-readable `--getkey` in the stack checker.
+
+### Compatibility
+
+- Select compatible images explicitly before enabling file inputs. Retain volumes, prepare an old-image-supported credential source before rollback, and refresh affected consumers after rotation.
+
 ## 2026-11-10
 
 ### Fixed

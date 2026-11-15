@@ -40,6 +40,30 @@ Run local AI models, chat with your documents, transcribe audio, and connect MCP
 | **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate)** | Provides MCP tools (filesystem, fetch, GitHub, search, databases) to AI clients | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate)** | Converts documents (PDF, DOCX, etc.) to structured text/Markdown | `5001` |
 
+## Optional secret files
+
+Compatible wrapper images can read credentials from mounted files. Default startup continues to generate and share credentials without external files. The [opt-in overrides](docs/examples/secrets) require an explicitly selected compatible image, so older published images are not silently configured with unsupported file-only inputs.
+
+Choose only an override for a service already present in your stack. Keep your existing project name, base CPU/CUDA file, proxy overlays, env-file arguments and volumes. Remove the corresponding direct variable everywhere, including an empty value in a mounted service env file. For example, from the repository root:
+
+```bash
+export WHISPER_SECRET_IMAGE=scribecrate:secret-files-candidate
+export WHISPER_SECRET_PATH=/absolute/path/to/api-key
+docker compose -f docker-compose.yml -f docs/examples/secrets/whisper.yml config
+```
+
+Build/select that candidate from the matching wrapper revision before using it. After reviewing `config`, start only the affected service with the same file set. For a service that uses a CUDA image in your stack, select a matching CUDA candidate. For a prebuilt stack, use its existing base file and an absolute path to the selected override. With HTTPS, append the secret override after the existing proxy overlay. Do not apply overlays for absent services: Compose would introduce those services. Live remains disabled/commented unless deliberately configured separately.
+
+**Note:** If a direct credential comes from Compose `environment` or `env_file`, remove it there and recreate only the affected service, keeping its volumes. Wrapper documentation describes the `unset` workaround for shell-sourced bind-mounted env files. Docker `--env-file` and Compose `env_file` do not execute shell commands.
+
+The same service overrides cover all 19 existing root/prebuilt CPU/CUDA/proxy files. The existing PostgreSQL-password file, `ai-stack-init`, shared-key mounts, ports and optional-service choices are retained. GatewayCrate's checker now reads its machine-readable `--getkey`; UplinkCrate keeps its existing `--getkey` path.
+
+Files must be readable by the container user (ParseCrate uses UID 1001). Wrapper docs describe all supported secondary inputs, source validation and persistence: [ScribeCrate](https://github.com/hwdsl2/scribecrate#secret-files), [ParseCrate](https://github.com/hwdsl2/parsecrate#secret-files), [SpeakCrate](https://github.com/hwdsl2/speakcrate#secret-files), [Live](https://github.com/hwdsl2/scribecrate-live#secret-files), [EmbedCrate](https://github.com/hwdsl2/embedcrate#secret-files), [InferCrate](https://github.com/hwdsl2/infercrate#secret-files), [UplinkCrate](https://github.com/hwdsl2/uplinkcrate#secret-files), [GatewayCrate](https://github.com/hwdsl2/gatewaycrate#secret-files). Add secondary file inputs only to their owning service, with distinct secret definitions and mounts.
+
+Rotation takes effect at startup. Make new bytes visible, restart/recreate only affected producers as needed, then refresh consumers that cache shared credentials. Existing AnythingLLM credentials and saved provider/admin/database settings are not automatically rotated. Atomic replacement of host bind-mounted files may leave an old inode visible until recreation. Preserve volumes and back up related database/credential state together. Before rollback, restore an old-image-supported direct/saved credential source and verify protected requests; file-only configuration is not a safe old-image rollback target.
+
+Actual Compose/Podman mounting, rootless access and CPU/CUDA protected operations must be checked with the selected candidate images before deployment. The source examples do not establish Podman Compose, Swarm, Kubernetes or GPU compatibility.
+
 ## Quick start
 
 **Requirements:**

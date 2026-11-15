@@ -40,6 +40,22 @@
 | **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh-Hant.md)** | 為 AI 用戶端提供 MCP 工具（檔案系統、網頁擷取、GitHub、搜尋、資料庫） | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-zh-Hant.md)** | 將文件（PDF、DOCX 等）轉換為結構化文字/Markdown | `5001` |
 
+<a id="secret-files"></a>
+
+## 可選金鑰檔案
+
+相容的包裝器映像檔可從掛載檔案讀取憑證。預設啟動仍自動產生和共用憑證，不要求外部檔案。[可選覆寫檔案](examples/secrets)要求明確指定相容映像檔，避免向舊映像檔靜默傳入不支援的檔案輸入。
+
+只選擇目前堆疊已有服務的覆寫檔案，保留專案名稱、CPU/CUDA 基礎檔案、代理覆寫、env-file 參數和資料卷。對應直接變數必須完全不設定，包括掛載 env 檔案中的空賦值。設定服務對應的 `<SERVICE>_SECRET_IMAGE` 和 `<SERVICE>_SECRET_PATH`（如 `WHISPER_SECRET_IMAGE`、`WHISPER_SECRET_PATH`），合併現有 Compose 檔案後先執行 `config`，檢查後僅啟動受影響服務。建置命令和範例見[英文說明](../README.md#optional-secret-files)。如果該服務在堆疊中使用 CUDA 映像檔，請選擇相符的 CUDA 候選映像檔。預建堆疊使用原有基礎檔案和覆寫檔案的絕對路徑；HTTPS 部署將金鑰覆寫檔案放在原代理覆寫之後。注：為不存在的服務套用覆寫會引入該服務，Live 不會自動啟用。
+
+注：若直接憑證來自 Compose `environment` 或 `env_file`，請從該來源移除，並僅重建受影響的服務，保留其資料卷。包裝器文件介紹了在由 shell 讀取執行的繫結掛載 env 檔案中使用 `unset` 的替代做法。Docker `--env-file` 和 Compose `env_file` 不會執行 shell 命令。
+
+這些按服務劃分的覆寫檔案適用於現有全部 19 個根目錄和預建 CPU/CUDA/代理 Compose 檔案。原有 PostgreSQL 密碼檔案、`ai-stack-init`、共用掛載、連接埠和可選服務保持原樣。GatewayCrate 檢查使用機器可讀的 `--getkey`，UplinkCrate 保留原有 `--getkey`。檔案必須對容器使用者可讀，ParseCrate 使用 UID 1001。各包裝器 README 的金鑰檔案章節列出次要輸入、驗證和持久化規則；次要憑證僅設定在所屬服務中，並使用獨立 secret 定義和掛載。
+
+輪換在啟動時生效。確認新內容可見後按需重新啟動或重建受影響的產生端，再更新快取共用憑證的使用端。既有 AnythingLLM 憑證、供應商、管理員和資料庫設定不會自動輪換。原子替換主機繫結檔案可能保留舊 inode，需重建容器。保留資料卷，將相關資料庫和憑證一起備份。回復舊版前恢復舊映像檔支援的直接或已儲存來源並驗證受保護請求；不要使用純檔案設定直接降級舊映像檔。
+
+部署前應使用選定的候選映像檔驗證實際 Compose/Podman 掛載、rootless 模式（容器引擎以一般使用者身分執行）下的檔案存取及 CPU/CUDA 受保護操作。原始碼範例不代表已驗證 Podman Compose、Swarm、Kubernetes 或 GPU 相容性。
+
 ## 快速開始
 
 **系統需求：**
