@@ -295,7 +295,7 @@ if service_running "$LITELLM"; then
   fi
 
   if [ -n "$OLLAMA" ] && [ "$MODEL_COUNT" -gt 0 ]; then
-    LITELLM_KEY=$("$ENGINE" exec "$LITELLM" litellm_manage --showkey 2>/dev/null | sed 's/^ //' | grep '^sk-' | head -1) || LITELLM_KEY=""
+    LITELLM_KEY=$(service_key "$LITELLM" litellm_manage)
     if [ -n "$LITELLM_KEY" ]; then
       FIRST_MODEL=$("$ENGINE" exec "$OLLAMA" ollama_manage --listmodels | awk 'NF >= 4 && $2 ~ /^[a-f0-9]+$/ { print $1 }' | head -1)
       ROUTING_MODEL="ollama/$FIRST_MODEL"
