@@ -202,6 +202,47 @@ check_bootstrap_parity() {
   done
 }
 
+check_secret_overrides() {
+  local baseline="$1" service prefix override candidate secret variable
+  shift
+  while IFS= read -r service; do
+    override="$ROOT_DIR/docs/examples/secrets/$service.yml"
+    [ -f "$override" ] || continue
+    prefix=$(printf '%s' "$service" | tr '[:lower:]' '[:upper:]')
+    secret="${service}_api_key"
+    case "$service" in
+      litellm) variable=LITELLM_MASTER_KEY_FILE ;;
+      embeddings) variable=EMBED_API_KEY_FILE ;;
+      *) variable="${prefix}_API_KEY_FILE" ;;
+    esac
+    candidate="$TMP_DIR/secret-merged.json"
+    (
+      export "${prefix}_SECRET_IMAGE=secret-files-candidate:local"
+      export "${prefix}_SECRET_PATH=$TMP_DIR/secret-fixture"
+      compose_json "$candidate" "$@" -f "$override"
+    )
+    jq -e -s --arg svc "$service" --arg secret "$secret" --arg variable "$variable" '
+      .[0] as $before | .[1] as $after |
+      ($before.services | keys) == ($after.services | keys) and
+      $after.services[$svc].image == "secret-files-candidate:local" and
+      $after.services[$svc].environment[$variable] == ("/run/secrets/" + $secret) and
+      (($after.services[$svc].environment | del(.[$variable])) // {}) ==
+        ($before.services[$svc].environment // {}) and
+      ($after.services[$svc].secrets | map(.source) | index($secret)) != null and
+      $after.secrets[$secret].file != null and
+      # Existing service secrets are absent in this baseline; do not hide drift.
+      ($before.services[$svc].secrets // []) == [] and
+      ($before | del(.services[$svc].image, .services[$svc].environment,
+        .services[$svc].secrets, .secrets)) ==
+      ($after | del(.services[$svc].image, .services[$svc].environment,
+        .services[$svc].secrets, .secrets))
+    ' "$baseline" "$candidate" >/dev/null || {
+      echo "Error: $service secret override changed unrelated stack configuration." >&2
+      exit 1
+    }
+  done < <(jq -r '.services | keys[]' "$baseline")
+}
+
 check_standalone_compose() {
   log "Standalone compose files"
 
@@ -237,6 +278,7 @@ check_standalone_compose() {
       compose_json "$json_file" -f "$file"
     )
     assert_compose_shape "$json_file" "$label" "$variant" "$accel"
+    (cd "$ROOT_DIR/$dir"; check_secret_overrides "$json_file" -f "$file")
   done
 }
 
@@ -264,6 +306,11 @@ check_proxy_compose() {
         compose_json "$json_file" -f "$base_file" -f "$proxy_file"
     )
     assert_proxy_shape "$json_file" "$label" "$variant" "$accel"
+    (
+      cd "$ROOT_DIR/$dir"
+      DOMAIN=chat.example.test ACME_EMAIL=ci@example.test \
+        check_secret_overrides "$json_file" -f "$base_file" -f "$proxy_file"
+    )
   done
 }
 
@@ -307,6 +354,7 @@ main() {
   require_cmd docker
   docker compose version
 
+  printf '%s\n' synthetic-compose-fixture > "$TMP_DIR/secret-fixture"
   check_standalone_compose
   check_proxy_compose
   check_repository_consistency

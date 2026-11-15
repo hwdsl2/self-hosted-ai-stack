@@ -91,7 +91,10 @@ mock_engine() {
       shift # container name
       case "$1" in
         ollama_manage) printf '%s\n' 'NAME ID SIZE MODIFIED' 'llama3.2:3b abc123 2.0GB now' ;;
-        litellm_manage) printf '%s\n' 'sk-regression-secret' ;;
+        litellm_manage)
+          [ "$2" = --getkey ] || return 97
+          printf '%s' 'sk-regression-secret'
+          ;;
         embed_manage|kokoro_manage)
           [ "$MOCK_CASE" != legacy ] || return 1
           printf '%s\n' 'sk-regression-secret'
