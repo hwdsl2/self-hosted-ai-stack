@@ -4,6 +4,8 @@ All notable changes to self-hosted-ai-stack are documented here.
 
 ## 2026-11-15
 
+Release: `2026.11.1`
+
 ### Added
 
 - Prepare opt-in per-service secret-file overrides for compatible wrapper images across root and prebuilt CPU/CUDA/proxy stacks. Default generated/shared credentials remain unchanged.
