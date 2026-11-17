@@ -40,22 +40,6 @@
 | **[UplinkCrate (MCPHub)](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh.md)** | 为 AI 客户端提供 MCP 工具（文件系统、网页抓取、GitHub、搜索、数据库） | `3000` |
 | **[ParseCrate (Docling)](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-zh.md)** | 将文档（PDF、DOCX 等）转换为结构化文本/Markdown | `5001` |
 
-<a id="secret-files"></a>
-
-## 可选密钥文件
-
-兼容的包装器镜像可从挂载文件读取凭据。默认启动仍自动生成和共享凭据，不要求外部文件。[可选覆盖文件](examples/secrets)要求显式指定兼容镜像，避免向旧镜像静默传入不支持的文件输入。
-
-只选择当前堆栈已有服务的覆盖文件，保留项目名、CPU/CUDA 基础文件、代理覆盖、env-file 参数和数据卷。对应直接变量必须完全不设置，包括挂载 env 文件中的空赋值。设置服务对应的 `<SERVICE>_SECRET_IMAGE` 和 `<SERVICE>_SECRET_PATH`（如 `WHISPER_SECRET_IMAGE`、`WHISPER_SECRET_PATH`），合并现有 Compose 文件后先执行 `config`，检查后仅启动受影响服务。构建命令和示例见[英文说明](../README.md#optional-secret-files)。如果该服务在堆栈中使用 CUDA 镜像，请选择匹配的 CUDA 候选镜像。预构建堆栈使用原有基础文件和覆盖文件的绝对路径；HTTPS 部署将密钥覆盖文件放在原代理覆盖之后。注：为不存在的服务应用覆盖会引入该服务，Live 不会自动启用。
-
-注：若直接凭据来自 Compose `environment` 或 `env_file`，请从该来源移除，并仅重建受影响的服务，保留其数据卷。包装器文档介绍了在由 shell 读取执行的绑定挂载 env 文件中使用 `unset` 的替代做法。Docker `--env-file` 和 Compose `env_file` 不会执行 shell 命令。
-
-这些按服务划分的覆盖文件适用于现有全部 19 个根目录和预构建 CPU/CUDA/代理 Compose 文件。原有 PostgreSQL 密码文件、`ai-stack-init`、共享挂载、端口和可选服务保持原样。GatewayCrate 检查使用机器可读的 `--getkey`，UplinkCrate 保留原有 `--getkey`。文件必须对容器用户可读，ParseCrate 使用 UID 1001。各包装器 README 的密钥文件章节列出次级输入、校验和持久化规则；次级凭据仅配置在所属服务中，并使用独立 secret 定义和挂载。
-
-轮换在启动时生效。确认新内容可见后按需重启或重建受影响的生产者，再刷新缓存共享凭据的消费者。已有 AnythingLLM 凭据、提供商、管理员和数据库配置不会自动轮换。原子替换主机绑定文件可能保留旧 inode，需重建容器。保留数据卷，将相关数据库和凭据一起备份。回滚前恢复旧镜像支持的直接或已保存来源并验证受保护请求；不要用纯文件配置直接降级旧镜像。
-
-部署前应使用选定的候选镜像验证实际 Compose/Podman 挂载、rootless 模式（容器引擎以普通用户身份运行）下的文件访问及 CPU/CUDA 受保护操作。源码示例不代表已验证 Podman Compose、Swarm、Kubernetes 或 GPU 兼容性。
-
 ## 快速开始
 
 **系统要求：**
@@ -566,6 +550,43 @@ AnythingLLM 通过其 Web 界面 `http://<服务器IP>:3001` 进行配置。您�
 > 在现有部署上切换嵌入引擎或向量存储会使之前嵌入的文档不兼容 — 切换后请重新嵌入您的工作区。
 
 有关详细配置选项、API 参考和模型管理，请参阅各服务仓库的文档。
+
+<a id="secret-files"></a>
+
+## 可选密钥文件
+
+服务可从挂载文件读取凭据。这是可选功能；默认的凭据自动生成和共享方式保持不变。
+
+请选择兼容镜像及[对应服务的覆盖文件](examples/secrets)。仅对堆栈中已有的服务应用覆盖，移除对应的直接凭据设置（包括空值赋值），并保留现有数据卷。
+
+更改凭据来源前，请阅读下方的设置、轮换与回滚说明。
+
+<details>
+<summary>设置、轮换与回滚</summary>
+
+**设置**
+
+可使用兼容的已发布镜像，也可选择从对应服务的源码版本在本地构建。旧镜像会忽略新的文件输入。
+
+只选择当前堆栈已有服务的覆盖文件，保留项目名、CPU/CUDA 基础文件、代理覆盖、env-file 参数和数据卷。对应直接变量必须完全不设置，包括挂载 env 文件中的空赋值。设置服务对应的 `<SERVICE>_SECRET_IMAGE` 和 `<SERVICE>_SECRET_PATH`（如 `WHISPER_SECRET_IMAGE`、`WHISPER_SECRET_PATH`），合并现有 Compose 文件后先执行 `config`，检查后仅启动受影响服务。可选的本地构建和示例见[英文说明](../README.md#optional-secret-files)。如果该服务在堆栈中使用 CUDA 镜像，请选择匹配的 CUDA 候选镜像。预构建堆栈使用原有基础文件和覆盖文件的绝对路径；HTTPS 部署将密钥覆盖文件放在原代理覆盖之后。注：为不存在的服务应用覆盖会引入该服务，Live 不会自动启用。
+
+**凭据与访问**
+
+注：若直接凭据来自 Compose `environment` 或 `env_file`，请从该来源移除，并仅重建受影响的服务，保留其数据卷。服务文档介绍了在由 shell 读取执行的绑定挂载 env 文件中使用 `unset` 的替代做法。Docker `--env-file` 和 Compose `env_file` 不会执行 shell 命令。
+
+这些覆盖文件适用于现有根目录和预构建 CPU/CUDA/代理配置。原有 PostgreSQL 密码文件、`ai-stack-init`、共享挂载、端口和可选服务保持原样。
+
+文件必须对容器用户可读，ParseCrate 使用 UID 1001。各服务的 README 的密钥文件章节列出次级输入、校验和持久化规则；次级凭据仅配置在所属服务中，并使用独立 secret 定义和挂载。
+
+**轮换、备份与回滚**
+
+轮换在启动时生效。确认新内容可见后按需重启或重建受影响的生产者，再刷新缓存共享凭据的消费者。已有 AnythingLLM 凭据、提供商、管理员和数据库配置不会自动轮换。原子替换主机绑定文件可能保留旧 inode，需重建容器。保留数据卷，将相关数据库和凭据一起备份。回滚前恢复旧镜像支持的直接或已保存来源并验证受保护请求；不要用纯文件配置直接降级旧镜像。
+
+**兼容性**
+
+堆栈静态检查及 Compose 配置检查已通过。相关服务镜像通过了各自的构建、认证及独立 Docker Compose 密钥挂载检查。未验证完整堆栈运行、Podman、rootless 模式（容器引擎以普通用户身份运行）、Podman Compose、Swarm、Kubernetes 或 GPU 加速。
+
+</details>
 
 ## 面向互联网的部署
 
