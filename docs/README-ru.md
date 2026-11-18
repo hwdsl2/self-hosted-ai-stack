@@ -24,7 +24,7 @@
 - **GPU-ускорение:** ускорение через NVIDIA CUDA
 - **Поддержка нескольких архитектур:** `linux/amd64`, `linux/arm64`
 
-> 📘 **The Self-Hosted AI Builder’s Guide** ([Kindle](https://books2read.com/aiguide?store=amazon) · [Google Play](https://books2read.com/aiguide?store=google) · [книга в мягкой обложке](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)): практическое руководство по работе с этим стеком, охватывающее развёртывание, безопасность, резервное копирование и обновления.
+> 📘 **The Self-Hosted AI Builder’s Guide** служит практическим руководством по развёртыванию, защите, резервному копированию и обновлению этого стека. [Kindle](https://books2read.com/aiguide?store=amazon) · [Google Play](https://books2read.com/aiguide?store=google) · [книга в мягкой обложке](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)
 
 ## Включённые сервисы
 
